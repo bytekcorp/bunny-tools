@@ -17,6 +17,7 @@ describe('MCP tools', () => {
     expect(names).toContain('bunny.dns_record_set');
     expect(names).toContain('bunny.dns_record_delete');
     expect(names).toContain('bunny.manifest');
+    expect(names).toContain('bunny.init');
     expect(names).toContain('bunny.run');
   });
 
@@ -28,8 +29,8 @@ describe('MCP tools', () => {
     }
   });
 
-  it('hard-cap: ≤ 16 tools (10 high-level + escape hatch + a small buffer)', () => {
-    expect(TOOLS.length).toBeLessThanOrEqual(16);
+  it('hard-cap: ≤ 18 tools (~14 high-level + init + escape hatch + buffer)', () => {
+    expect(TOOLS.length).toBeLessThanOrEqual(18);
   });
 
   it('every tool has a non-empty description', () => {

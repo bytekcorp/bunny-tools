@@ -34,13 +34,14 @@ describe('registry', () => {
     const active = registry.commands.filter((c) => c.status === 'active').map((c) => c.name);
     expect(active).toContain('manifest');
     expect(active).toContain('init');
-    expect(active).toContain('configure');
     expect(active).toContain('auth:set');
     expect(active).toContain('auth:list');
     expect(active).toContain('auth:clear');
     expect(active).toContain('use');
     expect(active).toContain('deploy');
     expect(active).toContain('purge');
+    // `configure` removed in 0.1.0-rc.3 in favor of unified `init` (firebase-init style).
+    expect(active).not.toContain('configure');
   });
 
   it('listMcpTools returns commands that declare mcp', () => {

@@ -56,3 +56,29 @@ export async function confirm(opts: { message: string; default: boolean }): Prom
   });
   return Boolean(res['value']);
 }
+
+export async function multiselect<T extends string>(opts: {
+  name: string;
+  message: string;
+  choices: Array<{ value: T; label: string; selected?: boolean }>;
+  min?: number;
+}): Promise<T[]> {
+  if (!isInteractive()) {
+    throw new Error(`Cannot prompt for "${opts.name}" in a non-interactive shell.`);
+  }
+  const res = await prompts({
+    type: 'multiselect',
+    name: 'value',
+    message: opts.message,
+    instructions: false,
+    min: opts.min ?? 0,
+    choices: opts.choices.map((c) => ({
+      title: c.label,
+      value: c.value,
+      selected: c.selected ?? false,
+    })),
+  });
+  const v = res['value'];
+  if (!Array.isArray(v)) throw new Error('Prompt cancelled.');
+  return v as T[];
+}

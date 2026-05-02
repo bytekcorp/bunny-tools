@@ -6,6 +6,7 @@ import { spawn } from 'node:child_process';
 import { runDeploy } from '../core/deploy.js';
 import { parsePurgeArg, runPurgeCommand } from '../core/purge.js';
 import { listScopes } from '../core/auth.js';
+import { FEATURES, runInit } from '../core/init.js';
 import { listPath, deletePath, uploadFile } from '../core/storage-ops.js';
 import {
   listStorageZones,
@@ -229,6 +230,57 @@ export const TOOLS: ToolDef[] = [
     description: 'Returns the canonical bunny-tools command registry as JSON. Use this to discover the full CLI surface.',
     inputSchema: z.object({}),
     run: async () => renderRegistryHelpJson(registry),
+  },
+  {
+    name: 'bunny.init',
+    description:
+      'Initialize a bunny.json + store credentials in one call. Non-interactive shape. Use this to bootstrap a project. Returns the result with bunnyJsonPath, storedScopes, features.',
+    inputSchema: z.object({
+      features: z.array(z.enum(FEATURES)).min(1),
+      accountKey: z.string().optional(),
+      publicDir: z.string().optional(),
+      storageZone: z.string().optional(),
+      storagePassword: z.string().optional(),
+      region: z.string().optional(),
+      pullZoneId: z.number().int().optional(),
+      purge: z.string().optional(),
+      streamLibraryId: z.string().optional(),
+      streamKey: z.string().optional(),
+      cwd: z.string().optional(),
+      force: z.boolean().optional(),
+    }),
+    run: async (raw) => {
+      const args = z
+        .object({
+          features: z.array(z.enum(FEATURES)).min(1),
+          accountKey: z.string().optional(),
+          publicDir: z.string().optional(),
+          storageZone: z.string().optional(),
+          storagePassword: z.string().optional(),
+          region: z.string().optional(),
+          pullZoneId: z.number().int().optional(),
+          purge: z.string().optional(),
+          streamLibraryId: z.string().optional(),
+          streamKey: z.string().optional(),
+          cwd: z.string().optional(),
+          force: z.boolean().optional(),
+        })
+        .parse(raw);
+      const noopAsk = async () => {
+        throw new Error('bunny.init MCP tool is non-interactive; provide all required fields.');
+      };
+      const { cwd, force, ...input } = args;
+      return runInit(
+        input,
+        {
+          ask: noopAsk,
+          pick: noopAsk,
+          multiselect: async () => args.features,
+          confirm: async () => false,
+        },
+        { interactive: false, ...(cwd ? { cwd } : {}), ...(force ? { force: true } : {}) },
+      );
+    },
   },
   {
     name: 'bunny.run',

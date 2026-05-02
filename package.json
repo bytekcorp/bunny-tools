@@ -1,6 +1,6 @@
 {
   "name": "bunny-tools",
-  "version": "0.1.0-rc.2",
+  "version": "0.1.0-rc.3",
   "description": "Bunny.net CLI for storage deploy + CDN purge + full resource management. Like firebase-tools, for Bunny.",
   "license": "MIT",
   "type": "module",

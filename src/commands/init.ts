@@ -1,94 +1,97 @@
-// `bunny init` — per-project bunny.json generator. Thin wrapper over core.
+// `bunny init` — unified bootstrap (auth + feature picker + project config).
 
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import type { ParsedInvocation } from '../manifest/types.js';
-import { detectPublicDir, runInit } from '../core/init.js';
-import { listScopes } from '../core/auth.js';
-import { ask, confirm, isInteractive, pick } from '../ui/prompt.js';
+import type { Feature } from '../core/init.js';
+import { FEATURES, runInit } from '../core/init.js';
+import { ask, confirm, isInteractive, multiselect, pick } from '../ui/prompt.js';
 import { createProgress } from '../ui/progress.js';
-import { listAliases, upsertAlias } from '../core/aliases.js';
 
-export async function run(_inv: ParsedInvocation): Promise<number> {
+export async function run(inv: ParsedInvocation): Promise<number> {
   const progress = createProgress();
-  const cwd = process.cwd();
+  const flags = inv.flags as {
+    nonInteractive?: boolean;
+    force?: boolean;
+    accountKey?: string;
+    features?: string;
+    publicDir?: string;
+    storageZone?: string;
+    storagePassword?: string;
+    region?: string;
+    pullZone?: string;
+    purge?: string;
+    streamLibrary?: string;
+    streamKey?: string;
+  };
 
-  if (existsSync(join(cwd, 'bunny.json'))) {
-    progress.warn('bunny.json already exists. Aborting to avoid overwriting.');
-    return 2;
-  }
-
-  // Suggest `bunny configure` first if no creds set.
-  const stored = await listScopes();
-  if (stored.length === 0) {
-    progress.warn('No credentials detected. Run `bunny configure` first or set BUNNY_ACCOUNT_KEY env var.');
-  }
-
-  if (!isInteractive()) {
-    progress.fail('`bunny init` requires an interactive shell. Use a terminal or pre-write bunny.json.');
+  const interactive = !flags.nonInteractive && isInteractive();
+  if (!interactive && !flags.accountKey && !(await hasAccountKey())) {
+    progress.fail('Non-interactive mode without existing creds requires --account-key.');
     return 1;
   }
 
-  const detected = detectPublicDir(cwd);
-  const publicDir = await ask({ name: 'publicDir', message: `Public directory (default: ${detected})`, mode: 'plain' });
-  const storageZone = await ask({ name: 'storageZone', message: 'Storage zone name', mode: 'plain' });
-  const region = await ask({
-    name: 'region',
-    message: 'Region (ny|la|sg|syd|uk|se|br|jh; leave blank to auto-detect)',
-    mode: 'plain',
-  });
-  const pullZoneRaw = await ask({
-    name: 'pullZone',
-    message: 'Pull zone IDs (comma-separated; blank for none)',
-    mode: 'plain',
-  });
-  const purge = await pick({
-    name: 'purge',
-    message: 'Purge strategy after deploy',
-    choices: [
-      { value: 'all', label: 'all — full pull-zone purge' },
-      { value: 'tag:app', label: 'tag — Cache-Tag based (requires origin Cache-Tag header)' },
-      { value: 'none', label: 'none — skip purge (you handle it elsewhere)' },
-    ],
-  });
+  const features = parseFeatures(flags.features);
 
-  const pullZoneIds = pullZoneRaw
-    .split(',')
-    .map((s) => Number.parseInt(s.trim(), 10))
-    .filter((n) => Number.isFinite(n));
-
-  const result = await runInit(
-    {
-      publicDir: publicDir.length > 0 ? publicDir : detected,
-      storageZone,
-      ...(region.length > 0 ? { region } : {}),
-      pullZoneIds,
-      purge,
-    },
-    cwd,
-  );
-
-  progress.succeed(`Wrote ${result.bunnyJsonPath}`);
-  if (result.gitignoreUpdated) progress.info('.bunny-state.json added to .gitignore');
-  if (result.cacheTagHint) {
-    progress.info(
-      'Tag-based purge selected. Ensure your origin sets `Cache-Tag` response headers on relevant assets.',
+  try {
+    const result = await runInit(
+      {
+        ...(flags.accountKey ? { accountKey: flags.accountKey } : {}),
+        ...(features ? { features } : {}),
+        ...(flags.publicDir ? { publicDir: flags.publicDir } : {}),
+        ...(flags.storageZone ? { storageZone: flags.storageZone } : {}),
+        ...(flags.storagePassword ? { storagePassword: flags.storagePassword } : {}),
+        ...(flags.region ? { region: flags.region } : {}),
+        ...(flags.pullZone ? { pullZoneId: Number.parseInt(flags.pullZone, 10) } : {}),
+        ...(flags.purge ? { purge: flags.purge } : {}),
+        ...(flags.streamLibrary ? { streamLibraryId: flags.streamLibrary } : {}),
+        ...(flags.streamKey ? { streamKey: flags.streamKey } : {}),
+      },
+      { ask, pick, multiselect, confirm, notify: (m) => progress.info(m) },
+      { interactive, ...(flags.force ? { force: true } : {}) },
     );
-  }
 
-  // Seed an alias too if no aliases exist yet.
-  const { aliases } = await listAliases(cwd);
-  if (aliases.length === 0) {
-    const wantAlias = await confirm({ message: 'Create a "default" alias in .bunnyrc?', default: true });
-    if (wantAlias) {
-      await upsertAlias(
-        'default',
-        { storageZone, ...(region.length > 0 ? { region } : {}), pullZones: pullZoneIds },
-        cwd,
+    if (result.alreadyInitialized) {
+      progress.fail(
+        `bunny.json already exists at ${result.bunnyJsonPath}. Pass --force to overwrite, or delete the file.`,
       );
-      progress.info('Wrote .bunnyrc with default alias.');
+      return 2;
+    }
+
+    progress.succeed(`Wrote ${result.bunnyJsonPath}`);
+    if (result.gitignoreUpdated) progress.info('.bunny-state.json added to .gitignore.');
+    if (result.storedScopes.length > 0) {
+      progress.info(`Credentials stored: ${result.storedScopes.join(', ')}`);
+    }
+    if (result.features.includes('storage')) {
+      progress.info('Try: bunny deploy --dry-run');
+    }
+    return 0;
+  } catch (err) {
+    progress.fail((err as Error).message);
+    return 1;
+  }
+}
+
+function parseFeatures(raw: string | undefined): Feature[] | undefined {
+  if (!raw) return undefined;
+  if (raw === 'all') return [...FEATURES];
+  const parts = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  for (const p of parts) {
+    if (!FEATURES.includes(p as Feature)) {
+      throw new Error(`Unknown feature "${p}". Allowed: ${FEATURES.join(', ')}, or "all".`);
     }
   }
+  return parts as Feature[];
+}
 
-  return 0;
+async function hasAccountKey(): Promise<boolean> {
+  const { resolveCredential } = await import('../config/credential-resolver.js');
+  try {
+    const v = await resolveCredential({ kind: 'account' });
+    return v.length > 0;
+  } catch {
+    return false;
+  }
 }

@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.2',
+  version: '0.1.0-rc.3',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   commands: [
     // Phase 1
@@ -38,31 +38,33 @@ export const registry: Registry = {
     // Phase 2 — daily-use deploy loop
     {
       name: 'init',
-      summary: 'Initialize a bunny.json in the current project.',
-      examples: [{ command: 'bunny init', description: 'Interactive wizard.' }],
+      summary: 'Initialize a bunny.json + creds in one shot. Auth → feature multi-select → per-feature config.',
+      flags: [
+        { name: 'non-interactive', description: 'Skip prompts and accept all values via flags.', hasValue: false },
+        { name: 'force', description: 'Overwrite existing bunny.json.', hasValue: false },
+        { name: 'account-key', description: 'Bunny account API key (skipped if env/keychain has one).', hasValue: true },
+        { name: 'features', description: 'Comma-separated: storage,dns,stream,containers,scripting (or "all").', hasValue: true },
+        { name: 'public-dir', description: 'Public directory to deploy (default: auto-detect).', hasValue: true },
+        { name: 'storage-zone', description: 'Storage zone name (required for `storage` feature in non-interactive).', hasValue: true },
+        { name: 'storage-password', description: 'Storage zone password (stored in keychain).', hasValue: true },
+        { name: 'region', description: 'Override region (ny|la|sg|syd|uk|se|br|jh).', hasValue: true },
+        { name: 'pull-zone', description: 'Pull zone id for CDN purge.', hasValue: true },
+        { name: 'purge', description: 'Purge strategy: all|none|tag:<name>.', hasValue: true },
+        { name: 'stream-library', description: 'Stream library id (when `stream` feature selected).', hasValue: true },
+        { name: 'stream-key', description: 'Stream library API key.', hasValue: true },
+      ],
+      examples: [
+        { command: 'bunny init', description: 'Interactive wizard with feature multi-select.' },
+        {
+          command: 'bunny init --non-interactive --features=storage --account-key=$KEY --storage-zone=my-app --storage-password=$PW --pull-zone=12345',
+          description: 'CI-friendly Storage+CDN setup.',
+        },
+        { command: 'bunny init --features=all --non-interactive ...', description: 'Enable every feature.' },
+      ],
+      mcp: { tool: 'bunny.init', description: 'Initialize a bunny.json (and creds if not set). Non-interactive shape.' },
       status: 'active',
       phase: 2,
       load: () => import('../commands/init.js'),
-    },
-    {
-      name: 'configure',
-      summary: 'Interactive global setup of credentials (like aws configure).',
-      flags: [
-        { name: 'non-interactive', description: 'Skip prompts and accept all values via flags.', hasValue: false },
-        { name: 'account-key', description: 'Account API key.', hasValue: true },
-        { name: 'storage-zone', description: 'Default storage zone name.', hasValue: true },
-        { name: 'storage-password', description: 'Storage zone password.', hasValue: true },
-      ],
-      examples: [
-        { command: 'bunny configure', description: 'Interactive walkthrough.' },
-        {
-          command: 'bunny configure --non-interactive --account-key=$KEY --storage-zone=my-app --storage-password=$PW',
-          description: 'CI-friendly form.',
-        },
-      ],
-      status: 'active',
-      phase: 2,
-      load: () => import('../commands/configure.js'),
     },
     {
       name: 'auth:set',

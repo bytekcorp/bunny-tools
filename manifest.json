@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.2",
+  "version": "0.1.0-rc.3",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -38,23 +38,7 @@
     },
     {
       "name": "init",
-      "summary": "Initialize a bunny.json in the current project.",
-      "description": null,
-      "status": "active",
-      "phase": 2,
-      "args": [],
-      "flags": [],
-      "examples": [
-        {
-          "command": "bunny init",
-          "description": "Interactive wizard."
-        }
-      ],
-      "mcp": null
-    },
-    {
-      "name": "configure",
-      "summary": "Interactive global setup of credentials (like aws configure).",
+      "summary": "Initialize a bunny.json + creds in one shot. Auth → feature multi-select → per-feature config.",
       "description": null,
       "status": "active",
       "phase": 2,
@@ -69,9 +53,33 @@
           "defaultValue": null
         },
         {
+          "name": "force",
+          "short": null,
+          "description": "Overwrite existing bunny.json.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
           "name": "account-key",
           "short": null,
-          "description": "Account API key.",
+          "description": "Bunny account API key (skipped if env/keychain has one).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "features",
+          "short": null,
+          "description": "Comma-separated: storage,dns,stream,containers,scripting (or \"all\").",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "public-dir",
+          "short": null,
+          "description": "Public directory to deploy (default: auto-detect).",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
@@ -79,7 +87,7 @@
         {
           "name": "storage-zone",
           "short": null,
-          "description": "Default storage zone name.",
+          "description": "Storage zone name (required for `storage` feature in non-interactive).",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
@@ -87,7 +95,47 @@
         {
           "name": "storage-password",
           "short": null,
-          "description": "Storage zone password.",
+          "description": "Storage zone password (stored in keychain).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "region",
+          "short": null,
+          "description": "Override region (ny|la|sg|syd|uk|se|br|jh).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "pull-zone",
+          "short": null,
+          "description": "Pull zone id for CDN purge.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "purge",
+          "short": null,
+          "description": "Purge strategy: all|none|tag:<name>.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "stream-library",
+          "short": null,
+          "description": "Stream library id (when `stream` feature selected).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "stream-key",
+          "short": null,
+          "description": "Stream library API key.",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
@@ -95,15 +143,22 @@
       ],
       "examples": [
         {
-          "command": "bunny configure",
-          "description": "Interactive walkthrough."
+          "command": "bunny init",
+          "description": "Interactive wizard with feature multi-select."
         },
         {
-          "command": "bunny configure --non-interactive --account-key=$KEY --storage-zone=my-app --storage-password=$PW",
-          "description": "CI-friendly form."
+          "command": "bunny init --non-interactive --features=storage --account-key=$KEY --storage-zone=my-app --storage-password=$PW --pull-zone=12345",
+          "description": "CI-friendly Storage+CDN setup."
+        },
+        {
+          "command": "bunny init --features=all --non-interactive ...",
+          "description": "Enable every feature."
         }
       ],
-      "mcp": null
+      "mcp": {
+        "tool": "bunny.init",
+        "description": "Initialize a bunny.json (and creds if not set). Non-interactive shape."
+      }
     },
     {
       "name": "auth:set",
