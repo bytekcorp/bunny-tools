@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.5  |  **Active commands:** 46/46
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.6  |  **Active commands:** 46/46
 
 <!-- HANDCURATED:START -->
 
