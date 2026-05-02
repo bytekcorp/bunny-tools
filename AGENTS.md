@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 1/47
+**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 9/47
 
 <!-- HANDCURATED:START -->
 
@@ -48,14 +48,14 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 
 ### Phase 2
 
-- `bunny init` [planned] — Initialize a bunny.json in the current project.
-- `bunny configure` [planned] — Interactive global setup of credentials (like aws configure).
-- `bunny auth:set` [planned] — Store an API key for a scope (account, storage:<zone>, stream:<lib>).
-- `bunny auth:list` [planned] — List stored credential scopes (masked).
-- `bunny auth:clear` [planned] — Remove a stored credential.
-- `bunny use` [planned] — Switch active alias from .bunnyrc.
-- `bunny deploy` [planned] — Sync public dir to storage zone and purge CDN cache. _mcp: `bunny.deploy`_
-- `bunny purge` [planned] — Purge CDN cache by URL, tag:<name>, pull-zone:<id>, or all. _mcp: `bunny.purge`_
+- `bunny init` [active] — Initialize a bunny.json in the current project.
+- `bunny configure` [active] — Interactive global setup of credentials (like aws configure).
+- `bunny auth:set` [active] — Store an API key for a scope (account, storage:<zone>, stream:<lib>).
+- `bunny auth:list` [active] — List stored credential scopes (masked).
+- `bunny auth:clear` [active] — Remove a stored credential.
+- `bunny use` [active] — Switch active alias from .bunnyrc; with no arg, list aliases.
+- `bunny deploy` [active] — Sync public dir to storage zone and purge CDN cache. _mcp: `bunny.deploy`_
+- `bunny purge` [active] — Purge CDN cache by URL or pull-zone:<id>. _mcp: `bunny.purge`_
 
 ### Phase 3
 

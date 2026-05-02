@@ -18,13 +18,20 @@ export async function atomicWriteJson(
 }
 
 export async function readJsonOrNull<T>(path: string): Promise<T | null> {
+  let raw: string;
   try {
-    const raw = await readFile(path, 'utf8');
-    return JSON.parse(raw) as T;
+    raw = await readFile(path, 'utf8');
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
     if (code === 'ENOENT') return null;
     throw err;
+  }
+  // Treat parse errors as "no usable file" — caller can decide whether to
+  // overwrite or surface a separate validation error.
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
   }
 }
 

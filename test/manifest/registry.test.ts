@@ -30,9 +30,17 @@ describe('registry', () => {
     }
   });
 
-  it('phase 1 has manifest as the only active command', () => {
-    const active = registry.commands.filter((c) => c.status === 'active');
-    expect(active.map((c) => c.name)).toEqual(['manifest']);
+  it('phase 1 + 2 active commands present', () => {
+    const active = registry.commands.filter((c) => c.status === 'active').map((c) => c.name);
+    expect(active).toContain('manifest');
+    expect(active).toContain('init');
+    expect(active).toContain('configure');
+    expect(active).toContain('auth:set');
+    expect(active).toContain('auth:list');
+    expect(active).toContain('auth:clear');
+    expect(active).toContain('use');
+    expect(active).toContain('deploy');
+    expect(active).toContain('purge');
   });
 
   it('listMcpTools returns commands that declare mcp', () => {

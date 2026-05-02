@@ -1,18 +1,33 @@
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import nock from 'nock';
+import { setGlobalDispatcher, getGlobalDispatcher, MockAgent } from 'undici';
 
-// Globally disable real network. Tests must mock everything they need.
+// Belt-and-suspenders network isolation:
+// - nock blocks node:http/https (kept for legacy fakers; we don't use it directly).
+// - undici MockAgent intercepts undici.request (our HTTP client). Tests that need
+//   network responses opt in by setting up interceptors; everything unmocked throws.
+
+let priorDispatcher: ReturnType<typeof getGlobalDispatcher>;
+let mockAgent: MockAgent;
+
 beforeAll(() => {
   nock.disableNetConnect();
+  priorDispatcher = getGlobalDispatcher();
+  mockAgent = new MockAgent();
+  mockAgent.disableNetConnect();
+  setGlobalDispatcher(mockAgent);
 });
 
 afterEach(() => {
-  // Tests may add `nock(...).get(...)` interceptors; ensure they were used.
-  // We don't fail on leftover interceptors here so individual tests can
-  // assert their own state, but we clean them up.
   nock.cleanAll();
 });
 
-afterAll(() => {
+afterAll(async () => {
+  await mockAgent.close();
+  setGlobalDispatcher(priorDispatcher);
   nock.enableNetConnect();
 });
+
+export function getMockAgent(): MockAgent {
+  return mockAgent;
+}

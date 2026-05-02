@@ -40,18 +40,23 @@
       "name": "init",
       "summary": "Initialize a bunny.json in the current project.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 2,
       "args": [],
       "flags": [],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny init",
+          "description": "Interactive wizard."
+        }
+      ],
       "mcp": null
     },
     {
       "name": "configure",
       "summary": "Interactive global setup of credentials (like aws configure).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 2,
       "args": [],
       "flags": [
@@ -88,17 +93,43 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny configure",
+          "description": "Interactive walkthrough."
+        },
+        {
+          "command": "bunny configure --non-interactive --account-key=$KEY --storage-zone=my-app --storage-password=$PW",
+          "description": "CI-friendly form."
+        }
+      ],
       "mcp": null
     },
     {
       "name": "auth:set",
       "summary": "Store an API key for a scope (account, storage:<zone>, stream:<lib>).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 2,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "scope",
+          "short": null,
+          "description": "account | storage:<zone> | stream:<lib> | database:<name>.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "value",
+          "short": null,
+          "description": "Key value (else read from stdin if interactive).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -106,10 +137,19 @@
       "name": "auth:list",
       "summary": "List stored credential scopes (masked).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 2,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON instead of a table.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -117,21 +157,62 @@
       "name": "auth:clear",
       "summary": "Remove a stored credential.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 2,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "scope",
+          "short": null,
+          "description": "account | storage:<zone> | stream:<lib> | database:<name>.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation prompt.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
     {
       "name": "use",
-      "summary": "Switch active alias from .bunnyrc.",
+      "summary": "Switch active alias from .bunnyrc; with no arg, list aliases.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 2,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "alias",
+          "description": "Alias name (omit to list).",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "list",
+          "short": null,
+          "description": "List aliases (default when no arg given).",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON instead of a table.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -139,11 +220,73 @@
       "name": "deploy",
       "summary": "Sync public dir to storage zone and purge CDN cache.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 2,
       "args": [],
-      "flags": [],
-      "examples": [],
+      "flags": [
+        {
+          "name": "dry-run",
+          "short": null,
+          "description": "Plan and report without mutating remote.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "delete",
+          "short": null,
+          "description": "Delete orphan files on the remote.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "concurrency",
+          "short": null,
+          "description": "Parallel upload pool size.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": "8"
+        },
+        {
+          "name": "purge",
+          "short": null,
+          "description": "Override per-pull-zone purge: all|none|tag:<name>|paths.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "only",
+          "short": null,
+          "description": "Limit to a target (alias-scoped).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON summary instead of a table.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [
+        {
+          "command": "bunny deploy",
+          "description": "Sync + purge per bunny.json."
+        },
+        {
+          "command": "bunny deploy --dry-run",
+          "description": "Preview only."
+        },
+        {
+          "command": "bunny deploy --delete --concurrency=16",
+          "description": "Aggressive sync."
+        }
+      ],
       "mcp": {
         "tool": "bunny.deploy",
         "description": null
@@ -151,13 +294,29 @@
     },
     {
       "name": "purge",
-      "summary": "Purge CDN cache by URL, tag:<name>, pull-zone:<id>, or all.",
+      "summary": "Purge CDN cache by URL or pull-zone:<id>.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 2,
-      "args": [],
+      "args": [
+        {
+          "name": "target",
+          "description": "<url> | pull-zone:<id>",
+          "required": true,
+          "variadic": false
+        }
+      ],
       "flags": [],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny purge https://cdn.example.com/asset.js",
+          "description": "Purge a specific URL."
+        },
+        {
+          "command": "bunny purge pull-zone:12345",
+          "description": "Full pull-zone purge."
+        }
+      ],
       "mcp": {
         "tool": "bunny.purge",
         "description": null
