@@ -28,16 +28,20 @@ describe('parsePurgeArg', () => {
     });
   });
 
-  it('parses pull-zone:<id>', () => {
+  it('parses pullzone:<id>', () => {
+    expect(parsePurgeArg('pullzone:42')).toEqual({ kind: 'pullzone', pullZoneId: 42 });
+  });
+
+  it('still accepts legacy pull-zone:<id> for migration', () => {
     expect(parsePurgeArg('pull-zone:42')).toEqual({ kind: 'pullzone', pullZoneId: 42 });
   });
 
   it('rejects bare "all"', () => {
-    expect(() => parsePurgeArg('all')).toThrowError(/pull-zone/);
+    expect(() => parsePurgeArg('all')).toThrowError(/pullzone/);
   });
 
   it('rejects bare "tag:"', () => {
-    expect(() => parsePurgeArg('tag:foo')).toThrowError(/pull-zone/);
+    expect(() => parsePurgeArg('tag:foo')).toThrowError(/pullzone/);
   });
 
   it('rejects unknown shape', () => {

@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.6',
+  version: '0.1.0-rc.7',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   commands: [
     // Phase 1
@@ -67,7 +67,7 @@ export const registry: Registry = {
       load: () => import('../commands/init.js'),
     },
     {
-      name: 'auth:set',
+      name: 'auth set',
       summary: 'Store an API key for a scope (account, storage:<zone>, stream:<lib>).',
       flags: [
         { name: 'scope', description: 'account | storage:<zone> | stream:<lib> | database:<name>.', hasValue: true },
@@ -78,7 +78,7 @@ export const registry: Registry = {
       load: () => import('../commands/auth/set.js'),
     },
     {
-      name: 'auth:list',
+      name: 'auth list',
       summary: 'List stored credential scopes (masked).',
       flags: [{ name: 'json', description: 'Emit JSON instead of a table.', hasValue: false }],
       status: 'active',
@@ -86,7 +86,7 @@ export const registry: Registry = {
       load: () => import('../commands/auth/list.js'),
     },
     {
-      name: 'auth:clear',
+      name: 'auth clear',
       summary: 'Remove a stored credential.',
       flags: [
         { name: 'scope', description: 'account | storage:<zone> | stream:<lib> | database:<name>.', hasValue: true },
@@ -131,11 +131,11 @@ export const registry: Registry = {
     },
     {
       name: 'purge',
-      summary: 'Purge CDN cache by URL or pull-zone:<id>.',
-      args: [{ name: 'target', description: '<url> | pull-zone:<id>', required: true }],
+      summary: 'Purge CDN cache by URL or pullzone:<id>.',
+      args: [{ name: 'target', description: '<url> | pullzone:<id>', required: true }],
       examples: [
         { command: 'bunny purge https://cdn.example.com/asset.js', description: 'Purge a specific URL.' },
-        { command: 'bunny purge pull-zone:12345', description: 'Full pull-zone purge.' },
+        { command: 'bunny purge pullzone:12345', description: 'Full pull-zone purge.' },
       ],
       mcp: { tool: 'bunny.purge' },
       status: 'active',
@@ -145,7 +145,7 @@ export const registry: Registry = {
 
     // Phase 3 — storage + zones
     {
-      name: 'storage:upload',
+      name: 'storage upload',
       summary: 'Upload a file to a storage zone.',
       args: [
         { name: 'local', description: 'Local file path.', required: true },
@@ -160,7 +160,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage/upload.js'),
     },
     {
-      name: 'storage:download',
+      name: 'storage download',
       summary: 'Download a file from a storage zone.',
       args: [
         { name: 'remote', description: 'Remote path within the zone.', required: true },
@@ -175,7 +175,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage/download.js'),
     },
     {
-      name: 'storage:list',
+      name: 'storage list',
       summary: 'List a storage-zone path.',
       args: [{ name: 'path', description: 'Path within the zone (default /).', required: false }],
       flags: [
@@ -190,7 +190,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage/list.js'),
     },
     {
-      name: 'storage:delete',
+      name: 'storage delete',
       summary: 'Delete a file or path from a storage zone.',
       args: [{ name: 'path', description: 'Remote path.', required: true }],
       flags: [
@@ -204,7 +204,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage/delete.js'),
     },
     {
-      name: 'storage:sync',
+      name: 'storage sync',
       summary: 'Sync a local directory to a storage zone (upload-only, no purge).',
       args: [
         { name: 'local', description: 'Local directory.', required: true },
@@ -220,7 +220,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage/sync.js'),
     },
     {
-      name: 'storage-zone:list',
+      name: 'storagezone list',
       summary: 'List storage zones.',
       flags: [{ name: 'json', description: 'Emit JSON.', hasValue: false }],
       mcp: { tool: 'bunny.zones_list' },
@@ -229,7 +229,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage-zone/list.js'),
     },
     {
-      name: 'storage-zone:get',
+      name: 'storagezone get',
       summary: 'Get a storage zone by id or name.',
       args: [{ name: 'idOrName', description: 'Numeric id or zone name.', required: true }],
       mcp: { tool: 'bunny.zone_get' },
@@ -238,7 +238,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage-zone/get.js'),
     },
     {
-      name: 'storage-zone:create',
+      name: 'storagezone create',
       summary: 'Create a storage zone.',
       args: [{ name: 'name', description: 'Zone name.', required: true }],
       flags: [
@@ -252,7 +252,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage-zone/create.js'),
     },
     {
-      name: 'storage-zone:update',
+      name: 'storagezone update',
       summary: 'Update a storage zone (raw JSON body).',
       args: [{ name: 'id', description: 'Storage zone id.', required: true }],
       flags: [{ name: 'body', description: 'JSON body to POST.', hasValue: true }],
@@ -261,7 +261,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage-zone/update.js'),
     },
     {
-      name: 'storage-zone:delete',
+      name: 'storagezone delete',
       summary: 'Delete a storage zone.',
       args: [{ name: 'id', description: 'Storage zone id.', required: true }],
       flags: [{ name: 'yes', description: 'Skip confirmation.', hasValue: false }],
@@ -271,7 +271,7 @@ export const registry: Registry = {
       load: () => import('../commands/storage-zone/delete.js'),
     },
     {
-      name: 'pull-zone:list',
+      name: 'pullzone list',
       summary: 'List pull zones.',
       flags: [{ name: 'json', description: 'Emit JSON.', hasValue: false }],
       status: 'active',
@@ -279,7 +279,7 @@ export const registry: Registry = {
       load: () => import('../commands/pull-zone/list.js'),
     },
     {
-      name: 'pull-zone:get',
+      name: 'pullzone get',
       summary: 'Get a pull zone.',
       args: [{ name: 'id', description: 'Pull zone id.', required: true }],
       status: 'active',
@@ -287,7 +287,7 @@ export const registry: Registry = {
       load: () => import('../commands/pull-zone/get.js'),
     },
     {
-      name: 'pull-zone:create',
+      name: 'pullzone create',
       summary: 'Create a pull zone.',
       args: [{ name: 'name', description: 'Pull zone name.', required: true }],
       flags: [{ name: 'origin', description: 'Origin URL.', hasValue: true }],
@@ -296,7 +296,7 @@ export const registry: Registry = {
       load: () => import('../commands/pull-zone/create.js'),
     },
     {
-      name: 'pull-zone:update',
+      name: 'pullzone update',
       summary: 'Update a pull zone (raw JSON body).',
       args: [{ name: 'id', description: 'Pull zone id.', required: true }],
       flags: [{ name: 'body', description: 'JSON body to POST.', hasValue: true }],
@@ -305,7 +305,7 @@ export const registry: Registry = {
       load: () => import('../commands/pull-zone/update.js'),
     },
     {
-      name: 'pull-zone:delete',
+      name: 'pullzone delete',
       summary: 'Delete a pull zone.',
       args: [{ name: 'id', description: 'Pull zone id.', required: true }],
       flags: [{ name: 'yes', description: 'Skip confirmation.', hasValue: false }],
@@ -314,7 +314,7 @@ export const registry: Registry = {
       load: () => import('../commands/pull-zone/delete.js'),
     },
     {
-      name: 'pull-zone:edge-rule:list',
+      name: 'pullzone edgerule list',
       summary: 'List edge rules on a pull zone.',
       args: [{ name: 'pullZoneId', description: 'Pull zone id.', required: true }],
       flags: [{ name: 'json', description: 'Emit JSON.', hasValue: false }],
@@ -323,7 +323,7 @@ export const registry: Registry = {
       load: () => import('../commands/pull-zone/edge-rule/list.js'),
     },
     {
-      name: 'pull-zone:edge-rule:add',
+      name: 'pullzone edgerule add',
       summary: 'Add an edge rule to a pull zone (raw JSON rule).',
       args: [{ name: 'pullZoneId', description: 'Pull zone id.', required: true }],
       flags: [{ name: 'rule', description: 'JSON rule body.', hasValue: true }],
@@ -332,7 +332,7 @@ export const registry: Registry = {
       load: () => import('../commands/pull-zone/edge-rule/add.js'),
     },
     {
-      name: 'pull-zone:edge-rule:delete',
+      name: 'pullzone edgerule delete',
       summary: 'Delete an edge rule by Guid.',
       args: [
         { name: 'pullZoneId', description: 'Pull zone id.', required: true },
@@ -345,7 +345,7 @@ export const registry: Registry = {
 
     // Phase 4 — DNS
     {
-      name: 'dns:list',
+      name: 'dns list',
       summary: 'List DNS zones.',
       flags: [{ name: 'json', description: 'Emit JSON.', hasValue: false }],
       status: 'active',
@@ -353,7 +353,7 @@ export const registry: Registry = {
       load: () => import('../commands/dns/list.js'),
     },
     {
-      name: 'dns:get',
+      name: 'dns get',
       summary: 'Get a DNS zone (with records) by id.',
       args: [{ name: 'id', description: 'DNS zone id.', required: true }],
       status: 'active',
@@ -361,7 +361,7 @@ export const registry: Registry = {
       load: () => import('../commands/dns/get.js'),
     },
     {
-      name: 'dns:create',
+      name: 'dns create',
       summary: 'Create a DNS zone for a domain.',
       args: [{ name: 'domain', description: 'Domain name.', required: true }],
       status: 'active',
@@ -369,7 +369,7 @@ export const registry: Registry = {
       load: () => import('../commands/dns/create.js'),
     },
     {
-      name: 'dns:delete',
+      name: 'dns delete',
       summary: 'Delete a DNS zone.',
       args: [{ name: 'id', description: 'DNS zone id.', required: true }],
       flags: [{ name: 'yes', description: 'Skip confirmation.', hasValue: false }],
@@ -378,7 +378,7 @@ export const registry: Registry = {
       load: () => import('../commands/dns/delete.js'),
     },
     {
-      name: 'dns:record:list',
+      name: 'dns record list',
       summary: 'List DNS records for a zone.',
       args: [{ name: 'zoneId', description: 'DNS zone id.', required: true }],
       flags: [
@@ -391,7 +391,7 @@ export const registry: Registry = {
       load: () => import('../commands/dns/record/list.js'),
     },
     {
-      name: 'dns:record:add',
+      name: 'dns record add',
       summary: 'Add a DNS record (A, AAAA, CNAME, TXT, MX, SRV, CAA, NS).',
       args: [
         { name: 'zoneId', description: 'DNS zone id.', required: true },
@@ -413,7 +413,7 @@ export const registry: Registry = {
       load: () => import('../commands/dns/record/add.js'),
     },
     {
-      name: 'dns:record:update',
+      name: 'dns record update',
       summary: 'Update a DNS record (raw JSON body).',
       args: [
         { name: 'zoneId', description: 'DNS zone id.', required: true },
@@ -425,7 +425,7 @@ export const registry: Registry = {
       load: () => import('../commands/dns/record/update.js'),
     },
     {
-      name: 'dns:record:delete',
+      name: 'dns record delete',
       summary: 'Delete a DNS record.',
       args: [
         { name: 'zoneId', description: 'DNS zone id.', required: true },
@@ -440,7 +440,7 @@ export const registry: Registry = {
 
     // Phase 5 — Stream / Magic Containers / Edge Scripting
     {
-      name: 'stream:library:list',
+      name: 'stream library list',
       summary: 'List Stream video libraries.',
       flags: [{ name: 'json', description: 'Emit JSON.', hasValue: false }],
       status: 'active',
@@ -448,7 +448,7 @@ export const registry: Registry = {
       load: () => import('../commands/stream/library/list.js'),
     },
     {
-      name: 'stream:library:create',
+      name: 'stream library create',
       summary: 'Create a Stream video library.',
       args: [{ name: 'name', description: 'Library name.', required: true }],
       flags: [{ name: 'replicate', description: 'Comma-separated replication regions.', hasValue: true }],
@@ -457,7 +457,7 @@ export const registry: Registry = {
       load: () => import('../commands/stream/library/create.js'),
     },
     {
-      name: 'stream:video:list',
+      name: 'stream video list',
       summary: 'List videos in a library.',
       args: [{ name: 'library', description: 'Video library id.', required: true }],
       flags: [
@@ -469,7 +469,7 @@ export const registry: Registry = {
       load: () => import('../commands/stream/video/list.js'),
     },
     {
-      name: 'stream:video:upload',
+      name: 'stream video upload',
       summary: 'Upload a video to a library.',
       args: [
         { name: 'library', description: 'Video library id.', required: true },
@@ -484,7 +484,7 @@ export const registry: Registry = {
       load: () => import('../commands/stream/video/upload.js'),
     },
     {
-      name: 'stream:video:delete',
+      name: 'stream video delete',
       summary: 'Delete a video.',
       args: [
         { name: 'library', description: 'Video library id.', required: true },
@@ -496,7 +496,7 @@ export const registry: Registry = {
       load: () => import('../commands/stream/video/delete.js'),
     },
     {
-      name: 'containers:app:list',
+      name: 'containers app list',
       summary: 'List Magic Containers apps.',
       flags: [{ name: 'json', description: 'Emit JSON.', hasValue: false }],
       status: 'active',
@@ -504,7 +504,7 @@ export const registry: Registry = {
       load: () => import('../commands/containers/app/list.js'),
     },
     {
-      name: 'containers:app:create',
+      name: 'containers app create',
       summary: 'Create a Magic Containers app.',
       args: [{ name: 'name', description: 'App name.', required: true }],
       flags: [
@@ -517,7 +517,7 @@ export const registry: Registry = {
       load: () => import('../commands/containers/app/create.js'),
     },
     {
-      name: 'containers:app:delete',
+      name: 'containers app delete',
       summary: 'Delete a Magic Containers app.',
       args: [{ name: 'id', description: 'App id.', required: true }],
       flags: [{ name: 'yes', description: 'Skip confirmation.', hasValue: false }],
@@ -526,7 +526,7 @@ export const registry: Registry = {
       load: () => import('../commands/containers/app/delete.js'),
     },
     {
-      name: 'scripting:list',
+      name: 'scripting list',
       summary: 'List edge scripts.',
       flags: [{ name: 'json', description: 'Emit JSON.', hasValue: false }],
       status: 'active',
@@ -534,7 +534,7 @@ export const registry: Registry = {
       load: () => import('../commands/scripting/list.js'),
     },
     {
-      name: 'scripting:deploy',
+      name: 'scripting deploy',
       summary: 'Deploy an edge script from a source file (creates new, or updates by id).',
       args: [{ name: 'name', description: 'Script name.', required: true }],
       flags: [
@@ -547,7 +547,7 @@ export const registry: Registry = {
       load: () => import('../commands/scripting/deploy.js'),
     },
     {
-      name: 'scripting:delete',
+      name: 'scripting delete',
       summary: 'Delete an edge script.',
       args: [{ name: 'id', description: 'Script id.', required: true }],
       flags: [{ name: 'yes', description: 'Skip confirmation.', hasValue: false }],

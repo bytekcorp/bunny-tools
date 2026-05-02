@@ -17,18 +17,20 @@ export type PurgeResult = {
 
 export function parsePurgeArg(raw: string): PurgeTarget {
   if (raw === 'all') {
-    throw new Error('`all` purge requires a pull-zone context; use `pull-zone:<id>` or configure pullZones in bunny.json.');
+    throw new Error('`all` purge requires a pullzone context; use `pullzone:<id>` or configure pullZones in bunny.json.');
   }
   if (raw.startsWith('tag:')) {
-    throw new Error('Tag purge requires a pull-zone context; use `--purge=tag:<name>` inside `bunny deploy`.');
+    throw new Error('Tag purge requires a pullzone context; use `--purge=tag:<name>` inside `bunny deploy`.');
   }
-  if (raw.startsWith('pull-zone:')) {
-    const id = Number.parseInt(raw.slice('pull-zone:'.length), 10);
-    if (!Number.isFinite(id)) throw new Error(`Invalid pull-zone id in "${raw}".`);
+  // Accept both new `pullzone:` and legacy `pull-zone:` to ease migration mid-session.
+  const pzPrefix = raw.startsWith('pullzone:') ? 'pullzone:' : raw.startsWith('pull-zone:') ? 'pull-zone:' : null;
+  if (pzPrefix) {
+    const id = Number.parseInt(raw.slice(pzPrefix.length), 10);
+    if (!Number.isFinite(id)) throw new Error(`Invalid pullzone id in "${raw}".`);
     return { kind: 'pullzone', pullZoneId: id };
   }
   if (/^https?:\/\//.test(raw)) return { kind: 'url', url: raw };
-  throw new Error(`Unrecognized purge target "${raw}". Expected URL, "pull-zone:<id>", or use --purge with deploy.`);
+  throw new Error(`Unrecognized purge target "${raw}". Expected URL or "pullzone:<id>".`);
 }
 
 // High-level entry used by `bunny purge` command — instantiates its own client

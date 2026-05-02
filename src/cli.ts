@@ -23,8 +23,27 @@ function buildProgram(): Command {
   return program;
 }
 
-function registerCommand(parent: Command, spec: CommandSpec): void {
-  const cmd = parent.command(spec.name).description(spec.summary);
+// Walk the space-delimited name and create intermediate group commands as needed.
+// Example: "pullzone edgerule add" → pullzone (group) → edgerule (group) → add (leaf).
+function registerCommand(root: Command, spec: CommandSpec): void {
+  const parts = spec.name.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return;
+
+  let parent: Command = root;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const groupName = parts[i]!;
+    let group = parent.commands.find((c) => c.name() === groupName);
+    if (!group) {
+      group = parent
+        .command(groupName)
+        .description(`${groupName} commands`)
+        .helpOption('-h, --help', 'Show help for command.');
+    }
+    parent = group;
+  }
+
+  const leaf = parts[parts.length - 1]!;
+  const cmd = parent.command(leaf).description(spec.summary);
 
   for (const arg of spec.args ?? []) {
     const decoration = arg.variadic ? '...' : '';
@@ -59,7 +78,7 @@ function registerCommand(parent: Command, spec: CommandSpec): void {
 
     if (spec.status !== 'active' || !spec.load) {
       process.stderr.write(
-        `\`bunny ${spec.name}\` is planned for Phase ${spec.phase}. Not yet implemented.\n`,
+        `\`${registry.binary} ${spec.name}\` is planned for Phase ${spec.phase}. Not yet implemented.\n`,
       );
       process.exit(2);
     }
