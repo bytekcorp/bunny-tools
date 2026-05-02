@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 27/47
+**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 35/47
 
 <!-- HANDCURATED:START -->
 
@@ -80,14 +80,14 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 
 ### Phase 4
 
-- `bunny dns:list` [planned] — List DNS zones.
-- `bunny dns:get` [planned] — Get a DNS zone by id or domain.
-- `bunny dns:create` [planned] — Create a DNS zone for a domain.
-- `bunny dns:delete` [planned] — Delete a DNS zone.
-- `bunny dns:record:list` [planned] — List DNS records for a zone. _mcp: `bunny.dns_records`_
-- `bunny dns:record:add` [planned] — Add a DNS record (A, AAAA, CNAME, TXT, MX, SRV, CAA, NS). _mcp: `bunny.dns_record_set`_
-- `bunny dns:record:update` [planned] — Update a DNS record.
-- `bunny dns:record:delete` [planned] — Delete a DNS record. _mcp: `bunny.dns_record_delete`_
+- `bunny dns:list` [active] — List DNS zones.
+- `bunny dns:get` [active] — Get a DNS zone (with records) by id.
+- `bunny dns:create` [active] — Create a DNS zone for a domain.
+- `bunny dns:delete` [active] — Delete a DNS zone.
+- `bunny dns:record:list` [active] — List DNS records for a zone. _mcp: `bunny.dns_records`_
+- `bunny dns:record:add` [active] — Add a DNS record (A, AAAA, CNAME, TXT, MX, SRV, CAA, NS). _mcp: `bunny.dns_record_set`_
+- `bunny dns:record:update` [active] — Update a DNS record (raw JSON body).
+- `bunny dns:record:delete` [active] — Delete a DNS record. _mcp: `bunny.dns_record_delete`_
 
 ### Phase 5
 

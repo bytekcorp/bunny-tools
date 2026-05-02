@@ -100,10 +100,68 @@ export function createAccountClient(opts: AccountClientOptions) {
         scope: { kind: 'account' },
         body: {},
       }),
+
+    // DNS
+    listDnsZones: () => listAll<DnsZone>('/dnszone'),
+    getDnsZone: (id: number) =>
+      callBunny<DnsZone>({ base, path: `/dnszone/${id}`, scope: { kind: 'account' } }),
+    createDnsZone: (domain: string) =>
+      callBunny<DnsZone>({
+        base,
+        path: '/dnszone',
+        method: 'POST',
+        scope: { kind: 'account' },
+        body: { Domain: domain },
+      }),
+    deleteDnsZone: (id: number) =>
+      callBunny<void>({ base, path: `/dnszone/${id}`, method: 'DELETE', scope: { kind: 'account' } }),
+    addDnsRecord: (zoneId: number, body: Record<string, unknown>) =>
+      callBunny<DnsRecord>({
+        base,
+        path: `/dnszone/${zoneId}/records`,
+        method: 'PUT',
+        scope: { kind: 'account' },
+        body,
+      }),
+    updateDnsRecord: (zoneId: number, recordId: number, body: Record<string, unknown>) =>
+      callBunny<DnsRecord>({
+        base,
+        path: `/dnszone/${zoneId}/records/${recordId}`,
+        method: 'POST',
+        scope: { kind: 'account' },
+        body,
+      }),
+    deleteDnsRecord: (zoneId: number, recordId: number) =>
+      callBunny<void>({
+        base,
+        path: `/dnszone/${zoneId}/records/${recordId}`,
+        method: 'DELETE',
+        scope: { kind: 'account' },
+      }),
   };
 }
 
 export type AccountClient = ReturnType<typeof createAccountClient>;
+
+export type DnsZone = {
+  Id: number;
+  Domain: string;
+  Records?: DnsRecord[];
+};
+
+export type DnsRecord = {
+  Id: number;
+  Type: number;
+  Name: string;
+  Value: string;
+  Ttl?: number;
+  Priority?: number;
+  Weight?: number;
+  Port?: number;
+  Flags?: number;
+  Tag?: string;
+  Disabled?: boolean;
+};
 
 // Map Bunny's region-code response field to the storage-endpoint subdomain.
 // Bunny returns codes like "DE", "NY"; storage subdomains are lowercase.

@@ -906,20 +906,36 @@
       "name": "dns:list",
       "summary": "List DNS zones.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 4,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
     {
       "name": "dns:get",
-      "summary": "Get a DNS zone by id or domain.",
+      "summary": "Get a DNS zone (with records) by id.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 4,
-      "args": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "DNS zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
       "flags": [],
       "examples": [],
       "mcp": null
@@ -928,9 +944,16 @@
       "name": "dns:create",
       "summary": "Create a DNS zone for a domain.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 4,
-      "args": [],
+      "args": [
+        {
+          "name": "domain",
+          "description": "Domain name.",
+          "required": true,
+          "variadic": false
+        }
+      ],
       "flags": [],
       "examples": [],
       "mcp": null
@@ -939,10 +962,26 @@
       "name": "dns:delete",
       "summary": "Delete a DNS zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 4,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "DNS zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -950,10 +989,34 @@
       "name": "dns:record:list",
       "summary": "List DNS records for a zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 4,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "zoneId",
+          "description": "DNS zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "type",
+          "short": null,
+          "description": "Filter by record type.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": {
         "tool": "bunny.dns_records",
@@ -964,10 +1027,84 @@
       "name": "dns:record:add",
       "summary": "Add a DNS record (A, AAAA, CNAME, TXT, MX, SRV, CAA, NS).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 4,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "zoneId",
+          "description": "DNS zone id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "type",
+          "description": "Record type.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "name",
+          "description": "Record name.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "value",
+          "description": "Record value.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "ttl",
+          "short": null,
+          "description": "TTL in seconds.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "priority",
+          "short": null,
+          "description": "Priority (MX/SRV).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "weight",
+          "short": null,
+          "description": "Weight (SRV).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "port",
+          "short": null,
+          "description": "Port (SRV).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "flags",
+          "short": null,
+          "description": "Flags (CAA).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "tag",
+          "short": null,
+          "description": "Tag (CAA).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": {
         "tool": "bunny.dns_record_set",
@@ -976,12 +1113,34 @@
     },
     {
       "name": "dns:record:update",
-      "summary": "Update a DNS record.",
+      "summary": "Update a DNS record (raw JSON body).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 4,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "zoneId",
+          "description": "DNS zone id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "recordId",
+          "description": "Record id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "body",
+          "short": null,
+          "description": "JSON body.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -989,10 +1148,32 @@
       "name": "dns:record:delete",
       "summary": "Delete a DNS record.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 4,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "zoneId",
+          "description": "DNS zone id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "recordId",
+          "description": "Record id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": {
         "tool": "bunny.dns_record_delete",
