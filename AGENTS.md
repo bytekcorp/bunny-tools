@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 9/47
+**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 27/47
 
 <!-- HANDCURATED:START -->
 
@@ -59,24 +59,24 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 
 ### Phase 3
 
-- `bunny storage:upload` [planned] — Upload a file to a storage zone.
-- `bunny storage:download` [planned] — Download a file from a storage zone.
-- `bunny storage:list` [planned] — List a storage-zone path. _mcp: `bunny.storage_list`_
-- `bunny storage:delete` [planned] — Delete a file or path from a storage zone.
-- `bunny storage:sync` [planned] — Sync a local directory to a storage zone.
-- `bunny storage-zone:list` [planned] — List storage zones. _mcp: `bunny.zones_list`_
-- `bunny storage-zone:get` [planned] — Get a storage zone by id or name. _mcp: `bunny.zone_get`_
-- `bunny storage-zone:create` [planned] — Create a storage zone. _mcp: `bunny.zone_create`_
-- `bunny storage-zone:update` [planned] — Update a storage zone.
-- `bunny storage-zone:delete` [planned] — Delete a storage zone. _mcp: `bunny.zone_delete`_
-- `bunny pull-zone:list` [planned] — List pull zones.
-- `bunny pull-zone:get` [planned] — Get a pull zone.
-- `bunny pull-zone:create` [planned] — Create a pull zone.
-- `bunny pull-zone:update` [planned] — Update a pull zone.
-- `bunny pull-zone:delete` [planned] — Delete a pull zone.
-- `bunny pull-zone:edge-rule:list` [planned] — List edge rules on a pull zone.
-- `bunny pull-zone:edge-rule:add` [planned] — Add an edge rule to a pull zone.
-- `bunny pull-zone:edge-rule:delete` [planned] — Delete an edge rule.
+- `bunny storage:upload` [active] — Upload a file to a storage zone.
+- `bunny storage:download` [active] — Download a file from a storage zone.
+- `bunny storage:list` [active] — List a storage-zone path. _mcp: `bunny.storage_list`_
+- `bunny storage:delete` [active] — Delete a file or path from a storage zone.
+- `bunny storage:sync` [active] — Sync a local directory to a storage zone (upload-only, no purge).
+- `bunny storage-zone:list` [active] — List storage zones. _mcp: `bunny.zones_list`_
+- `bunny storage-zone:get` [active] — Get a storage zone by id or name. _mcp: `bunny.zone_get`_
+- `bunny storage-zone:create` [active] — Create a storage zone. _mcp: `bunny.zone_create`_
+- `bunny storage-zone:update` [active] — Update a storage zone (raw JSON body).
+- `bunny storage-zone:delete` [active] — Delete a storage zone. _mcp: `bunny.zone_delete`_
+- `bunny pull-zone:list` [active] — List pull zones.
+- `bunny pull-zone:get` [active] — Get a pull zone.
+- `bunny pull-zone:create` [active] — Create a pull zone.
+- `bunny pull-zone:update` [active] — Update a pull zone (raw JSON body).
+- `bunny pull-zone:delete` [active] — Delete a pull zone.
+- `bunny pull-zone:edge-rule:list` [active] — List edge rules on a pull zone.
+- `bunny pull-zone:edge-rule:add` [active] — Add an edge rule to a pull zone (raw JSON rule).
+- `bunny pull-zone:edge-rule:delete` [active] — Delete an edge rule by Guid.
 
 ### Phase 4
 

@@ -63,12 +63,16 @@ export function createAccountClient(opts: AccountClientOptions) {
       callBunny<StorageZone>({ base, path: '/storagezone', method: 'POST', scope: { kind: 'account' }, body }),
     deleteStorageZone: (id: number) =>
       callBunny<void>({ base, path: `/storagezone/${id}`, method: 'DELETE', scope: { kind: 'account' } }),
+    updateStorageZone: (id: number, body: Record<string, unknown>) =>
+      callBunny<StorageZone>({ base, path: `/storagezone/${id}`, method: 'POST', scope: { kind: 'account' }, body }),
 
     listPullZones: () => listAll<PullZone>('/pullzone'),
     getPullZone: (id: number) =>
       callBunny<PullZone>({ base, path: `/pullzone/${id}`, scope: { kind: 'account' } }),
     createPullZone: (body: { Name: string; OriginUrl: string }) =>
       callBunny<PullZone>({ base, path: '/pullzone', method: 'POST', scope: { kind: 'account' }, body }),
+    updatePullZone: (id: number, body: Record<string, unknown>) =>
+      callBunny<PullZone>({ base, path: `/pullzone/${id}`, method: 'POST', scope: { kind: 'account' }, body }),
     deletePullZone: (id: number) =>
       callBunny<void>({ base, path: `/pullzone/${id}`, method: 'DELETE', scope: { kind: 'account' } }),
 

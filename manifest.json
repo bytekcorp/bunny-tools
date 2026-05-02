@@ -326,10 +326,40 @@
       "name": "storage:upload",
       "summary": "Upload a file to a storage zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "local",
+          "description": "Local file path.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "remote",
+          "description": "Remote path within the zone.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "zone",
+          "short": null,
+          "description": "Storage zone name.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "region",
+          "short": null,
+          "description": "Override region (e.g. ny, la).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -337,10 +367,40 @@
       "name": "storage:download",
       "summary": "Download a file from a storage zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "remote",
+          "description": "Remote path within the zone.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "local",
+          "description": "Local destination path.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "zone",
+          "short": null,
+          "description": "Storage zone name.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "region",
+          "short": null,
+          "description": "Override region.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -348,10 +408,50 @@
       "name": "storage:list",
       "summary": "List a storage-zone path.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "path",
+          "description": "Path within the zone (default /).",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "zone",
+          "short": null,
+          "description": "Storage zone name.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "recursive",
+          "short": null,
+          "description": "List recursively.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "region",
+          "short": null,
+          "description": "Override region.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": {
         "tool": "bunny.storage_list",
@@ -362,21 +462,99 @@
       "name": "storage:delete",
       "summary": "Delete a file or path from a storage zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "path",
+          "description": "Remote path.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "zone",
+          "short": null,
+          "description": "Storage zone name.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "recursive",
+          "short": null,
+          "description": "Delete recursively.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "region",
+          "short": null,
+          "description": "Override region.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
     {
       "name": "storage:sync",
-      "summary": "Sync a local directory to a storage zone.",
+      "summary": "Sync a local directory to a storage zone (upload-only, no purge).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "local",
+          "description": "Local directory.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "remote",
+          "description": "Remote root path (default /).",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "zone",
+          "short": null,
+          "description": "Storage zone name.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "concurrency",
+          "short": null,
+          "description": "Parallel pool size.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": "8"
+        },
+        {
+          "name": "region",
+          "short": null,
+          "description": "Override region.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -384,10 +562,19 @@
       "name": "storage-zone:list",
       "summary": "List storage zones.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": {
         "tool": "bunny.zones_list",
@@ -398,9 +585,16 @@
       "name": "storage-zone:get",
       "summary": "Get a storage zone by id or name.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
+      "args": [
+        {
+          "name": "idOrName",
+          "description": "Numeric id or zone name.",
+          "required": true,
+          "variadic": false
+        }
+      ],
       "flags": [],
       "examples": [],
       "mcp": {
@@ -412,10 +606,42 @@
       "name": "storage-zone:create",
       "summary": "Create a storage zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "name",
+          "description": "Zone name.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "region",
+          "short": null,
+          "description": "Primary region (e.g. ny, la, sg).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "replicate",
+          "short": null,
+          "description": "Comma-separated replication regions.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "tier",
+          "short": null,
+          "description": "Standard | Edge.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": {
         "tool": "bunny.zone_create",
@@ -424,12 +650,28 @@
     },
     {
       "name": "storage-zone:update",
-      "summary": "Update a storage zone.",
+      "summary": "Update a storage zone (raw JSON body).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "Storage zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "body",
+          "short": null,
+          "description": "JSON body to POST.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -437,10 +679,26 @@
       "name": "storage-zone:delete",
       "summary": "Delete a storage zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "Storage zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": {
         "tool": "bunny.zone_delete",
@@ -451,10 +709,19 @@
       "name": "pull-zone:list",
       "summary": "List pull zones.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -462,9 +729,16 @@
       "name": "pull-zone:get",
       "summary": "Get a pull zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
       "flags": [],
       "examples": [],
       "mcp": null
@@ -473,21 +747,53 @@
       "name": "pull-zone:create",
       "summary": "Create a pull zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "name",
+          "description": "Pull zone name.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "origin",
+          "short": null,
+          "description": "Origin URL.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
     {
       "name": "pull-zone:update",
-      "summary": "Update a pull zone.",
+      "summary": "Update a pull zone (raw JSON body).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "body",
+          "short": null,
+          "description": "JSON body to POST.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -495,10 +801,26 @@
       "name": "pull-zone:delete",
       "summary": "Delete a pull zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -506,31 +828,76 @@
       "name": "pull-zone:edge-rule:list",
       "summary": "List edge rules on a pull zone.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "pullZoneId",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
     {
       "name": "pull-zone:edge-rule:add",
-      "summary": "Add an edge rule to a pull zone.",
+      "summary": "Add an edge rule to a pull zone (raw JSON rule).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "pullZoneId",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "rule",
+          "short": null,
+          "description": "JSON rule body.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
     {
       "name": "pull-zone:edge-rule:delete",
-      "summary": "Delete an edge rule.",
+      "summary": "Delete an edge rule by Guid.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 3,
-      "args": [],
+      "args": [
+        {
+          "name": "pullZoneId",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "ruleGuid",
+          "description": "Edge rule Guid.",
+          "required": true,
+          "variadic": false
+        }
+      ],
       "flags": [],
       "examples": [],
       "mcp": null
