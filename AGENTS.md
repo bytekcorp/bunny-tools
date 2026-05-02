@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.7  |  **Active commands:** 46/46
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.8  |  **Active commands:** 48/48
 
 <!-- HANDCURATED:START -->
 
@@ -55,6 +55,8 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 - `bunny use` [active] — Switch active alias from .bunnyrc; with no arg, list aliases.
 - `bunny deploy` [active] — Sync public dir to storage zone and purge CDN cache. _mcp: `bunny.deploy`_
 - `bunny purge` [active] — Purge CDN cache by URL or pullzone:<id>. _mcp: `bunny.purge`_
+- `bunny whoami` [active] — Show the current account context (stored credentials + reachable zone counts).
+- `bunny docs` [active] — Open Bunny.net docs in the browser. Optional [topic] for direct deep links.
 
 ### Phase 3
 
