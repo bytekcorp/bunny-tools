@@ -1,11 +1,19 @@
 {
   "name": "bunny-tools",
-  "version": "0.1.0-rc.5",
+  "version": "0.1.0-rc.6",
   "description": "Bunny.net CLI for storage deploy, CDN purge, and full resource management. AI-friendly via MCP.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "bunny": "./dist/cli.js"
+    "bunny": "dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bytekcorp/bunny-tools.git"
+  },
+  "homepage": "https://github.com/bytekcorp/bunny-tools#readme",
+  "bugs": {
+    "url": "https://github.com/bytekcorp/bunny-tools/issues"
   },
   "files": [
     "dist",
