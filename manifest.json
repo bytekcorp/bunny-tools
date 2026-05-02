@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.7",
+  "version": "0.1.0-rc.8",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -42,7 +42,14 @@
       "description": null,
       "status": "active",
       "phase": 2,
-      "args": [],
+      "args": [
+        {
+          "name": "dir",
+          "description": "Optional target directory (defaults to cwd).",
+          "required": false,
+          "variadic": false
+        }
+      ],
       "flags": [
         {
           "name": "non-interactive",
@@ -1592,6 +1599,57 @@
         {
           "command": "claude mcp add bunny-tools npx -y bunny-tools mcp",
           "description": "Install for Claude Code."
+        }
+      ],
+      "mcp": null
+    },
+    {
+      "name": "whoami",
+      "summary": "Show the current account context (stored credentials + reachable zone counts).",
+      "description": null,
+      "status": "active",
+      "phase": 2,
+      "args": [],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON instead of a table.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "docs",
+      "summary": "Open Bunny.net docs in the browser. Optional [topic] for direct deep links.",
+      "description": null,
+      "status": "active",
+      "phase": 2,
+      "args": [
+        {
+          "name": "topic",
+          "description": "Topic shortcut (e.g. storage, pullzone, dns) or path slug.",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "flags": [],
+      "examples": [
+        {
+          "command": "bunny docs",
+          "description": "Opens docs.bunny.net root."
+        },
+        {
+          "command": "bunny docs storage",
+          "description": "Storage introduction."
+        },
+        {
+          "command": "bunny docs pullzone",
+          "description": "CDN pull zone reference."
         }
       ],
       "mcp": null

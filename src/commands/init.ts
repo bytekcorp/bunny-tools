@@ -1,5 +1,7 @@
-// `bunny init` — unified bootstrap (auth + feature picker + project config).
+// `bunny init [dir]` — unified bootstrap (auth + feature picker + project config).
 
+import { mkdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import type { ParsedInvocation } from '../manifest/types.js';
 import type { Feature } from '../core/init.js';
 import { FEATURES, runInit } from '../core/init.js';
@@ -8,6 +10,12 @@ import { createProgress } from '../ui/progress.js';
 
 export async function run(inv: ParsedInvocation): Promise<number> {
   const progress = createProgress();
+  const args = inv.args as { dir?: string };
+  // Optional positional: target directory. Created if missing; runInit operates from there.
+  const targetCwd = args.dir ? resolve(args.dir) : process.cwd();
+  if (args.dir) {
+    await mkdir(targetCwd, { recursive: true });
+  }
   const flags = inv.flags as {
     nonInteractive?: boolean;
     force?: boolean;
@@ -46,7 +54,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
         ...(flags.streamKey ? { streamKey: flags.streamKey } : {}),
       },
       { ask, pick, multiselect, confirm, notify: (m) => progress.info(m) },
-      { interactive, ...(flags.force ? { force: true } : {}) },
+      { interactive, cwd: targetCwd, ...(flags.force ? { force: true } : {}) },
     );
 
     if (result.alreadyInitialized) {

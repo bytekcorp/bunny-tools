@@ -14,7 +14,27 @@ function buildProgram(): Command {
     .description(registry.description)
     .version(registry.version, '-v, --version', 'Show CLI version.')
     .helpOption('-h, --help', 'Show help for command.')
-    .showHelpAfterError(true);
+    .showHelpAfterError(true)
+    // Wrangler-style global flags. Applied via env vars + chdir in preAction hook.
+    .option('-c, --config <path>', 'Path to a bunny.json config (overrides walk-up search).')
+    .option('--cwd <dir>', 'Run as if launched from this directory.')
+    .option('-e, --env <alias>', 'One-shot .bunnyrc alias (no need for `bunny use` first).');
+
+  // Apply global flags BEFORE any leaf action runs. chdir first so subsequent
+  // config search uses the new cwd. Other flags become env vars consumed by
+  // the loaders downstream.
+  program.hook('preAction', (thisCmd) => {
+    const opts = thisCmd.optsWithGlobals();
+    if (typeof opts['cwd'] === 'string' && opts['cwd'].length > 0) {
+      process.chdir(opts['cwd']);
+    }
+    if (typeof opts['config'] === 'string' && opts['config'].length > 0) {
+      process.env['BUNNY_CONFIG_PATH'] = opts['config'];
+    }
+    if (typeof opts['env'] === 'string' && opts['env'].length > 0) {
+      process.env['BUNNY_ALIAS'] = opts['env'];
+    }
+  });
 
   for (const cmd of registry.commands) {
     registerCommand(program, cmd);

@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.7',
+  version: '0.1.0-rc.8',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   commands: [
     // Phase 1
@@ -39,6 +39,7 @@ export const registry: Registry = {
     {
       name: 'init',
       summary: 'Initialize a bunny.json + creds in one shot. Auth → feature multi-select → per-feature config.',
+      args: [{ name: 'dir', description: 'Optional target directory (defaults to cwd).', required: false }],
       flags: [
         { name: 'non-interactive', description: 'Skip prompts and accept all values via flags.', hasValue: false },
         { name: 'force', description: 'Overwrite existing bunny.json.', hasValue: false },
@@ -572,6 +573,29 @@ export const registry: Registry = {
       status: 'active',
       phase: 6,
       load: () => import('../commands/mcp.js'),
+    },
+
+    // rc.8 — wrangler-inspired wins.
+    {
+      name: 'whoami',
+      summary: 'Show the current account context (stored credentials + reachable zone counts).',
+      flags: [{ name: 'json', description: 'Emit JSON instead of a table.', hasValue: false }],
+      status: 'active',
+      phase: 2,
+      load: () => import('../commands/whoami.js'),
+    },
+    {
+      name: 'docs',
+      summary: 'Open Bunny.net docs in the browser. Optional [topic] for direct deep links.',
+      args: [{ name: 'topic', description: 'Topic shortcut (e.g. storage, pullzone, dns) or path slug.', required: false }],
+      examples: [
+        { command: 'bunny docs', description: 'Opens docs.bunny.net root.' },
+        { command: 'bunny docs storage', description: 'Storage introduction.' },
+        { command: 'bunny docs pullzone', description: 'CDN pull zone reference.' },
+      ],
+      status: 'active',
+      phase: 2,
+      load: () => import('../commands/docs.js'),
     },
   ],
 };

@@ -57,11 +57,14 @@ export async function upsertAlias(name: string, alias: Omit<ResolvedAlias, 'name
 
 export async function getActiveAliasOverlay(cwd = process.cwd()): Promise<ResolvedAlias | null> {
   const { rc } = await loadOrEmpty(cwd);
-  if (!rc.default) return null;
-  const entry = rc.aliases[rc.default];
+  // `-e, --env <alias>` global flag overrides `.bunnyrc#default` for this invocation.
+  const override = process.env['BUNNY_ALIAS'];
+  const activeName = override && override.length > 0 ? override : rc.default;
+  if (!activeName) return null;
+  const entry = rc.aliases[activeName];
   if (!entry) return null;
   return {
-    name: rc.default,
+    name: activeName,
     storageZone: entry.storageZone,
     ...(entry.region ? { region: entry.region } : {}),
     pullZones: entry.pullZones,
