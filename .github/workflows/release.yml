@@ -19,6 +19,9 @@ jobs:
           node-version: '20'
           cache: npm
           registry-url: 'https://registry.npmjs.org'
+      # npm 11.5+ required for trusted publishing (OIDC). Node 20 ships with npm 10.
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
@@ -37,7 +40,5 @@ jobs:
           else
             echo "dist=latest" >> "$GITHUB_OUTPUT"
           fi
-      - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish (OIDC trusted publishing — no token needed)
         run: npm publish --provenance --tag "${{ steps.tag.outputs.dist }}"
