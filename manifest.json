@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.8",
+  "version": "0.1.0-rc.9",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -168,36 +168,97 @@
       }
     },
     {
-      "name": "auth set",
-      "summary": "Store an API key for a scope (account, storage:<zone>, stream:<lib>).",
+      "name": "configure",
+      "summary": "Interactive credential walkthrough for a profile (account key + optional storage/stream).",
       "description": null,
       "status": "active",
       "phase": 2,
       "args": [],
       "flags": [
         {
-          "name": "scope",
+          "name": "non-interactive",
           "short": null,
-          "description": "account | storage:<zone> | stream:<lib> | database:<name>.",
+          "description": "Skip prompts; accept all values via flags.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "profile",
+          "short": null,
+          "description": "Profile name (default: active profile, or \"default\").",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
         },
         {
-          "name": "value",
+          "name": "account-key",
           "short": null,
-          "description": "Key value (else read from stdin if interactive).",
+          "description": "Bunny account API key.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "storage-zone",
+          "short": null,
+          "description": "Default storage zone for this profile.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "storage-password",
+          "short": null,
+          "description": "Storage zone password.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "pull-zone",
+          "short": null,
+          "description": "Default pull zone id.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "stream-library",
+          "short": null,
+          "description": "Stream library id.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "stream-key",
+          "short": null,
+          "description": "Stream library API key.",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny configure",
+          "description": "Walkthrough for the active profile."
+        },
+        {
+          "command": "bunny configure --profile=work",
+          "description": "Set up the \"work\" profile."
+        },
+        {
+          "command": "bunny configure --non-interactive --profile=ci --account-key=$KEY --storage-zone=my-app --storage-password=$PW",
+          "description": "CI form."
+        }
+      ],
       "mcp": null
     },
     {
-      "name": "auth list",
-      "summary": "List stored credential scopes (masked).",
+      "name": "configure list",
+      "summary": "List all credential profiles + stored scopes (masked). Active profile marked with *.",
       "description": null,
       "status": "active",
       "phase": 2,
@@ -216,17 +277,43 @@
       "mcp": null
     },
     {
-      "name": "auth clear",
-      "summary": "Remove a stored credential.",
+      "name": "configure switch",
+      "summary": "Set the active credential profile.",
+      "description": null,
+      "status": "active",
+      "phase": 2,
+      "args": [
+        {
+          "name": "profile",
+          "description": "Profile name to activate.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "configure remove",
+      "summary": "Remove a credential profile (entire) or a single scope within it.",
       "description": null,
       "status": "active",
       "phase": 2,
       "args": [],
       "flags": [
         {
+          "name": "profile",
+          "short": null,
+          "description": "Profile to remove (default: active).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
           "name": "scope",
           "short": null,
-          "description": "account | storage:<zone> | stream:<lib> | database:<name>.",
+          "description": "Remove only this scope (e.g. storage:my-app); else removes whole profile.",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
@@ -234,7 +321,7 @@
         {
           "name": "yes",
           "short": null,
-          "description": "Skip confirmation prompt.",
+          "description": "Skip confirmation.",
           "hasValue": false,
           "valueHint": null,
           "defaultValue": null

@@ -1,10 +1,11 @@
-// core/auth — typed wrappers around the credential resolver. UI-free.
-// CLI commands and (later) MCP tools both call into these.
+// core/auth — scope helpers + thin profile-aware wrappers around the resolver.
+// CLI commands and MCP tools use these. UI-free.
 
 import type { AuthScope } from '../api/http.js';
 import {
   clearCredential,
-  listCredentialScopes,
+  getActiveProfile,
+  listScopesInProfile,
   maskCredential,
   resolveCredential,
   scopeToAccount,
@@ -17,38 +18,44 @@ export type StoredScope = {
   masked: string;
 };
 
-export async function setKey(scope: AuthScope, value: string): Promise<{ storedIn: 'keychain' | 'file' }> {
+export async function setKey(
+  scope: AuthScope,
+  value: string,
+  opts: { profile?: string } = {},
+): Promise<{ storedIn: 'keychain' | 'file'; profile: string }> {
   if (!value || value.length === 0) {
     throw new Error('Cannot store empty credential.');
   }
-  return setCredential(scope, value);
+  return setCredential(scope, value, opts);
 }
 
-export async function clearKey(scope: AuthScope): Promise<void> {
-  return clearCredential(scope);
+export async function clearKey(scope: AuthScope, opts: { profile?: string } = {}): Promise<void> {
+  return clearCredential(scope, opts);
 }
 
-export async function listScopes(): Promise<StoredScope[]> {
-  const accounts = await listCredentialScopes();
+// List scopes stored in the given profile (or active if omitted).
+export async function listScopes(profile?: string): Promise<StoredScope[]> {
+  const p = profile ?? (await getActiveProfile());
+  const accounts = await listScopesInProfile(p);
   const out: StoredScope[] = [];
   for (const account of accounts) {
     const scope = parseAccountString(account);
     if (!scope) continue;
     try {
-      const value = await resolveCredential(scope);
+      const value = await resolveCredential(scope, { profile: p });
       out.push({
         scope: scopeToAccount(scope),
         storedIn: 'unknown',
         masked: maskCredential(value),
       });
     } catch {
-      // Skip scopes that can't be resolved (e.g. transient keychain issues).
+      // skip unresolvable
     }
   }
   return out;
 }
 
-// Parse "storage:my-zone" / "stream:42" / "account" / "database:main" back to AuthScope.
+// "storage:my-zone" / "stream:42" / "account" / "database:main" → AuthScope.
 export function parseAccountString(raw: string): AuthScope | null {
   if (raw === 'account') return { kind: 'account' };
   const idx = raw.indexOf(':');

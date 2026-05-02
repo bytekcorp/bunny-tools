@@ -80,7 +80,7 @@ describe('credential resolver', () => {
     expect(v).toBe('scoped');
   });
 
-  it('falls through to keychain', async () => {
+  it('falls through to keychain (profile-prefixed in rc.9)', async () => {
     const fake = {
       getPassword: vi.fn(async () => 'kc-key'),
       setPassword: vi.fn(),
@@ -89,7 +89,8 @@ describe('credential resolver', () => {
     };
     const v = await resolveCredential({ kind: 'account' } as AuthScope, { keytar: fake });
     expect(v).toBe('kc-key');
-    expect(fake.getPassword).toHaveBeenCalledWith('bunny-tools', 'account');
+    // rc.9: keychain entries are <profile>:<scope>; default profile maps to "default:account".
+    expect(fake.getPassword).toHaveBeenCalledWith('bunny-tools', 'default:account');
   });
 
   it('throws AuthError when nothing resolves and no TTY prompt', async () => {

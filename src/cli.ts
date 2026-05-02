@@ -18,7 +18,8 @@ function buildProgram(): Command {
     // Wrangler-style global flags. Applied via env vars + chdir in preAction hook.
     .option('-c, --config <path>', 'Path to a bunny.json config (overrides walk-up search).')
     .option('--cwd <dir>', 'Run as if launched from this directory.')
-    .option('-e, --env <alias>', 'One-shot .bunnyrc alias (no need for `bunny use` first).');
+    .option('-e, --env <alias>', 'One-shot .bunnyrc alias (no need for `bunny use` first).')
+    .option('-p, --profile <name>', 'One-shot credential profile (overrides active). See `bunny configure list`.');
 
   // Apply global flags BEFORE any leaf action runs. chdir first so subsequent
   // config search uses the new cwd. Other flags become env vars consumed by
@@ -33,6 +34,9 @@ function buildProgram(): Command {
     }
     if (typeof opts['env'] === 'string' && opts['env'].length > 0) {
       process.env['BUNNY_ALIAS'] = opts['env'];
+    }
+    if (typeof opts['profile'] === 'string' && opts['profile'].length > 0) {
+      process.env['BUNNY_PROFILE'] = opts['profile'];
     }
   });
 

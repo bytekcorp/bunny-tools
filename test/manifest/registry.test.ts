@@ -30,19 +30,22 @@ describe('registry', () => {
     }
   });
 
-  it('phase 1 + 2 active commands present (space-delimited as of rc.7)', () => {
+  it('phase 1 + 2 active commands present (space-delimited; rc.9 multi-account profiles)', () => {
     const active = registry.commands.filter((c) => c.status === 'active').map((c) => c.name);
     expect(active).toContain('manifest');
     expect(active).toContain('init');
-    expect(active).toContain('auth set');
-    expect(active).toContain('auth list');
-    expect(active).toContain('auth clear');
+    expect(active).toContain('configure');
+    expect(active).toContain('configure list');
+    expect(active).toContain('configure switch');
+    expect(active).toContain('configure remove');
     expect(active).toContain('use');
     expect(active).toContain('deploy');
     expect(active).toContain('purge');
-    // `configure` removed in rc.3.
-    expect(active).not.toContain('configure');
-    // rc.7: no command name should contain a colon (space-delimited subcommands).
+    // rc.9: `auth set/list/clear` removed; replaced by `configure` namespace.
+    expect(active).not.toContain('auth set');
+    expect(active).not.toContain('auth list');
+    expect(active).not.toContain('auth clear');
+    // rc.7: no command name should contain a colon.
     for (const name of active) {
       expect(name, `${name} still has colon`).not.toMatch(/:/);
     }
