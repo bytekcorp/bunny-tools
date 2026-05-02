@@ -59,9 +59,8 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 **Status:** ✅ Complete (2026-05-02)
 
 **Scope:**
-- `bunny init` — interactive setup wizard
-- `bunny configure` — global credential setup (like `aws configure`)
-- `bunny auth set/list/clear` — credential management
+- `bunny init` — unified interactive bootstrap (auth + feature multi-select + project config)
+- `bunny auth set/list/clear` — low-level credential management
 - `bunny use <alias>` — alias switching
 - `bunny deploy` — storage sync + CDN purge (the money command)
 - `bunny purge` — standalone cache purge by URL/tag/zone
@@ -73,7 +72,7 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 - Expanded tests for deploy loop (Nock-mocked)
 
 **Validation:**
-- User can `bunny init && bunny configure && bunny deploy` on fresh machine in <5 min
+- User can `bunny init && bunny deploy` on fresh machine in <5 min
 - Warm deploy <3s (after first run)
 - Dry-run matches actual upload
 - 429 backoff + retry tested

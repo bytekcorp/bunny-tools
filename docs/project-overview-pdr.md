@@ -31,7 +31,7 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 - Manual + CI parity: same command, same credentials model in terminal and GitHub Actions
 - Full Bunny.net resource surface (v0.1): CRUD for storage zones, pull zones, DNS, Stream, Magic Containers, edge scripting (phased alpha releases)
 - Honest 4-key auth model: explicit credential scope handling (Account / Storage Zone / Stream / Database) without false unification
-- Firebase-tools ergonomics: single binary, JSON config (`bunny.json`), interactive setup (`bunny configure`), no poetry/containers/complex setup
+- Frictionless ergonomics: single binary, JSON config (`bunny.json`), interactive setup (`bunny init`), no poetry/containers/complex setup
 
 **Acceptance Criteria**
 - `npm install -g bunny-tools` → `bunny deploy` works on fresh machine in <5 min (with credentials)
@@ -74,7 +74,7 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 | D3 | Registry-driven CLI: `src/manifest/registry.ts` is canonical command source | All surfaces (help, JSON, AGENTS.md, schema, MCP defs) generated from one registry; no hand-wiring; easy to add commands |
 | D4 | Auth: explicit 4-key model (`account` / `storage:<zone>` / `stream:<lib>` / `database:<name>`) | Honest to Bunny's architecture; per-call-site credential resolution; prevents fake unification |
 | D5 | Credential resolver chain: flag → scoped env → generic env → keychain → file → prompt | Flexible per deployment context; CI-friendly (env vars); local-friendly (keychain); interactive fallback |
-| D6 | `bunny.json` (git-tracked, project) + `.bunnyrc` (gitignored, aliases) | Firebase-tools pattern; zod-validated; JSON Schema published for editor support |
+| D6 | `bunny.json` (git-tracked, project) + `.bunnyrc` (gitignored, aliases) | Per-project config + per-developer aliases; zod-validated; JSON Schema published for editor support |
 | D7 | HTTP client: undici + 429/5xx exponential backoff + jitter + Retry-After honor | Connection reuse for small PUTs; rate-limit resilience; configurable timeout |
 | D8 | Pagination: always `page=1, perPage=1000` | Avoids Bunny's `page=0` array footgun on large accounts |
 | D9 | Test stack: Vitest + Nock | Isolated HTTP mocking; no live e2e; fast feedback; Node ecosystem standard |
@@ -128,8 +128,7 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 ## Command Taxonomy (v0.1 Complete)
 
 ```
-bunny init
-bunny configure [--non-interactive]
+bunny init [--non-interactive --features=storage,dns,... --account-key=... --storage-zone=... --storage-password=... --pull-zone=... --purge=...]
 bunny auth set|list|clear
 bunny use <alias>
 bunny deploy [--dry-run]

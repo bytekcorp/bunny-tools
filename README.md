@@ -1,30 +1,46 @@
 # bunny-tools
 
-> Bunny.net CLI — storage deploy, CDN purge, full resource management. Like `firebase-tools`, for Bunny. AI-friendly via MCP.
+> Bunny.net CLI for storage deploy, CDN purge, and full resource management. AI-friendly via MCP.
 
 [![CI](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
+[![npm](https://img.shields.io/npm/v/bunny-tools/alpha.svg)](https://www.npmjs.com/package/bunny-tools)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Install
 
 ```bash
-npm install -g bunny-tools
+npm install -g bunny-tools@alpha
 ```
 
 ## Quickstart
 
 ```bash
-bunny configure              # one-time global setup (like aws configure)
-bunny init                   # per-project bunny.json
+bunny init                   # interactive: auth + feature picker + bunny.json
+bunny deploy --dry-run       # preview
 bunny deploy                 # storage sync + CDN purge
+```
+
+`bunny init` walks you through:
+
+1. Bunny account API key (skipped if already in env or keychain)
+2. Feature multi-select — Storage+CDN, DNS, Stream, Magic Containers, Edge Scripting
+3. Per-feature config (e.g. for Storage+CDN: public dir, storage zone, password, pull zone, purge strategy)
+
+Non-interactive form for CI:
+
+```bash
+bunny init --non-interactive --features=storage \
+  --account-key=$BUNNY_ACCOUNT_KEY \
+  --storage-zone=my-app \
+  --storage-password=$BUNNY_STORAGE_PASSWORD \
+  --pull-zone=12345
 ```
 
 ## Commands at a glance
 
 | Area | Commands |
 |---|---|
-| **Setup** | `configure`, `init`, `auth:set`, `auth:list`, `auth:clear`, `use` |
+| **Setup** | `init`, `auth:set`, `auth:list`, `auth:clear`, `use` |
 | **Deploy** | `deploy`, `purge` |
 | **Storage** | `storage:upload`, `storage:download`, `storage:list`, `storage:delete`, `storage:sync` |
 | **Zones** | `storage-zone:{list,get,create,update,delete}`, `pull-zone:{list,get,create,update,delete}`, `pull-zone:edge-rule:{list,add,delete}` |

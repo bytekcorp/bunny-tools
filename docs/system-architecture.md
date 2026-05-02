@@ -464,5 +464,5 @@ Commander.js baseline alone is ~22ms; we stay under budget with lazy command loa
 
 **CI security:**
 - Credentials via env vars (GitHub Secrets)
-- `--account-key` flag for explicit pass-through (non-interactive `bunny configure`)
+- `--account-key` flag for explicit pass-through (`bunny init --non-interactive`)
 - No credentials in `bunny.json` or checked-in files

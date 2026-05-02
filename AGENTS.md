@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.3  |  **Active commands:** 46/46
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.4  |  **Active commands:** 46/46
 
 <!-- HANDCURATED:START -->
 
@@ -11,7 +11,7 @@ Bunny.net CLI — storage deploy, CDN purge, full resource management.
 When asked to deploy a project to Bunny.net using bunny-tools:
 
 1. Check that `bunny.json` exists in the project root. If not, run `bunny init`.
-2. Check global creds with `bunny auth list`. If empty, run `bunny configure --non-interactive --account-key=... --storage-zone=... --storage-password=...`.
+2. Check global creds with `bunny auth list`. If empty, `bunny init` will prompt for them (interactive) or run `bunny init --non-interactive --features=storage --account-key=... --storage-zone=... --storage-password=...` (CI).
 3. Run `bunny deploy --dry-run` first to verify the plan.
 4. Run `bunny deploy` to sync storage and purge CDN cache.
 
