@@ -1305,7 +1305,7 @@
       "name": "mcp",
       "summary": "Boot the bunny-tools MCP stdio server (for AI agents).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 6,
       "args": [],
       "flags": [
@@ -1318,7 +1318,12 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "claude mcp add bunny-tools npx -y bunny-tools mcp",
+          "description": "Install for Claude Code."
+        }
+      ],
       "mcp": null
     }
   ]

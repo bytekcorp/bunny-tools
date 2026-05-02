@@ -456,8 +456,15 @@ export const registry: Registry = {
       flags: [
         { name: 'http', description: 'Enable HTTP/SSE transport (deferred to v0.2).', hasValue: false },
       ],
-      status: 'planned',
+      examples: [
+        {
+          command: 'claude mcp add bunny-tools npx -y bunny-tools mcp',
+          description: 'Install for Claude Code.',
+        },
+      ],
+      status: 'active',
       phase: 6,
+      load: () => import('../commands/mcp.js'),
     },
   ],
 };

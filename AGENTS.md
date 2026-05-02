@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 35/47
+**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 36/47
 
 <!-- HANDCURATED:START -->
 
@@ -105,7 +105,7 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 
 ### Phase 6
 
-- `bunny mcp` [planned] — Boot the bunny-tools MCP stdio server (for AI agents).
+- `bunny mcp` [active] — Boot the bunny-tools MCP stdio server (for AI agents).
 
 ---
 
