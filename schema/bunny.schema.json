@@ -1,0 +1,106 @@
+{
+  "$ref": "#/definitions/BunnyJson",
+  "definitions": {
+    "BunnyJson": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "deploy": {
+          "type": "object",
+          "properties": {
+            "publicDir": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ignore": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "storageZone": {
+              "type": "string",
+              "minLength": 1
+            },
+            "region": {
+              "type": "string",
+              "enum": [
+                "ny",
+                "la",
+                "sg",
+                "syd",
+                "uk",
+                "se",
+                "br",
+                "jh"
+              ]
+            },
+            "concurrency": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 64,
+              "default": 8
+            },
+            "pullZones": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "purge": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "all"
+                      },
+                      {
+                        "type": "string",
+                        "const": "none"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^tag\\:"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1
+                      }
+                    ],
+                    "default": "all"
+                  },
+                  "tag": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "default": []
+            }
+          },
+          "required": [
+            "publicDir",
+            "storageZone"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "deploy"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

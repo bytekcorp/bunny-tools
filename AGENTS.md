@@ -1,0 +1,112 @@
+# AGENTS.md — bunny-tools
+
+Bunny.net CLI — storage deploy, CDN purge, full resource management.
+
+**Binary:** `bunny`  |  **Version:** 0.1.0-alpha.0  |  **Active commands:** 1/47
+
+<!-- HANDCURATED:START -->
+
+## Quickstart for AI agents
+
+When asked to deploy a project to Bunny.net using bunny-tools:
+
+1. Check that `bunny.json` exists in the project root. If not, run `bunny init`.
+2. Check global creds with `bunny auth list`. If empty, run `bunny configure --non-interactive --account-key=... --storage-zone=... --storage-password=...`.
+3. Run `bunny deploy --dry-run` first to verify the plan.
+4. Run `bunny deploy` to sync storage and purge CDN cache.
+
+## Common workflows
+
+- **Deploy a static site**: `bunny deploy`
+- **Purge CDN cache only**: `bunny purge tag:<name>` or `bunny purge pull-zone:<id>`
+- **List storage zones**: `bunny storage-zone:list --json`
+- **Manage DNS records**: `bunny dns:record:list <zone>` then `bunny dns:record:add ...`
+
+## Gotchas
+
+- Bunny has 4 distinct credential types (account, storage zone, stream library, database). All use the `AccessKey` HTTP header but with different scopes.
+- Storage uses 8 regional endpoints; bunny-tools resolves the region per zone automatically.
+- Pagination: bunny-tools always uses `page=1, perPage=1000` to avoid Bunny’s `page=0` array footgun.
+- Per-folder storage cap: keep <10000 files per directory.
+- Tag-based purge requires the origin to set a `Cache-Tag` response header. Without it, fall back to `purge: "all"`.
+
+## MCP usage
+
+`bunny mcp` boots an MCP stdio server (Phase 6). Install for Claude Code with:
+
+```bash
+claude mcp add bunny-tools npx -y bunny-tools mcp
+```
+
+<!-- HANDCURATED:END -->
+
+## Command tree (auto-generated)
+
+### Phase 1
+
+- `bunny manifest` [active] — Print the bunny-tools command registry as JSON. _mcp: `bunny.manifest`_
+
+### Phase 2
+
+- `bunny init` [planned] — Initialize a bunny.json in the current project.
+- `bunny configure` [planned] — Interactive global setup of credentials (like aws configure).
+- `bunny auth:set` [planned] — Store an API key for a scope (account, storage:<zone>, stream:<lib>).
+- `bunny auth:list` [planned] — List stored credential scopes (masked).
+- `bunny auth:clear` [planned] — Remove a stored credential.
+- `bunny use` [planned] — Switch active alias from .bunnyrc.
+- `bunny deploy` [planned] — Sync public dir to storage zone and purge CDN cache. _mcp: `bunny.deploy`_
+- `bunny purge` [planned] — Purge CDN cache by URL, tag:<name>, pull-zone:<id>, or all. _mcp: `bunny.purge`_
+
+### Phase 3
+
+- `bunny storage:upload` [planned] — Upload a file to a storage zone.
+- `bunny storage:download` [planned] — Download a file from a storage zone.
+- `bunny storage:list` [planned] — List a storage-zone path. _mcp: `bunny.storage_list`_
+- `bunny storage:delete` [planned] — Delete a file or path from a storage zone.
+- `bunny storage:sync` [planned] — Sync a local directory to a storage zone.
+- `bunny storage-zone:list` [planned] — List storage zones. _mcp: `bunny.zones_list`_
+- `bunny storage-zone:get` [planned] — Get a storage zone by id or name. _mcp: `bunny.zone_get`_
+- `bunny storage-zone:create` [planned] — Create a storage zone. _mcp: `bunny.zone_create`_
+- `bunny storage-zone:update` [planned] — Update a storage zone.
+- `bunny storage-zone:delete` [planned] — Delete a storage zone. _mcp: `bunny.zone_delete`_
+- `bunny pull-zone:list` [planned] — List pull zones.
+- `bunny pull-zone:get` [planned] — Get a pull zone.
+- `bunny pull-zone:create` [planned] — Create a pull zone.
+- `bunny pull-zone:update` [planned] — Update a pull zone.
+- `bunny pull-zone:delete` [planned] — Delete a pull zone.
+- `bunny pull-zone:edge-rule:list` [planned] — List edge rules on a pull zone.
+- `bunny pull-zone:edge-rule:add` [planned] — Add an edge rule to a pull zone.
+- `bunny pull-zone:edge-rule:delete` [planned] — Delete an edge rule.
+
+### Phase 4
+
+- `bunny dns:list` [planned] — List DNS zones.
+- `bunny dns:get` [planned] — Get a DNS zone by id or domain.
+- `bunny dns:create` [planned] — Create a DNS zone for a domain.
+- `bunny dns:delete` [planned] — Delete a DNS zone.
+- `bunny dns:record:list` [planned] — List DNS records for a zone. _mcp: `bunny.dns_records`_
+- `bunny dns:record:add` [planned] — Add a DNS record (A, AAAA, CNAME, TXT, MX, SRV, CAA, NS). _mcp: `bunny.dns_record_set`_
+- `bunny dns:record:update` [planned] — Update a DNS record.
+- `bunny dns:record:delete` [planned] — Delete a DNS record. _mcp: `bunny.dns_record_delete`_
+
+### Phase 5
+
+- `bunny stream:library:list` [planned] — List Stream video libraries.
+- `bunny stream:library:create` [planned] — Create a Stream video library.
+- `bunny stream:video:list` [planned] — List videos in a library.
+- `bunny stream:video:upload` [planned] — Upload a video to a library.
+- `bunny stream:video:delete` [planned] — Delete a video.
+- `bunny containers:app:list` [planned] — List Magic Containers apps.
+- `bunny containers:app:create` [planned] — Create a Magic Containers app.
+- `bunny containers:app:delete` [planned] — Delete a Magic Containers app.
+- `bunny scripting:list` [planned] — List edge scripts.
+- `bunny scripting:deploy` [planned] — Deploy an edge script from a source file.
+- `bunny scripting:delete` [planned] — Delete an edge script.
+
+### Phase 6
+
+- `bunny mcp` [planned] — Boot the bunny-tools MCP stdio server (for AI agents).
+
+---
+
+_Generated from `src/manifest/registry.ts` by `npm run gen:agents`. Do not edit auto sections by hand._

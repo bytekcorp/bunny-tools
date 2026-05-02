@@ -1,0 +1,63 @@
+{
+  "name": "bunny-tools",
+  "version": "0.1.0-alpha.0",
+  "description": "Bunny.net CLI for storage deploy + CDN purge + full resource management. Like firebase-tools, for Bunny.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "bunny": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "schema",
+    "manifest.json",
+    "AGENTS.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsx scripts/post-build.ts",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src test scripts --ext .ts,.mjs",
+    "lint:fix": "eslint src test scripts --ext .ts,.mjs --fix",
+    "format": "prettier --write src test scripts",
+    "gen:manifest": "tsx scripts/generate-manifest.ts",
+    "gen:agents": "tsx scripts/generate-agents.ts",
+    "gen:schema": "tsx scripts/generate-schema.ts",
+    "gen:all": "npm run gen:manifest && npm run gen:agents && npm run gen:schema",
+    "verify:drift": "npm run gen:all && git diff --exit-code manifest.json AGENTS.md schema/bunny.schema.json"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "undici": "^6.21.0",
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "^3.23.5",
+    "keytar": "^7.9.0",
+    "picocolors": "^1.1.1",
+    "ora": "^8.1.1",
+    "ignore": "^6.0.2",
+    "fast-glob": "^3.3.2",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.10",
+    "@types/prompts": "^2.4.9",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
+    "@vitest/coverage-v8": "^2.1.8",
+    "esbuild": "^0.24.0",
+    "eslint": "^8.57.1",
+    "nock": "^13.5.6",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,27 @@
+node_modules/
+dist/
+coverage/
+.bunny-state.json
+.bunnyrc
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local credentials (never commit)
+credentials.json

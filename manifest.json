@@ -1,0 +1,618 @@
+{
+  "cliName": "bunny-tools",
+  "binary": "bunny",
+  "version": "0.1.0-alpha.0",
+  "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
+  "commands": [
+    {
+      "name": "manifest",
+      "summary": "Print the bunny-tools command registry as JSON.",
+      "description": "Outputs the canonical command registry. AI agents and tooling read this to discover commands without parsing prose. Use --pretty for indented output.",
+      "status": "active",
+      "phase": 1,
+      "args": [],
+      "flags": [
+        {
+          "name": "pretty",
+          "short": null,
+          "description": "Indent the JSON output for readability.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": false
+        }
+      ],
+      "examples": [
+        {
+          "command": "bunny manifest",
+          "description": "Compact JSON to stdout."
+        },
+        {
+          "command": "bunny manifest --pretty",
+          "description": "Pretty-printed JSON."
+        }
+      ],
+      "mcp": {
+        "tool": "bunny.manifest",
+        "description": "Returns the full bunny-tools registry as JSON."
+      }
+    },
+    {
+      "name": "init",
+      "summary": "Initialize a bunny.json in the current project.",
+      "description": null,
+      "status": "planned",
+      "phase": 2,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "configure",
+      "summary": "Interactive global setup of credentials (like aws configure).",
+      "description": null,
+      "status": "planned",
+      "phase": 2,
+      "args": [],
+      "flags": [
+        {
+          "name": "non-interactive",
+          "short": null,
+          "description": "Skip prompts and accept all values via flags.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "account-key",
+          "short": null,
+          "description": "Account API key.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "storage-zone",
+          "short": null,
+          "description": "Default storage zone name.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "storage-password",
+          "short": null,
+          "description": "Storage zone password.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "auth:set",
+      "summary": "Store an API key for a scope (account, storage:<zone>, stream:<lib>).",
+      "description": null,
+      "status": "planned",
+      "phase": 2,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "auth:list",
+      "summary": "List stored credential scopes (masked).",
+      "description": null,
+      "status": "planned",
+      "phase": 2,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "auth:clear",
+      "summary": "Remove a stored credential.",
+      "description": null,
+      "status": "planned",
+      "phase": 2,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "use",
+      "summary": "Switch active alias from .bunnyrc.",
+      "description": null,
+      "status": "planned",
+      "phase": 2,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "deploy",
+      "summary": "Sync public dir to storage zone and purge CDN cache.",
+      "description": null,
+      "status": "planned",
+      "phase": 2,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.deploy",
+        "description": null
+      }
+    },
+    {
+      "name": "purge",
+      "summary": "Purge CDN cache by URL, tag:<name>, pull-zone:<id>, or all.",
+      "description": null,
+      "status": "planned",
+      "phase": 2,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.purge",
+        "description": null
+      }
+    },
+    {
+      "name": "storage:upload",
+      "summary": "Upload a file to a storage zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "storage:download",
+      "summary": "Download a file from a storage zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "storage:list",
+      "summary": "List a storage-zone path.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.storage_list",
+        "description": null
+      }
+    },
+    {
+      "name": "storage:delete",
+      "summary": "Delete a file or path from a storage zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "storage:sync",
+      "summary": "Sync a local directory to a storage zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "storage-zone:list",
+      "summary": "List storage zones.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.zones_list",
+        "description": null
+      }
+    },
+    {
+      "name": "storage-zone:get",
+      "summary": "Get a storage zone by id or name.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.zone_get",
+        "description": null
+      }
+    },
+    {
+      "name": "storage-zone:create",
+      "summary": "Create a storage zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.zone_create",
+        "description": null
+      }
+    },
+    {
+      "name": "storage-zone:update",
+      "summary": "Update a storage zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "storage-zone:delete",
+      "summary": "Delete a storage zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.zone_delete",
+        "description": null
+      }
+    },
+    {
+      "name": "pull-zone:list",
+      "summary": "List pull zones.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pull-zone:get",
+      "summary": "Get a pull zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pull-zone:create",
+      "summary": "Create a pull zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pull-zone:update",
+      "summary": "Update a pull zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pull-zone:delete",
+      "summary": "Delete a pull zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pull-zone:edge-rule:list",
+      "summary": "List edge rules on a pull zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pull-zone:edge-rule:add",
+      "summary": "Add an edge rule to a pull zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pull-zone:edge-rule:delete",
+      "summary": "Delete an edge rule.",
+      "description": null,
+      "status": "planned",
+      "phase": 3,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "dns:list",
+      "summary": "List DNS zones.",
+      "description": null,
+      "status": "planned",
+      "phase": 4,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "dns:get",
+      "summary": "Get a DNS zone by id or domain.",
+      "description": null,
+      "status": "planned",
+      "phase": 4,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "dns:create",
+      "summary": "Create a DNS zone for a domain.",
+      "description": null,
+      "status": "planned",
+      "phase": 4,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "dns:delete",
+      "summary": "Delete a DNS zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 4,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "dns:record:list",
+      "summary": "List DNS records for a zone.",
+      "description": null,
+      "status": "planned",
+      "phase": 4,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.dns_records",
+        "description": null
+      }
+    },
+    {
+      "name": "dns:record:add",
+      "summary": "Add a DNS record (A, AAAA, CNAME, TXT, MX, SRV, CAA, NS).",
+      "description": null,
+      "status": "planned",
+      "phase": 4,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.dns_record_set",
+        "description": null
+      }
+    },
+    {
+      "name": "dns:record:update",
+      "summary": "Update a DNS record.",
+      "description": null,
+      "status": "planned",
+      "phase": 4,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "dns:record:delete",
+      "summary": "Delete a DNS record.",
+      "description": null,
+      "status": "planned",
+      "phase": 4,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": {
+        "tool": "bunny.dns_record_delete",
+        "description": null
+      }
+    },
+    {
+      "name": "stream:library:list",
+      "summary": "List Stream video libraries.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "stream:library:create",
+      "summary": "Create a Stream video library.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "stream:video:list",
+      "summary": "List videos in a library.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "stream:video:upload",
+      "summary": "Upload a video to a library.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "stream:video:delete",
+      "summary": "Delete a video.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "containers:app:list",
+      "summary": "List Magic Containers apps.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "containers:app:create",
+      "summary": "Create a Magic Containers app.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "containers:app:delete",
+      "summary": "Delete a Magic Containers app.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "scripting:list",
+      "summary": "List edge scripts.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "scripting:deploy",
+      "summary": "Deploy an edge script from a source file.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "scripting:delete",
+      "summary": "Delete an edge script.",
+      "description": null,
+      "status": "planned",
+      "phase": 5,
+      "args": [],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "mcp",
+      "summary": "Boot the bunny-tools MCP stdio server (for AI agents).",
+      "description": null,
+      "status": "planned",
+      "phase": 6,
+      "args": [],
+      "flags": [
+        {
+          "name": "http",
+          "short": null,
+          "description": "Enable HTTP/SSE transport (deferred to v0.2).",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [],
+      "mcp": null
+    }
+  ]
+}
