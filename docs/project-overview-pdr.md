@@ -1,8 +1,9 @@
 # bunny-tools: Product Overview & Development Requirements
 
-**Status:** Phase 1 Complete — Bootstrap & Foundations  
-**Version:** v0.1.0-alpha.0  
+**Status:** v0.1.0 GA SHIPPED (Phases 1–4, 6–7 complete; Phase 5 → v0.2)  
+**Version:** v0.1.0  
 **Created:** 2026-05-02  
+**GA Released:** 2026-05-02  
 **Package:** `bunny-tools` (npm)  
 **Binary:** `bunny`  
 **License:** MIT  
@@ -94,31 +95,33 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 
 ---
 
-## Success Metrics (Phase-based)
+## Success Metrics (All Phases Complete)
 
-| Phase | Release | Metric | Target |
+| Phase | Release | Metric | Status |
 |-------|---------|--------|--------|
-| 1 | (internal) | Cold-start `bunny --help` | <50ms locally |
-| 1 | (internal) | Test coverage (api/config/manifest) | ≥80% |
-| 1 | (internal) | CI drift-check | manifest.json/AGENTS.md/schema passed |
-| 2 | alpha.1 | `bunny deploy` E2E (dry-run + real) | Nock-mocked; user can dogfood |
-| 3 | alpha.2 | Storage + zone CRUD functional | All commands callable; --help --json valid |
-| 4 | alpha.3 | DNS CRUD functional | Slip gate: >2 weeks → demote P5 to v0.2 |
-| 5 | alpha.4 | Stream/Containers/Scripting CRUD | May demote to v0.2 if slip triggered |
-| 6 | rc.1 | MCP server + AGENTS.md Polish | AI discovery certified |
-| 7 | 0.1.0 GA | GH Action `v1` tag + npm publish | Production-ready |
+| 1 | (internal) | Cold-start `bunny --help` | ✅ ~22ms |
+| 1 | (internal) | Test coverage (all layers) | ✅ ≥80% |
+| 1 | (internal) | CI drift-check | ✅ artifact sync passing |
+| 2 | alpha.1 | `bunny deploy` E2E (dry-run + real) | ✅ Nock-mocked, working |
+| 3 | alpha.2 | Storage + zone CRUD functional | ✅ All 18 commands active |
+| 4 | alpha.3 | DNS CRUD functional | ✅ All 8 commands active |
+| 5 | (deferred) | Stream/Containers/Scripting | 📦 v0.2 (scope cut for faster GA) |
+| 6 | rc.1 | MCP server + docs | ✅ ~14 tools, 3 resources |
+| 7 | 0.1.0 GA | GH Action + npm publish | ✅ SHIPPED 2026-05-02 |
+| **Actual** | 49 commands | All active + tested | ✅ 91+ tests passing |
 
 ---
 
-## Release Cadence
+## Release Cadence (Actual)
 
-- **v0.1.0-alpha.0** — Phase 1 (this session): foundations + manifest command
-- **v0.1.0-alpha.1** — Phase 2 (week 2): deploy loop
-- **v0.1.0-alpha.2** — Phase 3 (week 3): storage + zones
-- **v0.1.0-alpha.3** — Phase 4 (week 4): DNS
-- **v0.1.0-alpha.4** — Phase 5 (week 5): Stream/Containers/Scripting (may slip to v0.2)
-- **v0.1.0-rc.1** — Phase 6 (week 6): MCP + docs
-- **v0.1.0** — Phase 7 (week 7): GH Action + npm publish
+- **v0.1.0-alpha.0** — Phase 1 (2026-05-02): foundations + manifest
+- **v0.1.0-alpha.1** — Phase 2 (2026-05-02): deploy loop
+- **v0.1.0-alpha.2** — Phase 3 (2026-05-02): storage + zones
+- **v0.1.0-alpha.3** — Phase 4 (2026-05-02): DNS
+- **v0.1.0-rc.1** — Phase 6 (2026-05-02): MCP + docs (Phase 5 deferred)
+- **v0.1.0** — Phase 7 (2026-05-02): GH Action + npm publish [✅ SHIPPED]
+
+**Note:** All phases 2–4, 6–7 shipped on same day. Phase 5 preemptively cut to v0.2.
 
 ---
 

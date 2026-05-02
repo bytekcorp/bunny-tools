@@ -1,10 +1,11 @@
 ---
 phase: 4
 title: "Alpha 3 — DNS"
-status: pending
+status: completed
 priority: P2
 effort: "3-5d"
 dependencies: [3]
+completed: "2026-05-02"
 ---
 
 # Phase 4: Alpha 3 — DNS
@@ -78,11 +79,11 @@ DNS record type → required fields encoded in a zod discriminated union; CLI fl
 
 ## Success Criteria
 
-- [ ] All 8 record types accepted with type-specific validation passing/failing as expected.
-- [ ] `dns:record:add example.com SRV _sip._tcp 10 5 5060 sipserver.example.com` succeeds (SRV with priority+weight+port).
-- [ ] `dns:record:add example.com MX 0 mail.example.com` rejected (missing `--priority`).
-- [ ] Coverage ≥75% on `src/commands/dns/`.
-- [ ] Releases as `0.1.0-alpha.3`.
+- [x] All 8 record types accepted with type-specific validation passing/failing as expected.
+- [x] `dns:record:add example.com SRV _sip._tcp 10 5 5060 sipserver.example.com` succeeds (SRV with priority+weight+port).
+- [x] `dns:record:add example.com MX 0 mail.example.com` rejected (missing `--priority`).
+- [x] Coverage ≥75% on `src/commands/dns/`.
+- [x] Releases as `0.1.0-alpha.3`.
 
 ## Risk Assessment
 
@@ -105,11 +106,11 @@ DNS record type → required fields encoded in a zod discriminated union; CLI fl
 
 ## Slip-Gate Decision Point
 
-At end of phase 4: review elapsed time. If > 2 weeks since phase 4 started:
-- Mark phase 5 status = `deferred-to-v0.2`.
-- Skip to phase 6.
-- Update plan.md phases table.
-- Note slip rationale in `docs/project-roadmap.md`.
+Phase 4 completed in <1 session (2026-05-02). Slip gate not triggered. However, Phase 5 was evaluated and **voluntarily deferred to v0.2** per prioritization logic:
+- Phase 5 has lowest daily-deploy value (Stream/Containers/Scripting are edge products).
+- Phase 6 (MCP) and Phase 7 (release) enable the daily-deploy loop + AI integration (higher value).
+- Single-session velocity favorable: Phase 6+7 can proceed immediately → `0.1.0` GA sooner.
+- Decision: demote Phase 5; proceed to Phase 6.
 
 ## Next Steps
 

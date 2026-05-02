@@ -191,8 +191,24 @@ export const TOOLS: ToolDef[] = [
       tag: z.string().optional(),
     }),
     run: async (raw) => {
-      const args = (raw as { zoneId: number }) ?? {};
-      const { zoneId, ...rest } = args as { zoneId: number };
+      // Validate at the MCP boundary BEFORE addRecord runs its own
+      // discriminated-union check. Same shape as inputSchema; declared inline
+      // so the schema parse and the run function share one source of truth.
+      const parsed = z
+        .object({
+          zoneId: z.number().int().positive(),
+          type: z.enum(['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'SRV', 'CAA', 'NS']),
+          name: z.string(),
+          value: z.string(),
+          ttl: z.number().int().positive().optional(),
+          priority: z.number().int().nonnegative().optional(),
+          weight: z.number().int().nonnegative().optional(),
+          port: z.number().int().positive().optional(),
+          flags: z.number().int().nonnegative().optional(),
+          tag: z.string().optional(),
+        })
+        .parse(raw);
+      const { zoneId, ...rest } = parsed;
       return addRecord(zoneId, rest);
     },
   },

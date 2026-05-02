@@ -1,6 +1,6 @@
 # bunny-tools Code Standards & Engineering Rules
 
-**Version:** Phase 1  
+**Version:** Phases 1–4, 6–7 shipped  
 **Last Updated:** 2026-05-02
 
 ---
@@ -277,12 +277,12 @@ const zones = await callBunny({
 });
 ```
 
-### Pagination
+### Pagination Contract
 
 **Always:** `page=1, perPage=1000`  
 **Never:** `page=0`
 
-Bunny's pagination has a footgun: `page=0` returns objects instead of arrays on empty results. We avoid it.
+Bunny's footgun: `page=0` returns objects instead of arrays on empty. Always start at page 1.
 
 ```ts
 let allResults = [];
@@ -297,12 +297,48 @@ while (true) {
 }
 ```
 
+### List Commands
+
+**Pattern:** All `*:list` commands support `--json` flag.
+
+```ts
+// src/commands/storage/list.ts
+export async function run({ flags }: ParsedInvocation): Promise<number> {
+  const items = await core.listStorageItems(...);
+  if (flags.json) {
+    console.log(JSON.stringify(items));
+  } else {
+    renderTable(items);
+  }
+  return 0;
+}
+```
+
+### Destructive Operations
+
+**Always require `--yes` flag in non-interactive shells.**
+
+```ts
+// src/commands/storage/delete.ts
+export async function run({ flags }: ParsedInvocation): Promise<number> {
+  if (!flags.yes && !process.stdin.isTTY) {
+    throw new Error('Destructive op requires --yes or interactive terminal');
+  }
+  if (!flags.yes) {
+    const confirmed = await promptConfirm('Really delete?');
+    if (!confirmed) return 1;
+  }
+  await core.deleteFile(...);
+  return 0;
+}
+```
+
 ### Retry & Backoff
 
 **Retryable (429, 502, 503, 504):**
 - Exponential backoff: `min(baseMs * 2^attempt, 30s) ± 25% jitter`
 - Honor `Retry-After` header if present
-- Max 5 attempts
+- Max 5 attempts (default)
 
 **Non-retryable (other 4xx, 3xx):**
 - Throw immediately
@@ -314,7 +350,7 @@ const opts: CallOptions = {
   path: '/pullzone/12345',
   method: 'DELETE',
   scope: { kind: 'account' },
-  retry: { max: 5, baseMs: 500 },  // default; can override
+  retry: { max: 5, baseMs: 500 },  // default; override if needed
 };
 ```
 
@@ -644,17 +680,56 @@ No strict formatting rules; Prettier handles.
 
 ---
 
+## MCP-Specific Rules
+
+### MCP Tools (Phase 6)
+
+**Pattern:** All tools are wrappers around `src/core/*` functions.
+
+**Critical:** MCP uses stdout for JSON-RPC transport. NEVER write to stdout in MCP tools.
+
+✗ **Bad:**
+```ts
+export async function deploy(args) {
+  console.log('Starting deploy...');  // BREAKS MCP JSON-RPC!
+  await core.deploy(args);
+}
+```
+
+✓ **Good:**
+```ts
+export async function deploy(args) {
+  logger.info('Starting deploy...');  // Logs to stderr
+  const result = await core.deploy(args);
+  return result;  // Return tool result, not log
+}
+```
+
+### MCP Resources
+
+**Pattern:** Read-only resources expose registry, AGENTS.md, current config (redacted).
+
+**Security:** Never expose credentials in resources. Mask sensitive fields.
+
+---
+
 ## Code Review Checklist
 
 Before merging, verify:
 
-- [ ] No raw `fetch` / `undici.request` outside `src/api/http.ts`
+- [ ] No raw HTTP outside `src/api/http.ts` (callBunny only)
 - [ ] No credentials in error messages or logs
-- [ ] All HTTP errors funnel through `parseBunnyError`
+- [ ] All HTTP errors funnel through `parseBunnyErrorBody`
 - [ ] Strict TS; no `any` without justification
-- [ ] Commands only import core/manifest/util/config, NOT api
-- [ ] Tests cover happy path + error cases
+- [ ] Commands/MCP only import core/manifest/util/config/ui, NOT api
+- [ ] Core logic has no side effects (no UI, no exit, no console)
+- [ ] List commands support `--json` flag
+- [ ] Destructive ops require `--yes` in non-TTY
+- [ ] DNS record types zod-validated before API call
+- [ ] Tests cover happy path + error cases + boundary conditions
 - [ ] No real network calls in tests (Nock enforced)
+- [ ] MCP tools never write stdout (stderr only)
+- [ ] Pagination always page=1, perPage=1000
 - [ ] Commit message follows conventional commits
 
 ---

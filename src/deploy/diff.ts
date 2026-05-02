@@ -66,11 +66,20 @@ export async function diffFiles(opts: {
     };
     if (!remote) {
       newFiles.push(entry);
+    } else if (remote.checksum && remote.checksum.toLowerCase() === sha.toLowerCase()) {
+      // Remote checksum is authoritative.
+      entry.classification = 'unchanged';
+      unchanged.push(entry);
     } else if (
-      // Prefer checksum match if remote provides it.
-      (remote.checksum && remote.checksum.toLowerCase() === sha.toLowerCase()) ||
-      (!remote.checksum && remote.length === file.size)
+      !remote.checksum &&
+      remote.length === file.size &&
+      cached &&
+      cached.sha256 === sha
     ) {
+      // Without a remote checksum, fall back to size-match ONLY when our local
+      // state cache previously confirmed this same SHA was pushed under the same
+      // size. Without that confirmation, a same-size edit could silently slip
+      // through; treat as changed and reupload.
       entry.classification = 'unchanged';
       unchanged.push(entry);
     } else {

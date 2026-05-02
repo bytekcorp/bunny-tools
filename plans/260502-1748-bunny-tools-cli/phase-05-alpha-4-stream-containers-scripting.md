@@ -1,13 +1,35 @@
 ---
 phase: 5
 title: "Alpha 4 — Stream/Containers/Scripting"
-status: pending
+status: deferred
 priority: P3
 effort: "5-8d"
 dependencies: [4]
+deferred: "2026-05-02"
+deferral_reason: "Lowest daily-deploy value; Phase 6+7 higher priority for v0.1 GA"
+target_release: "v0.2"
 ---
 
 # Phase 5: Alpha 4 — Stream/Containers/Scripting
+
+## DEFERRAL NOTE
+
+This phase has been **deferred to v0.2** (2026-05-02). 
+
+**Reason:** Per prioritization review at end of Phase 4:
+- Stream, Magic Containers, and Edge Scripting are lower-frequency daily-deploy operations (edge products, not core).
+- Phase 6 (MCP) and Phase 7 (release) unblock the daily-deploy loop and AI agent integration (higher-value).
+- Single-session velocity enabled skipping Phase 5 to ship `0.1.0` GA sooner with stable core surface.
+- The 7 stream/containers/scripting commands remain in `src/manifest/registry.ts` as `planned` entries so AI agents can discover and request them in v0.2 planning.
+
+**What happens:**
+- `0.1.0` GA ships without `stream:*`, `containers:*`, `scripting:*` commands.
+- `0.1.0-alpha.4` release is skipped; `0.1.0-rc.1` becomes the pre-GA build.
+- v0.2 project will restore this phase + any v0.2-specific enhancements (optional live E2E, headers/rewrites desugaring).
+
+---
+
+# Phase 5: Alpha 4 — Stream/Containers/Scripting (v0.2 target)
 
 ## Overview
 

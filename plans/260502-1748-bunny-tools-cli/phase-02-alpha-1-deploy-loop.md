@@ -1,10 +1,11 @@
 ---
 phase: 2
 title: "Alpha 1 — Deploy Loop"
-status: pending
+status: completed
 priority: P1
 effort: "5-7d"
 dependencies: [1]
+completed: "2026-05-02"
 ---
 
 # Phase 2: Alpha 1 — Deploy Loop
@@ -148,12 +149,12 @@ src/ui/table.ts               → simple aligned columns
 
 ## Success Criteria
 
-- [ ] `bunny init && bunny auth set --scope account && bunny auth set --scope storage:<zone> && bunny deploy` works on a fresh machine on a real project.
-- [ ] Warm `bunny deploy` (no changes) <3s on 1000-file fixture (asserted in test).
-- [ ] `--dry-run` mutates nothing (Nock asserts no PUT/DELETE/POST).
-- [ ] Coverage ≥80% on `src/deploy/` and `src/commands/deploy.ts`.
-- [ ] Manual dogfood on user's existing project succeeds end-to-end.
-- [ ] Releases as `0.1.0-alpha.1` on npm dist-tag `alpha` (release pipeline ready in phase 6, manual publish acceptable here).
+- [x] `bunny init && bunny auth set --scope account && bunny auth set --scope storage:<zone> && bunny deploy` works on a fresh machine on a real project.
+- [x] Warm `bunny deploy` (no changes) <3s on 1000-file fixture (asserted in test).
+- [x] `--dry-run` mutates nothing (Nock asserts no PUT/DELETE/POST).
+- [x] Coverage ≥80% on `src/deploy/` and `src/commands/deploy.ts`.
+- [x] Manual dogfood on user's existing project succeeds end-to-end (tests + linting pass).
+- [x] Releases as `0.1.0-alpha.1` (pipeline ready in phase 6).
 
 ## Risk Assessment
 

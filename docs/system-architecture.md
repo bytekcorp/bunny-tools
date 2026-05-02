@@ -7,46 +7,72 @@
 
 ## Architectural Overview
 
-bunny-tools is a **registry-driven CLI + MCP server** that abstracts Bunny.net's REST API with honest credential scoping and rate-limit resilience. The architecture enforces a clean separation between CLI/MCP plumbing and core business logic.
+bunny-tools is a **registry-driven CLI + MCP server** that abstracts Bunny.net's REST API with honest credential scoping, resilience, and zero duplication between CLI and MCP.
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│ CLI (src/commands/*)         MCP Server (src/mcp/*, Phase 6)   │
-│ ├─ manifest.ts               ├─ tools/manifest.ts              │
-│ ├─ init.ts (P2)              ├─ tools/deploy.ts (P2)           │
-│ └─ ... (P2–5)                └─ ... (P6+)                      │
-│                                                                │
-│ Both parse CLI args and JSON input, call src/core/*, render   │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ CLI Layer (src/commands/*)    MCP Server (src/mcp/*, P6)       │
+│ ├─ auth, configure, init      ├─ server.ts (stdio)              │
+│ ├─ deploy, purge              ├─ tools.ts (~14 tools)           │
+│ ├─ storage:*, storage-zone:*  └─ 3 resources (manifest,         │
+│ ├─ pull-zone:*, dns:*            agents, config)               │
+│ └─ manifest (P1), mcp (P6)                                      │
+│                                                                 │
+│ Both layers:                                                    │
+│  • Parse input (flags, args, JSON)                              │
+│  • Call src/core/* for business logic                           │
+│  • Render output (stderr, tables, colors)                       │
+└─────────────────────────────────────────────────────────────────┘
                               ↓
-┌────────────────────────────────────────────────────────────────┐
-│ src/core/* (business logic, no UI, no network)                 │
-│ ├─ (placeholder in Phase 1; populated P2–5)                   │
-│ └─ Pattern: typed functions, zod validation, pure logic       │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ Core Logic (src/core/*, src/deploy/*)    [P2–4, 6–7 shipped]  │
+│                                                                 │
+│ Business layer (no UI, no side effects):                        │
+│ ├─ src/core/deploy.ts (walk, diff, upload orchestration)       │
+│ ├─ src/core/purge.ts (tag/URL/zone purge)                      │
+│ ├─ src/core/storage-ops.ts (upload/download/list/sync)         │
+│ ├─ src/core/zones.ts (zone CRUD, regional selection)           │
+│ ├─ src/core/dns.ts (DNS CRUD, zod-validated types)             │
+│ ├─ src/core/auth.ts, configure.ts, init.ts, aliases.ts         │
+│ │                                                              │
+│ │ Deploy subsystem (internal):                                │
+│ ├─ src/deploy/walk.ts (gitignore-aware traversal)              │
+│ ├─ src/deploy/diff.ts (local vs remote comparison)             │
+│ ├─ src/deploy/upload-queue.ts (parallel pool + retry)          │
+│ ├─ src/deploy/remote-list.ts (pagination)                      │
+│ └─ src/deploy/state.ts (cache + state management)              │
+│                                                                 │
+│ UI helpers (for commands):                                      │
+│ ├─ src/ui/progress.ts (spinner, progress bar)                  │
+│ ├─ src/ui/prompt.ts (interactive input)                        │
+│ └─ src/ui/table.ts (formatted lists)                           │
+└─────────────────────────────────────────────────────────────────┘
                               ↓
-┌────────────────────────────────────────────────────────────────┐
-│ src/manifest/* (registry + code generation)                    │
-│ ├─ registry.ts   ★ single source of truth                      │
-│ ├─ types.ts      (CommandSpec, ArgSpec, FlagSpec)             │
-│ └─ render-help.ts (text help + JSON help)                      │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ Registry & Metadata (src/manifest/*)        [P1 canonical]     │
+│ ├─ registry.ts   ★ single source of truth (49 commands)        │
+│ ├─ types.ts (CommandSpec, ArgSpec, FlagSpec, McpToolSpec)      │
+│ └─ render-help.ts (text + JSON help from registry)             │
+└─────────────────────────────────────────────────────────────────┘
                               ↓
-┌────────────────────────────────────────────────────────────────┐
-│ src/api/* (HTTP client, auth, errors)                         │
-│ ├─ http.ts      (undici + retry + backoff + auth injection)   │
-│ └─ errors.ts    (BunnyApiError, AuthError, ConfigError)       │
-│                                                                │
-│ Configuration:                                                 │
-│ ├─ src/config/bunny-json.ts  (project config + zod schema)    │
-│ ├─ src/config/bunnyrc.ts     (alias map)                      │
-│ └─ src/config/credential-resolver.ts (4-step chain)           │
-│                                                                │
-│ Utilities:                                                     │
-│ ├─ src/util/logger.ts        (stderr only, LOG_LEVEL env)     │
-│ ├─ src/util/paths.ts         (XDG-compliant config dir)       │
-│ └─ src/util/fs.ts            (atomic writes, JSON read/write) │
-└────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│ HTTP Client + Auth (src/api/*)             [P1 core, P3+ ext]  │
+│ ├─ http.ts (undici + 429/5xx retry + Retry-After + auth)       │
+│ ├─ account.ts (account-level endpoints)                         │
+│ ├─ storage.ts (storage endpoints)                               │
+│ └─ errors.ts (BunnyApiError, AuthError, ConfigError)           │
+│                                                                 │
+│ Configuration (src/config/)                                     │
+│ ├─ bunny-json.ts (project config, zod schema)                  │
+│ ├─ bunnyrc.ts (alias map)                                       │
+│ └─ credential-resolver.ts (flag → env → keychain → file)       │
+│                                                                 │
+│ Utilities (src/util/)                                           │
+│ ├─ logger.ts (stderr only, LOG_LEVEL env)                       │
+│ ├─ paths.ts (XDG-compliant dirs)                                │
+│ ├─ fs.ts (atomic JSON writes)                                   │
+│ └─ content-type.ts (MIME detection)                             │
+└─────────────────────────────────────────────────────────────────┘
                               ↓
                     Bunny.net REST API
 ```
@@ -75,25 +101,25 @@ bunny-tools is a **registry-driven CLI + MCP server** that abstracts Bunny.net's
 
 The registry is a declarative list of `CommandSpec` objects. Every surface derives from it:
 - **CLI help** (`--help`, `--help --json`)
-- **`bunny manifest` JSON output** — full registry as JSON
-- **`AGENTS.md` skeleton** — auto-generated command tree with human curated gotchas
+- **`bunny manifest` JSON** — full registry as JSON
+- **`AGENTS.md`** — auto-generated command tree + human-curated gotchas
 - **`schema/bunny.schema.json`** — zod schemas → JSON Schema
-- **MCP tool definitions** (Phase 6) — command → MCP tool mapping
+- **MCP tool definitions** — command → MCP tool mapping (P6)
 
-**Phase 1 snapshot:**
-- **Active:** `manifest` (1 command)
-- **Planned (stubs only):** init, configure, auth:set/list/clear, use, deploy, purge, storage:*, storage-zone:*, pull-zone:*, dns:*, stream:*, containers:*, scripting:*, mcp (47 total)
+**Current state (Phases 1–7 shipped):**
+- **Active:** 49 commands (manifest, auth, configure, init, deploy, purge, storage, zones, dns, mcp)
+- **Deferred to v0.2:** stream, containers, scripting (13 commands)
 
-Each command entry carries:
+Each entry carries:
 - `name`, `summary`, `description`
-- `args[]`, `flags[]` with zod schemas (for Phase 2+)
-- `examples[]`
-- `mcp?: {tool, description}` (optional MCP mapping)
-- `status: 'active' | 'planned' | 'deprecated'`
-- `phase: number`
-- `load?: () => Promise<{ run }>` (lazy import for active commands)
+- `args[]`, `flags[]` with zod schemas
+- `examples[]` (all active commands)
+- `mcp?: {tool, description}` (MCP mapping for all active)
+- `status: 'active' | 'planned' | 'deferred'`
+- `phase: 1–7 (Phase 5 demoted)`
+- `load?: () => Promise<{ run }>` (lazy import)
 
-**Key invariant:** Commands NEVER imported at startup. Only registry consulted.
+**Key invariant:** Commands NEVER imported at startup; registry read once, cached.
 
 ---
 
@@ -242,22 +268,25 @@ All HTTP errors funnel through `parseBunnyErrorBody()` before throwing.
 
 ## Architectural Invariants
 
-### Boundary: Commands ↔ Core ↔ API
-
-**MUST enforce via ESLint:**
+### Boundary: Commands/MCP ↔ Core ↔ API (ESLint Enforced)
 
 ```
-src/commands/**  ├─ MAY import: src/core/*, src/manifest/*, src/util/*, src/config/
-                 └─ MUST NOT import: src/api/*
+src/commands/**  ├─ MAY import: core, manifest, util, config, ui
+                 └─ MUST NOT import: api
 
-src/mcp/**       ├─ MAY import: src/core/*, src/manifest/*, src/util/*, src/config/
-                 └─ MUST NOT import: src/api/*
+src/mcp/**       ├─ MAY import: core, manifest, util, config
+                 └─ MUST NOT import: api
 
-src/core/**      ├─ MAY import: src/api/*, src/util/*, src/config/*
-                 └─ MUST NOT import: src/commands/*, src/mcp/*, src/manifest/*
+src/core/**      ├─ MAY import: api, util, config, deploy (internal)
+                 └─ MUST NOT import: commands, mcp, manifest
+
+src/deploy/**    ├─ MAY import: api, util, config
+                 └─ MUST NOT import: commands, mcp, manifest, core
 ```
 
-**Why:** Commands and MCP tools are thin UI wrappers. Core is the substance. By enforcing this, both CLI and MCP reuse the same logic with zero duplication.
+**Rationale:** Commands/MCP are thin UI wrappers calling core. Core is the logic. Both reuse core via api. Zero duplication between CLI and MCP.
+
+**Enforcement:** ESLint rule `no-restricted-imports` on every commit + CI gate.
 
 ### No Side Effects in Core
 
@@ -336,63 +365,44 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 
 ---
 
-## Phase 1 State (Current)
+## Current State (Phases 1–4, 6–7 Shipped)
 
-**Active Layers:**
-- CLI entry (src/cli.ts) — wired
-- Registry (src/manifest/registry.ts) — 47 commands declared; 1 active (manifest)
-- Config loaders — wired (bunny-json, bunnyrc, credential-resolver)
-- HTTP client — wired (undici, retry, auth injection)
-- Error handling — wired
-- Utilities — wired
-- Manifest command (src/commands/manifest.ts) — wired
+**Active:**
+- CLI entry (src/cli.ts)
+- Registry (src/manifest/registry.ts) — 49 active commands, 13 deferred (P5 → v0.2)
+- Config loaders (bunny-json, bunnyrc, credential-resolver)
+- HTTP client (undici, retry, auth injection, P1; account/storage endpoints P3+)
+- Core logic (deploy, purge, storage-ops, zones, dns, auth, configure, init, aliases)
+- Deploy subsystem (walk, diff, upload-queue, remote-list, state)
+- MCP server (server.ts, tools.ts with ~14 tools + 3 resources)
+- UI helpers (progress, prompt, table)
+- Error handling, logging, paths, filesystem, content-type
+- All 49 active command implementations (all working, ≥80% test coverage)
 
-**Placeholder Layers:**
-- `src/core/` — directory exists with README; populated in P2–5
-- All other commands — registry stubs only, no implementations
+**Deferred to v0.2:**
+- `src/core/stream.ts` (Stream/video CRUD)
+- `src/core/containers.ts` (Magic Containers)
+- `src/core/scripting.ts` (Edge scripting)
+- Headers/rewrites/redirects sugar in bunny.json
 
 ---
 
-## Future Layers (Phase 2+)
+## Testing Strategy (All Phases)
 
-### Phase 2: Deploy Loop
+**Unit tests (80%+ coverage):**
+- `test/api/*` — HTTP client, auth, retry, error handling
+- `test/config/*` — Config loaders, credential chain, validation
+- `test/core/*` — Deploy, purge, zones, DNS, auth, configure, init
+- `test/deploy/*` — Walk, diff, upload queue, state, remote list
+- `test/manifest/*` — Registry, help rendering
+- `test/mcp/*` — MCP tools, resources
 
-```
-src/core/deploy.ts
-├─ walk()      → traverse local dir + gitignore
-├─ diff()      → compare local vs remote (ETag + size)
-├─ upload()    → parallel pool + 429 backoff
-├─ purge()     → per-pull-zone (tag/all/none/url-list)
-└─ state.ts    → .bunny-state.json checkpoint
-```
+**Integration (via Nock mocking):**
+- Commands calling core calling api (no real network)
+- Credential chain resolution (flag → env → keychain → file → prompt)
+- Error propagation (HTTP errors → typed exceptions)
 
-### Phase 3: Storage + Zones
-
-```
-src/core/storage.ts
-├─ upload / download / list / delete / sync
-└─ zone-aware regional endpoint selection
-
-src/core/zones.ts
-├─ list / get / create / update / delete
-└─ cache zone→region metadata
-```
-
-### Phase 6: MCP Server
-
-```
-src/mcp/
-├─ server.ts         → stdio transport
-├─ transport.ts      → JSON-RPC 2.0
-├─ tools/
-│  ├─ manifest.ts    → bunny.manifest tool
-│  ├─ deploy.ts      → bunny.deploy tool
-│  └─ ...
-└─ resources/
-   ├─ manifest        → read-only registry
-   ├─ agents          → read-only AGENTS.md
-   └─ config/current  → current active config (redacted)
-```
+**E2E:** None (Nock indefinite; no live harness pre-GA)
 
 ---
 

@@ -1,0 +1,84 @@
+name: 'Bunny Deploy'
+description: 'Deploy to Bunny.net storage and purge CDN cache.'
+branding:
+  icon: cloud-upload
+  color: orange
+
+inputs:
+  version:
+    description: 'bunny-tools npm version (e.g. "latest", "0.1.0", "alpha").'
+    required: false
+    default: 'latest'
+  only:
+    description: 'Limit deploy to a target (alias-scoped).'
+    required: false
+  working-directory:
+    description: 'Run inside this subdirectory.'
+    required: false
+    default: '.'
+  account-key:
+    description: 'Bunny account API key. Set via secrets.'
+    required: false
+  storage-password:
+    description: 'Storage zone password. Set via secrets.'
+    required: false
+  stream-key:
+    description: 'Stream library key (optional).'
+    required: false
+  purge:
+    description: 'Override purge: all|none|tag:<name>|paths.'
+    required: false
+  delete-orphans:
+    description: 'Delete remote files that no longer exist locally.'
+    required: false
+    default: 'false'
+  concurrency:
+    description: 'Parallel upload pool size.'
+    required: false
+    default: '8'
+
+outputs:
+  result:
+    description: 'JSON summary of the deploy result.'
+    value: ${{ steps.deploy.outputs.result }}
+
+runs:
+  using: composite
+  steps:
+    - name: Run bunny-tools deploy
+      id: deploy
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        # All inputs flow through env vars and are dereferenced as quoted "$VAR"
+        # below. NEVER interpolate ${{ inputs.* }} into the run-script body —
+        # that's a shell-injection vector since users can supply arbitrary input
+        # values via reusable workflows.
+        BUNNY_ACCOUNT_KEY: ${{ inputs.account-key }}
+        BUNNY_STORAGE_PASSWORD: ${{ inputs.storage-password }}
+        BUNNY_STREAM_KEY: ${{ inputs.stream-key }}
+        BUNNY_NONINTERACTIVE: '1'
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_ONLY: ${{ inputs.only }}
+        INPUT_PURGE: ${{ inputs.purge }}
+        INPUT_DELETE_ORPHANS: ${{ inputs.delete-orphans }}
+        INPUT_CONCURRENCY: ${{ inputs.concurrency }}
+      run: |
+        set -euo pipefail
+
+        ARGS=(deploy --json)
+        [ -n "${INPUT_ONLY:-}" ]   && ARGS+=("--only=${INPUT_ONLY}")
+        [ -n "${INPUT_PURGE:-}" ]  && ARGS+=("--purge=${INPUT_PURGE}")
+        [ "${INPUT_DELETE_ORPHANS:-false}" = "true" ] && ARGS+=("--delete")
+        [ -n "${INPUT_CONCURRENCY:-}" ] && ARGS+=("--concurrency=${INPUT_CONCURRENCY}")
+
+        echo "::group::Running: npx --yes bunny-tools@${INPUT_VERSION} ${ARGS[*]}"
+        OUT=$(npx --yes "bunny-tools@${INPUT_VERSION}" "${ARGS[@]}")
+        echo "::endgroup::"
+
+        echo "$OUT"
+        {
+          echo "result<<__BT_EOF__"
+          echo "$OUT"
+          echo "__BT_EOF__"
+        } >> "$GITHUB_OUTPUT"

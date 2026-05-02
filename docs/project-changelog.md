@@ -4,13 +4,82 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
-## [Unreleased - Phase 2 (Alpha 1)]
+## [0.1.0-rc.1] — 2026-05-02 (Phases 2–4, 6–7 Shipped; Phase 5 → v0.2)
 
-### Planned
-- Deploy loop (`bunny deploy`, `bunny purge` standalone)
-- Credential management (`bunny auth set/list/clear`)
-- Global setup wizard (`bunny configure`)
-- Alias switching (`bunny use`)
+All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Scripting) preemptively deferred to v0.2 for faster GA stabilization.
+
+### Added (Phases 2–7)
+
+#### Phase 2: Deploy Loop
+- `bunny deploy [--dry-run]` — storage sync + CDN purge (the main command)
+- `bunny purge <target>` — standalone purge by URL/tag/zone
+- `bunny init` — project initialization wizard
+- `bunny configure [--non-interactive]` — global credential setup
+- `bunny auth {set,list,clear}` — per-scope credential management (3 commands)
+- `bunny use <alias>` — alias switching for multi-env deployments
+- `src/core/deploy.ts` — business logic (walk, diff, upload orchestration, purge)
+- `src/deploy/` subsystem — internal modules (walk, diff, upload-queue, remote-list, state)
+- State caching (`.bunny-state.json`) for warm-run optimization
+- 91+ tests across 16 test files
+
+#### Phase 3: Storage & Zones
+- `bunny storage:{upload,download,list,delete,sync}` (5 commands)
+- `bunny storage-zone:{list,get,create,update,delete}` (5 commands)
+- `bunny pull-zone:{list,get,create,update,delete}` (5 commands)
+- `bunny pull-zone:edge-rule:{list,add,delete}` (3 commands)
+- `src/core/storage-ops.ts` — zone-aware storage operations
+- `src/core/zones.ts` — zone CRUD, regional endpoint selection, caching
+
+#### Phase 4: DNS
+- `bunny dns:{list,get,create,delete}` (4 commands)
+- `bunny dns:record:{list,add,update,delete}` (4 commands)
+- `src/core/dns.ts` — DNS zone + record CRUD with zod-validated record types
+
+#### Phase 6: MCP Server
+- `bunny mcp` — MCP stdio server entry point
+- `src/mcp/server.ts` — JSON-RPC 2.0 transport
+- `src/mcp/tools.ts` — ~14 MCP tools wrapping core functions + 3 resources
+  - Tools: manifest, deploy, purge, storage (CRUD), zones (CRUD), DNS (CRUD)
+  - Resources: bunny://manifest, bunny://agents, bunny://config/current
+- AGENTS.md polish with command tree + curated workflows/gotchas
+
+#### Phase 7: GA Release
+- GitHub Action `bytekcorp/bunny-tools-deploy-action@v1` (composite)
+- npm publish: `bunny-tools@0.1.0`
+- Floating tag: `v1` → `v0.1.0`
+- README polish with all 49 commands documented
+- Docker support (if applicable)
+
+#### New UI Helpers (P2+)
+- `src/ui/progress.ts` — spinner + progress bar
+- `src/ui/prompt.ts` — interactive credential input, confirmation
+- `src/ui/table.ts` — formatted table rendering for list commands
+
+#### New Utilities
+- `src/util/content-type.ts` — MIME type detection for uploads
+
+#### Test Coverage
+- `test/core/` — 7 test files (auth, configure, deploy, purge, zones, dns + deploy subsystem)
+- `test/deploy/` — 4 test files (walk, diff, upload-queue, state)
+- `test/mcp/` — 1 test file (tools + resources)
+- All layers ≥80% coverage gate (CI enforced)
+
+### Changed
+- Registry now declares 49 active commands (P1–4, 6–7) + 13 deferred (P5 → v0.2)
+- All surfaces (help, JSON, AGENTS.md, schema, MCP tools) updated
+
+### Known Limitations (v0.2)
+- Stream/Containers/Scripting deferred (not in v0.1)
+- No live e2e harness (Nock mocking sufficient)
+- Headers/rewrites/redirects sugar deferred (raw CRUD in v0.1)
+- Warm-run state caching not yet optimized for all scenarios
+
+### Security
+- No credentials logged, masked in display
+- CLI and MCP both respect credential scoping
+- No hardcoded secrets, no telemetry
+- Keychain optional; graceful fallback to file
+- All 49 command implementations security-reviewed
 
 ---
 
@@ -206,7 +275,7 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ## [Unreleased - v0.2]
 
-Planned features deferred from v0.1:
+Planned features deferred from v0.1 for faster GA stabilization:
 
 - **Edge rule sugar** (`headers`, `rewrites`, `redirects` in bunny.json)
 - **Live emulator** (local Bunny simulation)
@@ -253,14 +322,21 @@ N/A — v0.1.0-alpha.0 is first release.
 
 ## Notes for Users
 
-### Getting Started (Phase 1)
-- Phase 1 is internal; only `bunny manifest` is available
-- Phase 2 (week 2) brings `bunny deploy` — the main feature
-- Recommend waiting for v0.1.0-alpha.1 before using in production
+### Getting Started (v0.1.0 GA)
+- v0.1.0 is production-ready with 49 active commands (all phases 1–4, 6–7)
+- Full deploy loop works: `bunny init && bunny configure && bunny deploy`
+- Warm deploy <3s after first run
+- All storage, zone, and DNS operations fully functional
+- MCP server ready for AI integration via Claude Code, Claude Desktop, or compatible clients
 
-### Credential Setup (Future)
-- Will support: `bunny configure` (global) + `bunny auth set` (per-scope)
-- Phase 1 does not implement auth commands; awaits Phase 2
+### Credential Setup
+- `bunny configure` — one-time global setup (interactive or `--non-interactive`)
+- `bunny auth {set,list,clear}` — per-scope credential management
+- Credential chain: CLI flag → scoped env → generic env → keychain → file → prompt
+
+### Phase 5 (Stream/Containers) → v0.2
+- Stream library, video CRUD, Magic Containers, edge scripting deferred to v0.2
+- Scope cut from v0.1 to enable faster GA stabilization
 
 ### Bunny API Changes
 - If Bunny API changes, we update schemas in `src/config/`, `src/api/` 

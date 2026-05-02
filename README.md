@@ -1,12 +1,10 @@
 # bunny-tools
 
-> Bunny.net CLI — storage deploy, CDN purge, full resource management. Like `firebase-tools`, for Bunny.
+> Bunny.net CLI — storage deploy, CDN purge, full resource management. Like `firebase-tools`, for Bunny. AI-friendly via MCP.
 
 [![CI](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-**Status:** Phase 1 (foundations) — pre-alpha. Daily-use deploy loop ships in `0.1.0-alpha.1`.
 
 ## Install
 
@@ -17,34 +15,109 @@ npm install -g bunny-tools
 ## Quickstart
 
 ```bash
-bunny configure              # one-time global setup (like aws configure) — coming in 0.1.0-alpha.1
+bunny configure              # one-time global setup (like aws configure)
 bunny init                   # per-project bunny.json
 bunny deploy                 # storage sync + CDN purge
 ```
 
-## What's here today (Phase 1)
+## Commands at a glance
 
-- Project scaffolding (TypeScript, Commander, Vitest+Nock, undici, zod, keytar)
-- HTTP client with `AccessKey` auth + 429 backoff
-- Config loader (`bunny.json` + `.bunnyrc`) with zod validation
-- Credential resolver chain: flag → env → keychain → file → prompt
-- Manifest registry (single source for `--help --json`, `bunny manifest`, `AGENTS.md`, JSON Schema, MCP tool defs)
-- `bunny manifest` command
-- `bunny <any> --help --json` structured help
-- Generator scripts + CI drift check
+| Area | Commands |
+|---|---|
+| **Setup** | `configure`, `init`, `auth:set`, `auth:list`, `auth:clear`, `use` |
+| **Deploy** | `deploy`, `purge` |
+| **Storage** | `storage:upload`, `storage:download`, `storage:list`, `storage:delete`, `storage:sync` |
+| **Zones** | `storage-zone:{list,get,create,update,delete}`, `pull-zone:{list,get,create,update,delete}`, `pull-zone:edge-rule:{list,add,delete}` |
+| **DNS** | `dns:{list,get,create,delete}`, `dns:record:{list,add,update,delete}` |
+| **Discovery** | `manifest`, `<any> --help-json` |
+| **AI** | `mcp` (stdio MCP server) |
 
-## What's coming
+Run `bunny manifest --pretty` for the full machine-readable surface, or read [`AGENTS.md`](./AGENTS.md) for AI-agent guidance.
 
-| Phase | Ships as | What |
-|---|---|---|
-| 2 | `0.1.0-alpha.1` | `init`, `configure`, `auth`, `use`, `deploy`, `purge` |
-| 3 | `0.1.0-alpha.2` | `storage:*`, `storage-zone:*`, `pull-zone:*` |
-| 4 | `0.1.0-alpha.3` | `dns:*` |
-| 5 | `0.1.0-alpha.4` | `stream:*`, `containers:*`, `scripting:*` |
-| 6 | `0.1.0-rc.1` | `bunny mcp` server, `AGENTS.md` polish |
-| 7 | `0.1.0` GA | composite GitHub Action, `v1` floating tag |
+## GitHub Action
 
-See `plans/260502-1748-bunny-tools-cli/` for the implementation plan.
+```yaml
+- uses: bytekcorp/bunny-tools-deploy-action@v1
+  with:
+    account-key: ${{ secrets.BUNNY_ACCOUNT_KEY }}
+    storage-password: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+```
+
+See [`action/README.md`](./action/README.md) for full inputs.
+
+## MCP server (AI integration)
+
+`bunny-tools` ships an MCP stdio server. Install for Claude Code:
+
+```bash
+claude mcp add bunny-tools npx -y bunny-tools mcp
+```
+
+Or for Claude Desktop, add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "bunny-tools": {
+      "command": "npx",
+      "args": ["-y", "bunny-tools", "mcp"]
+    }
+  }
+}
+```
+
+The server exposes ~10 high-level tools (`bunny.deploy`, `bunny.purge`, zone/dns CRUD), an escape hatch (`bunny.run`) for any CLI invocation, and three resources (`bunny://manifest`, `bunny://agents`, `bunny://config/current`).
+
+## Configuration
+
+`bunny.json` (per-project, git-tracked):
+
+```jsonc
+{
+  "$schema": "https://unpkg.com/bunny-tools/schema/bunny.schema.json",
+  "deploy": {
+    "publicDir": "dist",
+    "ignore": ["bunny.json", ".bunnyrc", "**/.*", "**/node_modules/**"],
+    "storageZone": "my-app",
+    "region": "ny",
+    "concurrency": 8,
+    "pullZones": [{ "id": 12345, "purge": "all" }]
+  }
+}
+```
+
+`.bunnyrc` (per-developer aliases, gitignored):
+
+```json
+{
+  "default": "prod",
+  "aliases": {
+    "prod":    { "storageZone": "my-app",     "pullZones": [12345] },
+    "staging": { "storageZone": "my-app-stg", "pullZones": [12346] }
+  }
+}
+```
+
+## Auth
+
+Four credential scopes (all use the `AccessKey` HTTP header):
+
+- `account` — Account API key
+- `storage:<zone>` — Storage zone password (per zone)
+- `stream:<lib>` — Stream library API key
+- `database:<name>` — Database access key
+
+Resolved per call site with this fallback chain: `--flag` → scoped env (e.g. `BUNNY_STORAGE_PASSWORD_MY_APP`) → generic env (e.g. `BUNNY_STORAGE_PASSWORD`) → OS keychain → `~/.config/bunny-tools/credentials.json` → interactive prompt.
+
+## Development
+
+```bash
+git clone https://github.com/bytekcorp/bunny-tools
+cd bunny-tools
+npm ci
+npm test
+npm run dev -- manifest --pretty
+```
 
 ## License
 

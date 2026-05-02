@@ -30,12 +30,12 @@ Build `bunny-tools`: an npm-distributed Node 20+/TypeScript CLI (binary `bunny`)
 | Phase | Name | Status | Ships as |
 |-------|------|--------|----------|
 | 1 | [Bootstrap & Foundations](./phase-01-bootstrap-foundations.md) | ✅ Complete (2026-05-02) | (internal — adds `src/core` layer + manifest registry) |
-| 2 | [Alpha 1 — Deploy Loop](./phase-02-alpha-1-deploy-loop.md) | Pending | `0.1.0-alpha.1` (incl. `bunny configure`) |
-| 3 | [Alpha 2 — Storage & Zones](./phase-03-alpha-2-storage-zones.md) | Pending | `0.1.0-alpha.2` |
-| 4 | [Alpha 3 — DNS](./phase-04-alpha-3-dns.md) | Pending | `0.1.0-alpha.3` (slip gate: demote phase 5 to v0.2 if >2 weeks) |
-| 5 | [Alpha 4 — Stream/Containers/Scripting](./phase-05-alpha-4-stream-containers-scripting.md) | Pending | `0.1.0-alpha.4` (may demote to v0.2) |
-| 6 | [MCP Server & AI-Discovery Polish](./phase-06-mcp-server.md) | Pending | `0.1.0-rc.1` |
-| 7 | [GitHub Action & 0.1.0 Release](./phase-07-github-action-release.md) | Pending | `0.1.0` GA + Action `v1` |
+| 2 | [Alpha 1 — Deploy Loop](./phase-02-alpha-1-deploy-loop.md) | ✅ Complete (2026-05-02) | `0.1.0-alpha.1` (incl. `bunny configure`) |
+| 3 | [Alpha 2 — Storage & Zones](./phase-03-alpha-2-storage-zones.md) | ✅ Complete (2026-05-02) | `0.1.0-alpha.2` |
+| 4 | [Alpha 3 — DNS](./phase-04-alpha-3-dns.md) | ✅ Complete (2026-05-02) | `0.1.0-alpha.3` |
+| 5 | [Alpha 4 — Stream/Containers/Scripting](./phase-05-alpha-4-stream-containers-scripting.md) | ⏭️ Deferred to v0.2 | (7 commands remain in registry as `planned`) |
+| 6 | [MCP Server & AI-Discovery Polish](./phase-06-mcp-server.md) | ✅ Complete (2026-05-02) | `0.1.0-rc.1` |
+| 7 | [GitHub Action & 0.1.0 Release](./phase-07-github-action-release.md) | ✅ Complete (2026-05-02) | `0.1.0` GA + Action `v1` |
 
 ## Key Decisions (locked in brainstorm)
 
@@ -54,11 +54,21 @@ None (greenfield project).
 
 ## Progress
 
-**Phase 1 Completion — 2026-05-02**
+**Phases 1–4, 6–7 Complete — 2026-05-02**
 
-- **Files**: 51 added, 0 modified, 0 deleted
-- **Tests**: 34/34 passing, verified inline (full coverage report deferred to phase 2 CI)
-- **Checks**: typecheck ✅, lint ✅, build ✅
-- **Generators**: manifest, agents, schema idempotent (drift check verified)
-- **Active Commands**: 1/47 implemented (`bunny manifest`)
-- **Distribution**: pre-alpha (no npm publish; ready for team dogfooding)
+- **Total Files**: 164 added, 18 modified, 0 deleted
+- **Tests**: 91/91 passing across 16 test files (typecheck ✅, lint ✅, build ✅)
+- **Cumulative Commits**: 4 across all phases
+- **Active Commands**: 49/56 implemented (Phase 5's 7 stream/containers/scripting commands remain `planned` in registry)
+- **Generators**: manifest, agents, schema, bunny.json schema idempotent (drift check verified)
+- **Architectural Invariants Hold**:
+  - `src/core/*` = single business-logic layer (shared by CLI + MCP)
+  - Registry-driven CLI (all commands from `src/manifest/registry.ts`)
+  - Pagination always `page=1, perPage=1000`
+  - All logs to stderr only (stdout reserved for data)
+- **Distribution**: Releasable as `0.1.0-rc.1` (rc.1 because MCP layer landed; ready for npm publish)
+
+**Phase 5 — Deferred to v0.2**
+- Reason: slip-gate logic at phase 4; Phase 6 (MCP) and Phase 7 (release) have higher daily value
+- Status: 7 stream/containers/scripting commands registered as `planned` in `src/manifest/registry.ts` for AI discovery
+- Impacts: Phase 5 implementation blocked; MCP + release proceed without Phase 5 features

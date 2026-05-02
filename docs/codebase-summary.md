@@ -1,13 +1,29 @@
 # bunny-tools Codebase Summary
 
-**Version:** v0.1.0-alpha.0 (Phase 1)  
+**Version:** v0.1.0-rc.1 (Phases 1–4, 6–7 shipped)  
 **Last Updated:** 2026-05-02  
-**Total Files:** 13 source + 5 test + 3 config files  
-**Lines of Code (src/):** ~475 LOC  
+**Total Files:** 39 source + 16 test + 3 config files  
+**Lines of Code (src/):** ~2,400 LOC  
 
 ---
 
 ## File Map
+
+### Root Structure (Phase 1)
+
+| Subsystem | Location | Status |
+|-----------|----------|--------|
+| CLI entry | `src/cli.ts` | ✓ Active (P1) |
+| Commands | `src/commands/` | ✓ Active (P1–4, 6–7 shipped; P5 deferred) |
+| Core logic | `src/core/` | ✓ Active (P2–4 shipped) |
+| Deploy ops | `src/deploy/` | ✓ Active (P2 shipped) |
+| API client | `src/api/` | ✓ Active (P1 core, P3–4 extensions) |
+| UI rendering | `src/ui/` | ✓ Active (P2+ via commands) |
+| MCP server | `src/mcp/` | ✓ Active (P6 shipped) |
+| Config loaders | `src/config/` | ✓ Active (P1+) |
+| Manifest (registry) | `src/manifest/` | ✓ Active (P1) |
+| Utilities | `src/util/` | ✓ Active (P1+ with P2 content-type) |
+| Tests | `test/` | ✓ Active (16 files, 91+ tests) |
 
 ### Root Configuration
 
@@ -84,102 +100,64 @@ Used by:
 
 ---
 
-### Commands (Active & Planned)
+### Commands (P1–4, 6–7 Shipped)
 
-**`src/commands/manifest.ts`** (35 lines)
+**Phase 1 (Bootstrap)**
+- `src/commands/manifest.ts` — Registry as JSON
 
-Only active command in Phase 1. Outputs registry as JSON to stdout.
+**Phase 2 (Deploy Loop)**
+- `src/commands/configure.ts` — Global credential setup
+- `src/commands/init.ts` — Project init wizard
+- `src/commands/deploy.ts` — Storage sync + purge
+- `src/commands/purge.ts` — Standalone purge
+- `src/commands/use.ts` — Alias switching
+- `src/commands/auth/{set,list,clear}.ts` — Credential management (3 files)
 
-**Exports:**
-```ts
-export async function run({flags}: ParsedInvocation): Promise<number>
-```
+**Phase 3 (Storage & Zones)**
+- `src/commands/storage/{upload,download,list,delete,sync}.ts` (5 files)
+- `src/commands/storage-zone/{list,get,create,update,delete}.ts` (5 files)
+- `src/commands/pull-zone/{list,get,create,update,delete}.ts` (5 files)
+- `src/commands/pull-zone/edge-rule/{list,add,delete}.ts` (3 files)
 
-**Behavior:**
-- Reads registry in-memory
-- Serializes to JSON
-- If `--pretty` flag, indents with 2-space
-- Writes to stdout
-- Returns 0 on success
+**Phase 4 (DNS)**
+- `src/commands/dns/{list,get,create,delete}.ts` (4 files)
+- `src/commands/dns/record/{list,add,update,delete}.ts` (4 files)
 
-**Used by:**
-- `bunny manifest` CLI command
-- AI agents for command discovery
-- CI drift checks
+**Phase 6 (MCP)**
+- `src/commands/mcp.ts` — MCP stdio server entry
 
-**Dependencies:** registry, logger
+**Phase 5 (Stream/Containers/Scripting) → Deferred to v0.2**
+- Not shipped in v0.1
+
+**All commands:**
+- Export `run(ParsedInvocation): Promise<number>`
+- Call into `src/core/*` for business logic
+- Never call `src/api/*` directly
+- Render output via `src/ui/*` helpers
 
 ---
 
 ### API Layer (HTTP Client & Errors)
 
-**`src/api/http.ts`** (170+ lines)
+**`src/api/http.ts`** (170+ lines, P1)
 
-Single point for all Bunny.net REST API calls.
+Single point for all Bunny.net REST API calls. Features:
+- Auth injection (`AccessKey` header, per-call credential resolution)
+- Retry: 429/5xx → exponential backoff ±25% jitter, max 5 attempts, Retry-After honored
+- Connection pooling: persistent undici Pool per base URL
+- Binary support: uploads + downloads
+- Timeout: configurable, default 30s
 
-**Key exports:**
+**`src/api/account.ts`** (P3)  
+Account API endpoints (zones list pagination, etc.)
 
-```ts
-// Types
-type AuthScope = 
-  | { kind: 'account' }
-  | { kind: 'storage'; zone: string }
-  | { kind: 'stream'; libraryId: string }
-  | { kind: 'database'; name: string };
+**`src/api/storage.ts`** (P3)  
+Storage API endpoints (upload, download, list, delete).
 
-type CallOptions = {
-  base: string;              // e.g., 'https://api.bunny.net'
-  path: string;              // e.g., '/storagezone'
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  query?: Record<string, any>;
-  body?: unknown;            // JSON → stringified; Buffer → binary
-  scope: AuthScope;          // credential scope
-  contentType?: string;
-  retry?: { max?: number; baseMs?: number };
-  signal?: AbortSignal;
-  binary?: boolean;          // For storage downloads
-};
+**`src/api/errors.ts`** (50 lines, P1)
 
-// Main function
-async function callBunny<T>(opts: CallOptions): Promise<T>;
-```
-
-**Features:**
-- **Auth:** `AccessKey` header injected via credential resolver at call time
-- **Retry:** 429, 502, 503, 504 → exponential backoff with ±25% jitter, max 5 attempts
-- **Retry-After:** honors `Retry-After` header if present
-- **Max backoff:** 30s cap
-- **Timeout:** configurable per call, default 30s
-- **Connection reuse:** persistent undici `Pool` per base URL
-- **Error parsing:** all responses funnel through `parseBunnyErrorBody()`
-
-**Dependencies:** undici, errors, logger, credential-resolver
-
-**`src/api/errors.ts`** (50 lines)
-
-Custom error types and Bunny error parser.
-
-**Types:**
-```ts
-class BunnyApiError extends Error {
-  statusCode: number;
-  errorKey?: string;
-  field?: string;
-}
-
-class AuthError extends Error {}
-class ConfigError extends Error {}
-class ValidationError extends Error {}
-```
-
-**Key function:**
-```ts
-function parseBunnyErrorBody(status: number, body: unknown): Error
-```
-
-Parses Bunny's `{ ErrorKey, Field, Message }` response → typed error.
-
-**Dependencies:** none
+Custom error types: `BunnyApiError`, `AuthError`, `ConfigError`, `ValidationError`  
+Parser: `parseBunnyErrorBody(status, body)` → typed error from Bunny response
 
 ---
 
@@ -271,71 +249,65 @@ function maskCredential(value: string): string
 
 ---
 
+### UI Layer (Rendering)
+
+**Phase 2+**
+- `src/ui/progress.ts` — Progress bar + spinner wrapper
+- `src/ui/prompt.ts` — Interactive prompts (credential input, confirmation)
+- `src/ui/table.ts` — Table formatting for list commands
+
 ### Utilities
 
-**`src/util/logger.ts`** (40 lines)
+**`src/util/logger.ts`** (P1)  
+Stderr-only structured logging. `LOG_LEVEL` env control. No credentials.
 
-Structured logging to stderr (stdout reserved for JSON output).
-
-**Exports:**
-```ts
-const logger = {
-  debug(msg: string, ...args: unknown[]): void
-  info(msg: string, ...args: unknown[]): void
-  warn(msg: string, ...args: unknown[]): void
-  error(msg: string, ...args: unknown[]): void
-};
-```
-
-**Control:** `LOG_LEVEL` environment variable (debug|info|warn|error, default: error)
-
-**Invariant:** Credentials never logged.
-
-**Dependencies:** picocolors (optional; graceful fallback to plain text)
-
-**`src/util/paths.ts`** (35 lines)
-
+**`src/util/paths.ts`** (P1)  
 XDG-compliant config directory resolver.
 
-**Exports:**
-```ts
-function configDir(): string;  // ~/.config/bunny-tools/
-function credentialsFile(): string;  // ~/.config/bunny-tools/credentials.json
-function stateFile(projectDir: string): string;  // ./.bunny-state.json
-```
+**`src/util/fs.ts`** (P1)  
+JSON read/write with atomic writes (write-temp-rename pattern).
 
-**Platform aware:** Respects `XDG_CONFIG_HOME` on Linux, `~/Library/Application Support` on macOS.
-
-**Dependencies:** none (uses built-in path utils)
-
-**`src/util/fs.ts`** (45 lines)
-
-JSON file helpers with atomic writes.
-
-**Exports:**
-```ts
-async function readJsonOrNull<T>(path: string): Promise<T | null>
-async function atomicWriteJson(path: string, data: unknown, opts?: {mode?: number}): Promise<void>
-```
-
-**Atomic write pattern:** write-to-temp-then-rename (prevents corruption).
-
-**Dependencies:** none (uses fs.promises)
+**`src/util/content-type.ts`** (P2)  
+MIME type detection for file uploads.
 
 ---
 
-### Core Layer (Placeholder)
+### Core Layer (Business Logic)
 
-**`src/core/README.md`** (23 lines)
+**Phase 2 (Deploy Loop)**
+- `src/core/deploy.ts` — Walk, diff, upload orchestration
+- `src/core/purge.ts` — CDN purge by tag/URL/zone
+- `src/core/init.ts` — Project initialization
+- `src/core/configure.ts` — Global setup
+- `src/core/auth.ts` — Credential set/list/clear
+- `src/core/aliases.ts` — Alias resolution
 
-Architectural invariant documentation (ships at runtime, no code).
+**Phase 2 (Deploy Internals)**  
+- `src/deploy/walk.ts` — Directory traversal with gitignore
+- `src/deploy/diff.ts` — Local vs remote comparison
+- `src/deploy/upload-queue.ts` — Parallel upload pool
+- `src/deploy/remote-list.ts` — Fetch remote file list
+- `src/deploy/state.ts` — State cache (.bunny-state.json)
 
-**Key rules:**
-- No `console.log`, `process.stdout.write`, `process.exit`
-- No `prompts`, `ora`, `chalk` (UI lives in commands/mcp)
-- Stable, typed API with explicit validation at boundaries
-- Network calls via `src/api/*` only
-- Rationale: CLI and MCP reuse same core logic
+**Phase 3 (Storage & Zones)**
+- `src/core/storage-ops.ts` — Upload/download/list/delete/sync
+- `src/core/zones.ts` — Storage zone + pull zone CRUD
+
+**Phase 4 (DNS)**
+- `src/core/dns.ts` — DNS zone + record CRUD (zod-validated record types)
+
+**Phase 6 (MCP)**
+- `src/mcp/server.ts` — MCP stdio transport + tool dispatch
+- `src/mcp/tools.ts` — MCP tool implementations (~14 tools + 3 resources)
+
+**`src/core/README.md`** (Invariant documentation)
+
+Key rules:
+- No UI (console.log, process.exit, prompts, ora, chalk)
+- Network only via `src/api/*`
+- Zod validation at boundaries
+- Throwable results, no side effects
+- CLI + MCP both reuse core
 
 ---
 
@@ -382,64 +354,30 @@ Reads zod schemas from `src/config/bunny-json.ts`, generates `schema/bunny.schem
 
 ---
 
-### Tests
+### Tests (16 files, 91+ tests)
 
-**`test/setup.ts`** (15 lines)
+| File | Phase | Coverage |
+|------|-------|----------|
+| `test/api/http.test.ts` | P1 | HTTP client, retry, auth, binary |
+| `test/config/bunny-json.test.ts` | P1 | Config loading, validation, tree walk |
+| `test/config/credential-resolver.test.ts` | P1 | Credential chain, keychain, file, masking |
+| `test/manifest/registry.test.ts` | P1 | Registry validation, uniqueness, phases |
+| `test/manifest/render-help.test.ts` | P1 | Help text + JSON help rendering |
+| `test/core/auth.test.ts` | P2 | Credential set/list/clear operations |
+| `test/core/configure.test.ts` | P2 | Global setup wizard flow |
+| `test/core/deploy.test.ts` | P2 | Deploy logic, dry-run, actual upload |
+| `test/core/purge.test.ts` | P2 | Purge by tag/URL/zone |
+| `test/core/zones.test.ts` | P3 | Zone CRUD, caching, regional selection |
+| `test/core/dns.test.ts` | P4 | DNS zone + record CRUD, zod validation |
+| `test/deploy/walk.test.ts` | P2 | Directory traversal, gitignore patterns |
+| `test/deploy/diff.test.ts` | P2 | Local vs remote comparison |
+| `test/deploy/upload-queue.test.ts` | P2 | Upload pool, concurrency, retry |
+| `test/deploy/state.test.ts` | P2 | State file cache read/write |
+| `test/mcp/tools.test.ts` | P6 | MCP tool invocation, resources |
 
-Vitest initialization. Disables all real HTTP via Nock.
-
-```ts
-import nock from 'nock';
-nock.disableNetConnect();
-afterEach(() => nock.cleanAll());
-```
-
-**Ensures:** No real network calls in tests; all responses must be explicitly mocked.
-
-**`test/api/http.test.ts`** (120+ lines)
-
-HTTP client tests covering:
-- 200 success + response parsing
-- 401 AuthError
-- 429 with Retry-After (honored, then succeeds)
-- 500 retried, succeeds
-- 5× 429 (exhausts retries, throws)
-- Binary uploads (Buffer body)
-
-Mocked via Nock.
-
-**`test/config/bunny-json.test.ts`** (80 lines)
-
-Config loader tests covering:
-- Valid bunny.json
-- Missing `publicDir` (error)
-- Invalid `region` (error)
-- Tree walk (finds file in parent dir)
-
-**`test/config/credentials.test.ts`** (120+ lines)
-
-Credential resolver tests covering:
-- CLI flag override
-- Scoped env vars (BUNNY_ACCOUNT_KEY, etc.)
-- Generic env fallback
-- Keychain read (mocked)
-- File store read/write (mode 0600 verified)
-- No credentials logged (spy assertion)
-
-**`test/manifest/registry.test.ts`** (50 lines)
-
-Registry validation:
-- All command names unique
-- All commands have description
-- All active commands have example
-- Phase numbering consistent
-
-**`test/manifest/render-help.test.ts`** (60 lines)
-
-Help rendering tests:
-- Text help is readable string
-- JSON help is valid object
-- Round-trip: registry → JSON → structure preserved
+**Setup:** `test/setup.ts` — Vitest + Nock (disableNetConnect, afterEach cleanup)  
+**Coverage target:** ≥80% on api, config, core, deploy layers  
+**CI gate:** Coverage failure blocks merge
 
 ---
 
@@ -476,111 +414,66 @@ Used by editors (VS Code, JetBrains) for autocomplete/validation.
 
 ---
 
-## Key Metrics (Phase 1)
+## Key Metrics (Phases 1–4, 6–7 Shipped)
 
 | Metric | Value | Target |
 |--------|-------|--------|
 | Cold-start `bunny --help` | ~22ms | <50ms ✓ |
-| Test coverage (api/config/manifest) | ≥80% | ≥80% |
-| Active commands | 1 | 1 ✓ |
-| Total command stubs | 47 | 47 ✓ |
-| Source files | 13 | lean ✓ |
-| HTTP tests | 5 scenarios | comprehensive ✓ |
+| Test coverage (core systems) | ≥80% | ≥80% ✓ |
+| Active commands | 49 | 49 ✓ |
+| Total registered commands | 49 | 49 ✓ (P5 deferred) |
+| Source files | 39 | modular ✓ |
+| Test files | 16 | comprehensive ✓ |
+| Tests run | 91+ | passing ✓ |
 | CI passes | ✓ (ubuntu + macos, Node 20+22) | ✓ |
+| MCP tools | ~14 | all active commands ✓ |
 
 ---
 
-## Module Dependencies (Dependency Graph)
+## Boundary Enforcement (ESLint + TS)
 
 ```
-cli.ts
-├─ manifest/registry.ts
-├─ manifest/render-help.ts
-└─ util/logger.ts
+src/commands/**
+  ├─ MAY import: core, manifest, util, config, ui
+  └─ MUST NOT import: api
 
-commands/manifest.ts
-├─ manifest/registry.ts
-└─ util/logger.ts
+src/mcp/**
+  ├─ MAY import: core, manifest, util, config
+  └─ MUST NOT import: api
 
-api/http.ts
-├─ undici
-├─ config/credential-resolver.ts
-├─ api/errors.ts
-└─ util/logger.ts
+src/core/**
+  ├─ MAY import: api, util, config, deploy (internal)
+  └─ MUST NOT import: commands, mcp, manifest
 
-config/credential-resolver.ts
-├─ keytar (optional)
-├─ util/fs.ts
-├─ util/paths.ts
-├─ util/logger.ts
-└─ api/errors.ts
+src/api/**
+  ├─ MAY import: util, config (errors, paths, fs)
+  └─ MUST NOT import: commands, mcp, core, manifest
 
-config/bunny-json.ts
-├─ zod
-├─ util/fs.ts
-├─ util/logger.ts
-└─ api/errors.ts
-
-config/bunnyrc.ts
-├─ zod
-├─ util/fs.ts
-└─ util/logger.ts
-
-manifest/render-help.ts
-├─ manifest/types.ts
-├─ manifest/registry.ts
-└─ util/logger.ts
-
-util/logger.ts
-└─ picocolors (optional)
-
-util/paths.ts
-└─ (none — uses Node builtins)
-
-util/fs.ts
-└─ (none — uses Node promises)
+src/deploy/** (internal to core)
+  ├─ MAY import: api, util, config
+  └─ MUST NOT import: commands, mcp, manifest
 ```
 
-**Observation:** Clean layering. Commands only → core/manifest/util/config. No circular deps.
+**Rationale:** Commands/MCP are thin UI. Core is substance. Both reuse core via api.
+
+**Verification:** ESLint rule `no-restricted-imports` enforces on every commit.
 
 ---
 
 ## Development Workflow
 
-### Adding a New Command (Phase 2+)
+### Adding a New Command (Post-v0.1)
 
-1. **Edit `src/manifest/registry.ts`:**
-   ```ts
-   {
-     name: 'deploy',
-     summary: 'Deploy to Bunny...',
-     // ... flags, args, examples
-     status: 'planned',  // or 'active'
-     phase: 2,
-     load: () => import('../commands/deploy.js'),
-   }
-   ```
-
-2. **Create `src/commands/deploy.ts`:**
-   ```ts
-   export async function run({args, flags, raw}: ParsedInvocation): Promise<number> {
-     // ... implementation
-   }
-   ```
-
-3. **Add tests in `test/commands/deploy.test.ts`**
-
-4. **Run `npm run build`:**
-   - Compiles TypeScript
-   - Runs generators → updates manifest.json, AGENTS.md, schema
-   - CI drift-checks → passes (artifacts regenerated)
-
-5. **Verify:**
+1. **Update `src/manifest/registry.ts`:** Add CommandSpec entry with phase, flags, args, examples
+2. **Implement core logic:** Create `src/core/{feature}.ts` (no UI, no side effects)
+3. **Implement command:** Create `src/commands/{command-name}.ts` (calls core, renders output)
+4. **Add MCP mapping:** Update registry entry's `mcp` field (Phase 6+)
+5. **Write tests:** `test/core/{feature}.test.ts` + `test/commands/{command-name}.test.ts` (≥80% coverage)
+6. **Build & verify:**
    ```bash
-   npm test
-   npm run lint
-   bunny --help
-   bunny manifest | jq '.commands[] | select(.name=="deploy")'
+   npm run build    # TypeScript + generators
+   npm test         # All tests, coverage gate
+   npm run lint     # Boundary enforcement
    ```
 
 ### Building
@@ -607,16 +500,16 @@ git push origin    # triggers CI
 
 ---
 
-## Deferred (Phase 2+)
+## Deferred to v0.2
 
-| Component | Why Deferred | Lands In |
-|-----------|-------------|----------|
-| `src/core/deploy.ts` | Needs full http/config setup | P2 |
-| `src/core/zones.ts` | Storage zone CRUD | P3 |
-| `src/commands/init.ts`, `auth:*`, `use` | Part of deploy loop | P2 |
-| `src/mcp/` (stdio server) | Depends on all commands | P6 |
-| `.bunny-state.json` (cache) | Optional optimization | P2+ |
-| Live e2e tests | Use Nock indefinitely | Never |
+| Component | Why | Reasoning |
+|-----------|-----|-----------|
+| `src/core/stream.ts` | Stream/video CRUD | Phase 5 demoted to v0.2 (slip gate triggered) |
+| `src/core/containers.ts` | Magic Containers | Phase 5 deferred |
+| `src/core/scripting.ts` | Edge scripting | Phase 5 deferred |
+| Headers/rewrites/redirects sugar | Requires edge-rule sync | Post-GA polish |
+| Live e2e emulator | Nock covers testing | Not needed |
+| Plugin system | Premature | Revisit 100+ commands |
 
 ---
 
@@ -625,4 +518,6 @@ git push origin    # triggers CI
 - **Architecture:** `docs/system-architecture.md`
 - **Code Standards:** `docs/code-standards.md`
 - **PDR:** `docs/project-overview-pdr.md`
-- **Phase 1 Plan:** `plans/260502-1748-bunny-tools-cli/phase-01-bootstrap-foundations.md`
+- **Changelog:** `docs/project-changelog.md`
+- **Roadmap:** `docs/project-roadmap.md`
+- **Phase Plans:** `plans/260502-1748-bunny-tools-cli/phase-XX-*.md`

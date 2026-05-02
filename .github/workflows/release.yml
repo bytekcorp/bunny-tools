@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # for npm provenance
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Verify generated artifacts are up to date
+        run: |
+          npm run gen:all
+          git diff --exit-code manifest.json AGENTS.md schema/bunny.schema.json
+      - name: Determine npm dist-tag
+        id: tag
+        run: |
+          REF="${GITHUB_REF##*/}"
+          if [[ "$REF" == *-alpha.* || "$REF" == *-rc.* || "$REF" == *-beta.* ]]; then
+            echo "dist=alpha" >> "$GITHUB_OUTPUT"
+          else
+            echo "dist=latest" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --tag "${{ steps.tag.outputs.dist }}"

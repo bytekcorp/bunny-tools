@@ -1,10 +1,11 @@
 ---
 phase: 3
 title: "Alpha 2 — Storage & Zones"
-status: pending
+status: completed
 priority: P2
 effort: "4-6d"
 dependencies: [2]
+completed: "2026-05-02"
 ---
 
 # Phase 3: Alpha 2 — Storage & Zones
@@ -99,12 +100,12 @@ src/api/storage.ts (extend)
 
 ## Success Criteria
 
-- [ ] Every command has `--help` with at least one example in description.
-- [ ] `storage:sync` reuses phase-2 deploy primitives without duplicating walk/diff logic (asserted via static review).
-- [ ] All list endpoints iterate transparently (test: 2-page mock returns combined array).
-- [ ] No `--yes` bypass for destructive ops in CI without explicit env-var enable (`BUNNY_NONINTERACTIVE=1` accepts default = abort).
-- [ ] Coverage ≥75% on `src/commands/storage/`, `src/commands/storage-zone/`, `src/commands/pull-zone/`.
-- [ ] Releases as `0.1.0-alpha.2`.
+- [x] Every command has `--help` with at least one example in description.
+- [x] `storage:sync` reuses phase-2 deploy primitives without duplicating walk/diff logic (asserted via static review).
+- [x] All list endpoints iterate transparently (test: 2-page mock returns combined array).
+- [x] No `--yes` bypass for destructive ops in CI without explicit env-var enable (`BUNNY_NONINTERACTIVE=1` accepts default = abort).
+- [x] Coverage ≥75% on `src/commands/storage/`, `src/commands/storage-zone/`, `src/commands/pull-zone/`.
+- [x] Releases as `0.1.0-alpha.2`.
 
 ## Risk Assessment
 

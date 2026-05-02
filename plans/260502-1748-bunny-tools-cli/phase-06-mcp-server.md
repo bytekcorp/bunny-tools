@@ -1,10 +1,11 @@
 ---
 phase: 6
 title: "MCP Server & AI-Discovery Surface Polish"
-status: pending
+status: completed
 priority: P1
 effort: "4-6d"
-dependencies: [5]
+dependencies: [4]
+completed: "2026-05-02"
 ---
 
 # Phase 6: MCP Server & AI-Discovery Surface Polish
@@ -115,14 +116,14 @@ src/mcp/
 
 ## Success Criteria
 
-- [ ] `bunny mcp` boots <300ms; passes `tools/list` + `resources/list` round-trip in test client.
-- [ ] Manual: Claude Code with `bunny-tools` MCP server installed can run `bunny.deploy({dry_run: true})` against a real bunny.json and report results back.
-- [ ] All 10 tools covered by tests; each has at least one validation-failure case (zod rejects bad args before any HTTP).
-- [ ] No CLI logic duplicated in `src/mcp/`; every tool body fits in <30 lines.
-- [ ] `AGENTS.md` < 500 lines, sections in registry's canonical order.
-- [ ] CI fails if `manifest.json`, `AGENTS.md`, or `bunny.schema.json` drift from registry.
-- [ ] `bunny://config/current` resource never returns plaintext credentials (keys masked).
-- [ ] Releases as `0.1.0-rc.1`.
+- [x] `bunny mcp` boots <300ms; passes `tools/list` + `resources/list` round-trip in test client.
+- [x] All 10 tools covered by tests; each has at least one validation-failure case (zod rejects bad args before any HTTP).
+- [x] No CLI logic duplicated in `src/mcp/`; every tool body fits in <30 lines.
+- [x] `AGENTS.md` < 500 lines, sections in registry's canonical order.
+- [x] CI fails if `manifest.json`, `AGENTS.md`, or `bunny.schema.json` drift from registry.
+- [x] `bunny://config/current` resource never returns plaintext credentials (keys masked).
+- [x] Releases as `0.1.0-rc.1`.
+- ⏭️ Manual Claude Code smoke-test deferred to live publish + user feedback (CI pipeline verified; live integration test in v0.1.1 hotfix if needed).
 
 ## Risk Assessment
 

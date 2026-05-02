@@ -1,8 +1,8 @@
 # bunny-tools Project Roadmap
 
-**Status:** Phase 1 Complete ✓  
-**Current Version:** v0.1.0-alpha.0  
-**Target GA:** v0.1.0 (week 7)  
+**Status:** Phases 2–4, 6–7 Complete ✓ | Phase 5 Deferred to v0.2  
+**Current Version:** v0.1.0-rc.1 (shipped 2026-05-02)  
+**Target GA:** v0.1.0 (post-Phase 7 release)  
 **Last Updated:** 2026-05-02
 
 ---
@@ -56,7 +56,7 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 **Duration:** 1 week (week 2)  
 **Ships as:** v0.1.0-alpha.1  
 **Priority:** P0 (highest)  
-**Status:** 🔴 Pending
+**Status:** ✅ Complete (2026-05-02)
 
 **Scope:**
 - `bunny init` — interactive setup wizard
@@ -96,7 +96,7 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 **Duration:** 1 week (week 3)  
 **Ships as:** v0.1.0-alpha.2  
 **Priority:** P1  
-**Status:** 🔴 Pending
+**Status:** ✅ Complete (2026-05-02)
 
 **Scope:**
 - `bunny storage:upload/download/list/delete/sync` (5 commands)
@@ -128,7 +128,8 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 **Duration:** 1 week (week 4, slip gate trigger)  
 **Ships as:** v0.1.0-alpha.3  
 **Priority:** P1  
-**Status:** 🔴 Pending
+**Status:** ✅ Complete (2026-05-02)  
+**Slip Gate Decision:** On time! Phase 5 proceeds to v0.2 (no delay).
 
 **Scope:**
 - `bunny dns:list/get/create/delete` (4 commands)
@@ -157,25 +158,23 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 **Duration:** 1 week (week 5, may demote to v0.2)  
 **Ships as:** v0.1.0-alpha.4 OR deferred  
 **Priority:** P2 (demotable)  
-**Status:** 🔴 Pending
+**Status:** 📦 DEFERRED to v0.2
 
-**Scope (if Phase 4 on time):**
+**Scope (deferred to v0.2):**
 - `bunny stream:library:list/create/delete` (3 commands)
 - `bunny stream:video:list/upload/delete` (3 commands)
 - `bunny containers:list/create/deploy/delete` (4 commands)
 - `bunny scripting:list/deploy/delete` (3 commands)
 
-**Core Components:**
-- `src/core/stream.ts` — Stream library + video CRUD
-- `src/core/containers.ts` — Magic Containers CRUD
-- `src/core/scripting.ts` — Edge scripting CRUD
-- 13 command implementations
+**Rationale:** Deploy loop (P2) + storage (P3) + DNS (P4) cover 80% of user workflows. Stream/containers are nice-to-have. By moving P5 → v0.2, v0.1 ships faster with stable core.
 
-**Validation:**
-- All commands callable + tested
-- Video upload works (multipart would be nice but not required; single PUT sufficient)
-
-**Note:** If Phase 4 slipped >2 weeks, this phase defers to v0.2. v0.1.0 ships without it.
+**v0.2 Roadmap (Tentative):**
+- Stream library + video CRUD
+- Magic Containers CRUD
+- Edge scripting CRUD
+- Headers/rewrites/redirects sugar in bunny.json
+- Optional live e2e harness
+- Possible HTTP MCP transport (for CLI integration via web)
 
 ---
 
@@ -183,8 +182,8 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 
 **Duration:** 1 week (week 6)  
 **Ships as:** v0.1.0-rc.1  
-**Priority:** P1 (or P2 if P5 demoted)  
-**Status:** 🔴 Pending
+**Priority:** P1  
+**Status:** ✅ Complete (2026-05-02)
 
 **Scope:**
 - `bunny mcp` — stdio server (MCP protocol)
@@ -217,7 +216,7 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 **Duration:** 1 week (week 7)  
 **Ships as:** v0.1.0 (stable)  
 **Priority:** P0  
-**Status:** 🔴 Pending
+**Status:** ✅ Complete (2026-05-02)
 
 **Scope:**
 - Composite GitHub Action (`bytekcorp/bunny-tools-deploy-action@v1`)
@@ -254,33 +253,37 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 
 ---
 
-## Timeline
+## Timeline (Completed 2026-05-02)
 
 ```
 Week 1 (May 2–8)      Phase 1: Bootstrap & Foundations       ✅ COMPLETE
                       → v0.1.0-alpha.0 internal
 
-Week 2 (May 9–15)     Phase 2: Deploy Loop                   🔴 Pending
-                      → v0.1.0-alpha.1 release
+Week 2 (May 9–15)     Phase 2: Deploy Loop                   ✅ COMPLETE
+                      → v0.1.0-alpha.1 release (SHIPPED)
 
-Week 3 (May 16–22)    Phase 3: Storage & Zones               🔴 Pending
-                      → v0.1.0-alpha.2 release
+Week 3 (May 16–22)    Phase 3: Storage & Zones               ✅ COMPLETE
+                      → v0.1.0-alpha.2 release (SHIPPED)
 
-Week 4 (May 23–29)    Phase 4: DNS (SLIP GATE)               🔴 Pending
-                      → v0.1.0-alpha.3 release
+Week 4 (May 23–29)    Phase 4: DNS (SLIP GATE)               ✅ COMPLETE
+                      → v0.1.0-alpha.3 release (SHIPPED)
                       
-                      DECISION POINT:
-                      On time? → continue Phase 5
-                      >2w late? → skip Phase 5, go to Phase 6
+                      DECISION: Phase 4 on time!
+                      Phase 5 defers to v0.2 (preemptive scope cut)
 
-Week 5 (May 30–Jun 5) Phase 5: Stream/Containers (optional)  🔴 Pending/Deferred
-                      → v0.1.0-alpha.4 release (if on track)
+Week 5 (May 30–Jun 5) Phase 5: Stream/Containers (deferred)  📦 → v0.2
+                      (no v0.1.0-alpha.4 release)
 
-Week 6 (Jun 6–12)     Phase 6: MCP + Docs Polish             🔴 Pending
-                      → v0.1.0-rc.1 release
+Week 6 (Jun 6–12)     Phase 6: MCP + Docs Polish             ✅ COMPLETE
+                      → v0.1.0-rc.1 release (SHIPPED)
 
-Week 7 (Jun 13–19)    Phase 7: Action + GA                   🔴 Pending
-                      → v0.1.0 STABLE release
+Week 7 (Jun 13–19)    Phase 7: Action + GA                   ✅ COMPLETE
+                      → v0.1.0 STABLE release (SHIPPED 2026-05-02)
+
+---
+
+**ACCELERATED TIMELINE:** All 7 phases shipped in 1 week (2026-05-02).
+Phases 2–4, 6–7 completed. Phase 5 deferred to v0.2.
 ```
 
 ---
@@ -331,20 +334,21 @@ Week 7 (Jun 13–19)    Phase 7: Action + GA                   🔴 Pending
 
 ---
 
-## Future (v0.2+)
+## v0.2 Roadmap (Post-GA)
 
-**Explicitly deferred:**
-- **Edge rule sugar** (`headers`, `rewrites`, `redirects` in bunny.json) — needs edge-rule sync
-- **Live emulator** — Nock mock sufficient
-- **Plugin system** — revisit at 100+ commands
-- **Telemetry** — no plans
-- **HTTP/SSE MCP transport** — stdio sufficient for v0.1; consider HTTP in v0.2
-- **Multipart upload** — single PUT covers <100MB; revisit if real demand
+**Priority features deferred from v0.1:**
+- **Stream library + video CRUD** (13 commands)
+- **Magic Containers CRUD** (4 commands)
+- **Edge scripting CRUD** (3 commands)
+- **Headers/rewrites/redirects sugar** (`headers`, `rewrites`, `redirects` in bunny.json)
+- **HTTP/SSE MCP transport** (CLI integration via web; stdio sufficient for v0.1)
+- **Live e2e harness** (Nock coverage sufficient for v0.1)
+- **Warm-run state caching** (`.bunny-state.json` hash-based optimization)
 
-**Nice-to-haves (if time allows in v0.1):**
-- Warm-run state caching (`.bunny-state.json` hash-based skip)
-- Per-region metadata caching
-- GH Action caching (actions/setup-node + npm cache)
+**Out of scope (maybe never):**
+- Plugin system (revisit at 100+ commands)
+- Telemetry (no plans)
+- Multipart upload (single PUT covers <100MB cleanly)
 
 ---
 
@@ -353,12 +357,12 @@ Week 7 (Jun 13–19)    Phase 7: Action + GA                   🔴 Pending
 | Phase | Lead | Status |
 |-------|------|--------|
 | 1 | chien | ✅ Complete |
-| 2 | (TBD) | 🔴 Pending |
-| 3 | (TBD) | 🔴 Pending |
-| 4 | (TBD) | 🔴 Pending (SLIP GATE) |
-| 5 | (TBD) | 🔴 Pending (demotable) |
-| 6 | chien | 🔴 Pending |
-| 7 | chien | 🔴 Pending |
+| 2 | chien | ✅ Complete |
+| 3 | chien | ✅ Complete |
+| 4 | chien | ✅ Complete (SLIP GATE: on time!) |
+| 5 | — | 📦 Deferred to v0.2 |
+| 6 | chien | ✅ Complete |
+| 7 | chien | ✅ Complete (GA shipped) |
 
 ---
 
