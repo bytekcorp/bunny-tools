@@ -33,7 +33,7 @@ Build `bunny-tools`: an npm-distributed Node 20+/TypeScript CLI (binary `bunny`)
 | 2 | [Alpha 1 — Deploy Loop](./phase-02-alpha-1-deploy-loop.md) | ✅ Complete (2026-05-02) | `0.1.0-alpha.1` (incl. `bunny configure`) |
 | 3 | [Alpha 2 — Storage & Zones](./phase-03-alpha-2-storage-zones.md) | ✅ Complete (2026-05-02) | `0.1.0-alpha.2` |
 | 4 | [Alpha 3 — DNS](./phase-04-alpha-3-dns.md) | ✅ Complete (2026-05-02) | `0.1.0-alpha.3` |
-| 5 | [Alpha 4 — Stream/Containers/Scripting](./phase-05-alpha-4-stream-containers-scripting.md) | ⏭️ Deferred to v0.2 | (7 commands remain in registry as `planned`) |
+| 5 | [Alpha 4 — Stream/Containers/Scripting](./phase-05-alpha-4-stream-containers-scripting.md) | ✅ Complete (2026-05-02) | `0.1.0-rc.2` (un-deferred from v0.2 same day; 11 commands shipped) |
 | 6 | [MCP Server & AI-Discovery Polish](./phase-06-mcp-server.md) | ✅ Complete (2026-05-02) | `0.1.0-rc.1` |
 | 7 | [GitHub Action & 0.1.0 Release](./phase-07-github-action-release.md) | ✅ Complete (2026-05-02) | `0.1.0` GA + Action `v1` |
 

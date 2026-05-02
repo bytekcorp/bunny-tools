@@ -138,10 +138,69 @@ export function createAccountClient(opts: AccountClientOptions) {
         method: 'DELETE',
         scope: { kind: 'account' },
       }),
+
+    // Magic Containers
+    listContainerApps: () => listAll<ContainerApp>('/mc/apps'),
+    getContainerApp: (id: string) =>
+      callBunny<ContainerApp>({ base, path: `/mc/apps/${id}`, scope: { kind: 'account' } }),
+    createContainerApp: (body: Record<string, unknown>) =>
+      callBunny<ContainerApp>({
+        base,
+        path: '/mc/apps',
+        method: 'POST',
+        scope: { kind: 'account' },
+        body,
+      }),
+    deleteContainerApp: (id: string) =>
+      callBunny<void>({ base, path: `/mc/apps/${id}`, method: 'DELETE', scope: { kind: 'account' } }),
+
+    // Edge Scripting (Bunny Compute)
+    listEdgeScripts: () => listAll<EdgeScript>('/compute/script'),
+    getEdgeScript: (id: number) =>
+      callBunny<EdgeScript>({ base, path: `/compute/script/${id}`, scope: { kind: 'account' } }),
+    createEdgeScript: (body: Record<string, unknown>) =>
+      callBunny<EdgeScript>({
+        base,
+        path: '/compute/script',
+        method: 'POST',
+        scope: { kind: 'account' },
+        body,
+      }),
+    updateEdgeScriptCode: (id: number, body: Record<string, unknown>) =>
+      callBunny<EdgeScript>({
+        base,
+        path: `/compute/script/${id}/code`,
+        method: 'POST',
+        scope: { kind: 'account' },
+        body,
+      }),
+    deleteEdgeScript: (id: number) =>
+      callBunny<void>({
+        base,
+        path: `/compute/script/${id}`,
+        method: 'DELETE',
+        scope: { kind: 'account' },
+      }),
   };
 }
 
 export type AccountClient = ReturnType<typeof createAccountClient>;
+
+export type ContainerApp = {
+  Id: string;
+  Name: string;
+  Image?: string;
+  Status?: string;
+  Region?: string;
+};
+
+export type EdgeScript = {
+  Id: number;
+  Name: string;
+  Code?: string;
+  ScriptType?: number;
+  Deployed?: boolean;
+};
 
 export type DnsZone = {
   Id: number;

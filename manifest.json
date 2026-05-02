@@ -1184,10 +1184,19 @@
       "name": "stream:library:list",
       "summary": "List Stream video libraries.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1195,10 +1204,26 @@
       "name": "stream:library:create",
       "summary": "Create a Stream video library.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "name",
+          "description": "Library name.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "replicate",
+          "short": null,
+          "description": "Comma-separated replication regions.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1206,10 +1231,34 @@
       "name": "stream:video:list",
       "summary": "List videos in a library.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "library",
+          "description": "Video library id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "collection",
+          "short": null,
+          "description": "Filter by collection id.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1217,10 +1266,40 @@
       "name": "stream:video:upload",
       "summary": "Upload a video to a library.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "library",
+          "description": "Video library id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "file",
+          "description": "Local video file path.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "title",
+          "short": null,
+          "description": "Video title.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "collection",
+          "short": null,
+          "description": "Collection id.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1228,10 +1307,32 @@
       "name": "stream:video:delete",
       "summary": "Delete a video.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "library",
+          "description": "Video library id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "video",
+          "description": "Video guid.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1239,10 +1340,19 @@
       "name": "containers:app:list",
       "summary": "List Magic Containers apps.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1250,10 +1360,42 @@
       "name": "containers:app:create",
       "summary": "Create a Magic Containers app.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "name",
+          "description": "App name.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "image",
+          "short": null,
+          "description": "Docker image (e.g. ghcr.io/x/y:tag).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "region",
+          "short": null,
+          "description": "Deploy region.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "port",
+          "short": null,
+          "description": "Container port.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1261,10 +1403,26 @@
       "name": "containers:app:delete",
       "summary": "Delete a Magic Containers app.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "App id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1272,21 +1430,62 @@
       "name": "scripting:list",
       "summary": "List edge scripts.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
       "args": [],
-      "flags": [],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
     {
       "name": "scripting:deploy",
-      "summary": "Deploy an edge script from a source file.",
+      "summary": "Deploy an edge script from a source file (creates new, or updates by id).",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "name",
+          "description": "Script name.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "file",
+          "short": null,
+          "description": "Local source file.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "id",
+          "short": null,
+          "description": "Existing script id (update mode).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "type",
+          "short": null,
+          "description": "Numeric script type.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1294,10 +1493,26 @@
       "name": "scripting:delete",
       "summary": "Delete an edge script.",
       "description": null,
-      "status": "planned",
+      "status": "active",
       "phase": 5,
-      "args": [],
-      "flags": [],
+      "args": [
+        {
+          "name": "id",
+          "description": "Script id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
