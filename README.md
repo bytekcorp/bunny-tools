@@ -63,6 +63,27 @@ bunny init --non-interactive --features=storage \
   --pull-zone=12345
 ```
 
+## Quickstart for AI agents
+
+With the MCP server installed (see [Install](#install)), Claude Code and Claude Desktop can drive every command. Drop into any project and try:
+
+| What you say | What happens |
+| --- | --- |
+| **"Use bunny-tools to set up CI/CD for this project"** | Runs `bunny init`, writes `.github/workflows/deploy.yml` using the official action, and lists the secrets you need to add |
+| **"Deploy this site to Bunny"** | Reads existing `bunny.json`, runs `bunny deploy` (with dry-run preview first) |
+| **"Purge the CDN cache for tag release-2026-04"** | Calls `bunny.purge` with `tag:release-2026-04` |
+| **"Show me what's on my Bunny account"** | Calls `bunny.whoami` + lists reachable zone counts |
+| **"Add an A record for www → 1.2.3.4 on my Bunny DNS zone for chien.do"** | Resolves the zone id, calls `bunny.dns_record_add` |
+
+For best results in a new project, drop a 2-line hint into the project's `CLAUDE.md`:
+
+```markdown
+## Deploy
+This project uses bunny-tools. Run `bunny init` for first-time setup, then `bunny deploy`.
+```
+
+This anchors Claude to bunny-tools for that project's deploy work.
+
 ---
 
 ## Setup & Auth
