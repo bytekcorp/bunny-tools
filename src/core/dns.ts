@@ -123,7 +123,16 @@ function toApiBody(rec: RecordInput): Record<string, unknown> {
   if ('port' in rec) body['Port'] = rec.port;
   if ('flags' in rec) body['Flags'] = rec.flags;
   if ('tag' in rec) body['Tag'] = rec.tag;
-  if ('linkName' in rec) body['LinkName'] = rec.linkName;
+  // PULLZONE (Type 7): Bunny's PUT /dnszone/{id}/records expects the numeric
+  // pull zone id in `PullZoneId`, NOT the string `LinkName`. Sending LinkName
+  // alone fails with "The pull zone ID is not valid" (Field: Value). The
+  // dashboard sends PullZoneId; the response then derives Value and LinkName.
+  // SCRIPT (Type 11) still uses LinkName (untested but no contradicting evidence).
+  if (rec.type === 'PULLZONE') {
+    body['PullZoneId'] = Number.parseInt(rec.linkName, 10);
+  } else if ('linkName' in rec) {
+    body['LinkName'] = rec.linkName;
+  }
   return body;
 }
 
@@ -165,20 +174,6 @@ export async function addRecord(zoneId: number, raw: unknown): Promise<DnsRecord
   return client().addDnsRecord(zoneId, toApiBody(parsed));
 }
 
-// DNS record types that resolve a name to a destination — mutually exclusive
-// at the same Name. Bunny silently rejects a new PULLZONE record at a Name
-// that already carries any of these (with the same misleading "The pull zone
-// ID is not valid" error). Auxiliary types (TXT, MX, NS, SRV, CAA, PTR,
-// SCRIPT) coexist fine and are not blocking.
-const RESOLVING_TYPES = new Set([
-  RECORD_TYPE_CODES['A'],
-  RECORD_TYPE_CODES['AAAA'],
-  RECORD_TYPE_CODES['CNAME'],
-  RECORD_TYPE_CODES['REDIRECT'],
-  RECORD_TYPE_CODES['FLATTEN'],
-  RECORD_TYPE_CODES['PULLZONE'],
-]);
-
 async function preflightPullzoneRecord(
   zoneId: number,
   name: string,
@@ -209,21 +204,10 @@ async function preflightPullzoneRecord(
         `Run: bunny pullzone hostname enable-ssl ${pz.Id} ${fqdn}`,
     );
   }
-
-  // Conflict detection: another resolving record at the same Name will cause
-  // Bunny to reject the new PULLZONE record. Surface the conflict with a
-  // copy-pasteable delete command instead of letting the API fail opaquely.
-  const conflicting = (dnsZone.Records ?? []).find(
-    (r) => r.Name === name && RESOLVING_TYPES.has(r.Type),
-  );
-  if (conflicting) {
-    const conflictType = recordTypeName(conflicting.Type);
-    throw new ValidationError(
-      `Conflicting ${conflictType} record at ${fqdn} (id=${conflicting.Id} value=${conflicting.Value}). ` +
-        `Bunny rejects PULLZONE at a name that already has another resolving record. ` +
-        `Run: bunny dns record delete ${zoneId} ${conflicting.Id}`,
-    );
-  }
+  // No conflict-with-other-records check: Bunny accepts PULLZONE alongside
+  // A/AAAA at the same Name (verified live on bytek.org against rc.30).
+  // CNAME may still be exclusive per DNS RFC, but Bunny's gate isn't visible
+  // to us so we don't pre-empt — let Bunny return its own error if any.
 }
 
 export async function updateRecord(zoneId: number, recordId: number, body: Record<string, unknown>): Promise<DnsRecord> {

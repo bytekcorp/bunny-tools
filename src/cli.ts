@@ -10,6 +10,7 @@ import { formatHelp } from './manifest/format-help.js';
 import { renderCommandHelpJson, renderRegistryHelpJson } from './manifest/render-help.js';
 import type { CommandSpec, ParsedInvocation } from './manifest/types.js';
 import { logger } from './util/logger.js';
+import { formatBunnyError as formatError } from './api/errors.js';
 
 function buildProgram(): Command {
   const program = new Command(registry.binary);
@@ -176,23 +177,8 @@ function registerCommand(root: Command, spec: CommandSpec): void {
   });
 }
 
-// rc.10 (M4): when Bunny returns a typed error envelope, surface errorKey + field
-// in the CLI message so users can grep docs / logs for the key.
-function formatError(err: unknown): string {
-  if (err && typeof err === 'object') {
-    const e = err as { name?: string; message?: string; errorKey?: string; field?: string; status?: number };
-    if (e.errorKey || e.field) {
-      const parts: string[] = [];
-      if (e.errorKey) parts.push(`[${e.errorKey}]`);
-      parts.push(e.message ?? 'unknown error');
-      if (e.field) parts.push(`(field: ${e.field})`);
-      if (e.status) parts.push(`(HTTP ${e.status})`);
-      return parts.join(' ');
-    }
-    if (e.message) return e.message;
-  }
-  return String(err);
-}
+// formatError is imported at the top of the file (formatBunnyError aliased)
+// so command handlers can reuse the same enrichment.
 
 function zipArgs(spec: CommandSpec, positional: unknown[]): Record<string, unknown> {
   const out: Record<string, unknown> = {};

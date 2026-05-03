@@ -132,7 +132,7 @@ describe('core/zones', () => {
   it('removePullZoneHostname POSTs to /removeHostname and re-lists hostnames', async () => {
     const pool = getMockAgent().get('https://api.bunny.net');
     pool
-      .intercept({ path: '/pullzone/42/removeHostname', method: 'POST' })
+      .intercept({ path: '/pullzone/42/removeHostname', method: 'DELETE' })
       .reply(204);
     pool
       .intercept({ path: '/pullzone/42', method: 'GET' })

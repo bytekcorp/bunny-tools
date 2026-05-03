@@ -4,6 +4,24 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.30] — 2026-05-03 (PULLZONE field name fix + reverts rc.29 conflict-check)
+
+### Reverted
+- **rc.29's PULLZONE conflict-detection removed.** Live test on bytek.org proved Bunny accepts PULLZONE alongside A at the same Name. Premise was wrong; the real gate was the input field name (see below). Conflict pre-flight had a latent `'@' vs ''` normalization bug that masked the wrongness in tests.
+
+### Fixed
+- **PRIMARY: PULLZONE (Type-7) records now POST `PullZoneId` (numeric) instead of `LinkName` (string).** Bunny's `PUT /dnszone/{id}/records` validation requires the numeric `PullZoneId` field for Type-7; sending `LinkName` alone fails with `"The pull zone ID is not valid"` (Field: Value). Bunny derives `Value` and `LinkName` from `PullZoneId` on the response — so the chien.do "reference shape" we'd been mirroring was actually the response, never a valid request body. Identified by sniffing the dashboard's network call against bytek.org. SCRIPT (Type 11) still uses `LinkName` (untested but no contradicting evidence).
+- **`pullzone hostname remove` returned HTTP 405 in production.** Bunny's `/pullzone/{id}/removeHostname` endpoint requires DELETE, not POST. Asymmetric to `addHostname` (POST) but verified live.
+- **Bunny error envelopes stripped `ErrorKey` and `Field` from CLI output.** Command handlers caught errors with `(err as Error).message` and lost the structured envelope context. The shared formatter `formatBunnyError` (extracted from `cli.ts`) now applies in `dns record add` and other handlers, surfacing e.g. `[validation_error] The pull zone ID is not valid. (field: Value) (HTTP 400)` instead of just the message.
+
+### Internal
+- `formatBunnyError` moved from `src/cli.ts` (private) to `src/api/errors.ts` (shared) so any command handler can enrich Bunny errors with the same shape.
+
+### Test Coverage
+- 149/149 (no count change; happy-path PULLZONE test now asserts `PullZoneId: <number>` is sent and `LinkName` is NOT in the body).
+
+---
+
 ## [0.1.0-rc.29] — 2026-05-03 (PULLZONE conflict detection in pre-flight)
 
 ### Fixed

@@ -1,6 +1,7 @@
 import type { ParsedInvocation } from '../../../manifest/types.js';
 import { addRecord, SUPPORTED_TYPES } from '../../../core/dns.js';
 import { getPullZone } from '../../../core/zones.js';
+import { formatBunnyError } from '../../../api/errors.js';
 import { createProgress } from '../../../ui/progress.js';
 
 // Re-exported for tests; canonical implementation lives in core/dns.
@@ -72,7 +73,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     progress.succeed(`Added ${upperType} record (id=${created.Id}).`);
     return 0;
   } catch (err) {
-    progress.fail((err as Error).message);
+    progress.fail(formatBunnyError(err));
     return 1;
   }
 }

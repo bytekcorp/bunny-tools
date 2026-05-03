@@ -120,8 +120,10 @@ export function createAccountClient(opts: AccountClientOptions) {
     removePullZoneHostname: (pullZoneId: number, hostname: string) =>
       callBunny<void>({
         base,
+        // Bunny rejects POST here with 405 — the correct verb is DELETE
+        // (asymmetric to addHostname which uses POST). Body shape matches.
         path: `/pullzone/${pullZoneId}/removeHostname`,
-        method: 'POST',
+        method: 'DELETE',
         scope: { kind: 'account' },
         body: { Hostname: hostname },
       }),

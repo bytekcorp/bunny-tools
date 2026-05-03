@@ -44,6 +44,33 @@ export type BunnyErrorEnvelope = {
   Message?: string;
 };
 
+// Format an error for user-facing output. When Bunny's typed envelope is
+// present (errorKey/field), include them as tags so the user can grep docs
+// and pinpoint which field Bunny rejected without re-reading the request.
+//
+// Output shape: `[errorKey] Message (field: X) (HTTP 400)`
+export function formatBunnyError(err: unknown): string {
+  if (err && typeof err === 'object') {
+    const e = err as {
+      name?: string;
+      message?: string;
+      errorKey?: string;
+      field?: string;
+      status?: number;
+    };
+    if (e.errorKey || e.field) {
+      const parts: string[] = [];
+      if (e.errorKey) parts.push(`[${e.errorKey}]`);
+      parts.push(e.message ?? 'unknown error');
+      if (e.field) parts.push(`(field: ${e.field})`);
+      if (e.status) parts.push(`(HTTP ${e.status})`);
+      return parts.join(' ');
+    }
+    if (e.message) return e.message;
+  }
+  return String(err);
+}
+
 export function parseBunnyErrorBody(
   status: number,
   body: string,
