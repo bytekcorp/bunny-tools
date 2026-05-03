@@ -162,8 +162,8 @@ describe('core/zones', () => {
       });
     // 2. loadFreeCertificate
     pool
-      .intercept({ path: /\/pullzone\/loadFreeCertificate.*/, method: 'POST' })
-      .reply(204);
+      .intercept({ path: /\/pullzone\/loadFreeCertificate.*/, method: 'GET' })
+      .reply(200, '');
     // 3. First poll — still no cert.
     pool
       .intercept({ path: '/pullzone/42', method: 'GET' })
@@ -245,8 +245,8 @@ describe('core/zones', () => {
       .reply(200, noCertPz)
       .times(4);
     pool
-      .intercept({ path: /\/pullzone\/loadFreeCertificate.*/, method: 'POST' })
-      .reply(204);
+      .intercept({ path: /\/pullzone\/loadFreeCertificate.*/, method: 'GET' })
+      .reply(200, '');
 
     await expect(
       enablePullZoneSSL(42, 'example.com', { timeoutMs: 30, pollIntervalMs: 10 }),

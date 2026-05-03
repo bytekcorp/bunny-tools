@@ -1,7 +1,7 @@
 # bunny-tools Project Roadmap
 
 **Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.26 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management + SSL Provisioning Live ✓
-**Current Version:** v0.1.0-rc.26 (shipped 2026-05-03)  
+**Current Version:** v0.1.0-rc.27 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
 **Release Cadence:** 13 RCs shipped (rc.14–rc.26) after rc.13
 **Last Updated:** 2026-05-03
@@ -26,6 +26,7 @@ bunny-tools v0.1.0-rc.26 ships all **55 commands** live on npm (latest & alpha d
 - **rc.24:** **DNS routing types extended** (REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT = 13 types total); rc.24 brings 129 unit + 44 e2e tests live
 - **rc.25:** **Pull zone hostname management** — `pullzone hostname {list,add,remove}` wraps `addHostname`/`removeHostname` subresource (silent-drop fix); `dns record add --pull-zone` pre-flight check fails fast with copy-pasteable next command when hostname unlinked; 3 new MCP tools; 139 unit tests
 - **rc.26:** **Pull zone SSL provisioning** — `pullzone hostname enable-ssl` wraps `loadFreeCertificate` and polls cert status (90s timeout); `dns record add --pull-zone` cert pre-flight surfaces missing cert with actionable next command; 1 new MCP tool; 143 unit tests
+- **rc.27:** **Fix `loadFreeCertificate` HTTP shape** — endpoint is GET not POST (Bunny was returning 400 "The request is invalid"); add `useOnlyHttp01=false` so DNS-01 is preferred for Bunny-DNS-managed zones (works without pre-existing A records)
 
 **Status:** GA-ready. All phases + MCP harness + DNS REDIRECT e2e live. Current backlog for v0.2: containers app create (Bunny v3 schema fix pending), headers/rewrites sugar, live emulator.
 

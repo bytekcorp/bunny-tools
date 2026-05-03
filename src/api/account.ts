@@ -128,16 +128,23 @@ export function createAccountClient(opts: AccountClientOptions) {
 
     // Request a Let's Encrypt certificate for a custom hostname. The endpoint
     // is account-scoped (Bunny resolves the PZ from hostname); response is
-    // typically 200/204 immediately, but actual cert provisioning is async
-    // and only flips Hostnames[].HasCertificate to true after Let's Encrypt
+    // typically 200 immediately, but actual cert provisioning is async and
+    // only flips Hostnames[].HasCertificate to true after Let's Encrypt
     // completes (usually 30-60s for DNS-01 when Bunny NS is authoritative).
+    //
+    // Bunny's API uses GET (not POST despite being a state-changing call), and
+    // accepts useOnlyHttp01: when false and the hostname is on a Bunny DNS
+    // zone, Bunny attempts DNS-01 validation first (works without any
+    // pre-existing A/AAAA records). Default to false to make this work
+    // out-of-the-box for users on Bunny DNS; HTTP-01 still falls through for
+    // hostnames using external DNS.
     loadFreeCertificate: (hostname: string) =>
       callBunny<void>({
         base,
         path: '/pullzone/loadFreeCertificate',
-        method: 'POST',
+        method: 'GET',
         scope: { kind: 'account' },
-        query: { hostname },
+        query: { hostname, useOnlyHttp01: false },
       }),
 
     purgeByUrl: (url: string, async = false) =>

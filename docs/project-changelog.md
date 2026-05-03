@@ -4,6 +4,17 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.27] — 2026-05-03 (Fix loadFreeCertificate HTTP shape)
+
+### Fixed
+- **`enable-ssl` was failing with "The request is invalid"** — Bunny's `/pullzone/loadFreeCertificate` endpoint is **GET**, not POST (despite being a state-changing call). rc.26 was sending POST, Bunny returned 400.
+- **DNS-01 validation now opt-in via default** — added `useOnlyHttp01=false` query param. When the hostname is on a Bunny DNS zone (NameserversDetected=true), Bunny prefers DNS-01 over HTTP-01. Lets cert provision without any pre-existing A/AAAA records on the apex.
+
+### Test Coverage
+- 143/143 (no test count change — existing enable-ssl tests updated to mock the GET shape).
+
+---
+
 ## [0.1.0-rc.26] — 2026-05-03 (Pull Zone SSL Provisioning + Cert Pre-flight)
 
 ### Added
