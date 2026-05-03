@@ -194,6 +194,103 @@ describe('core/dns addRecord PULLZONE pre-flight', () => {
     ).rejects.toThrow(/no SSL certificate yet/);
   });
 
+  it('rejects PULLZONE record when a conflicting A record already exists at the same name', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/5789465', method: 'GET' })
+      .reply(200, {
+        Id: 5789465,
+        Name: 'bytek',
+        OriginUrl: null,
+        Enabled: true,
+        Hostnames: [{ Value: 'bytek.org', HasCertificate: true }],
+      });
+    pool
+      .intercept({ path: '/dnszone/784669', method: 'GET' })
+      .reply(200, {
+        Id: 784669,
+        Domain: 'bytek.org',
+        Records: [
+          { Id: 16997813, Type: 0, Name: '', Value: '156.59.95.218' },
+          { Id: 16997271, Type: 3, Name: '', Value: 'v=spf1 ...' },
+        ],
+      });
+
+    await expect(
+      addRecord(784669, {
+        type: 'PULLZONE',
+        name: '',
+        value: 'bytek',
+        linkName: '5789465',
+      }),
+    ).rejects.toThrow(/Conflicting A record at bytek\.org \(id=16997813/);
+  });
+
+  it('rejects PULLZONE record when a conflicting CNAME exists at a subdomain', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/5789465', method: 'GET' })
+      .reply(200, {
+        Id: 5789465,
+        Name: 'bytek',
+        OriginUrl: null,
+        Enabled: true,
+        Hostnames: [{ Value: 'app.bytek.org', HasCertificate: true }],
+      });
+    pool
+      .intercept({ path: '/dnszone/784669', method: 'GET' })
+      .reply(200, {
+        Id: 784669,
+        Domain: 'bytek.org',
+        Records: [
+          { Id: 999, Type: 2, Name: 'app', Value: 'old-target.example.com' },
+        ],
+      });
+
+    await expect(
+      addRecord(784669, {
+        type: 'PULLZONE',
+        name: 'app',
+        value: 'bytek',
+        linkName: '5789465',
+      }),
+    ).rejects.toThrow(/Conflicting CNAME record/);
+  });
+
+  it('does not flag auxiliary records (TXT, MX) as conflicts at the same name', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/5789465', method: 'GET' })
+      .reply(200, {
+        Id: 5789465,
+        Name: 'bytek',
+        OriginUrl: null,
+        Enabled: true,
+        Hostnames: [{ Value: 'bytek.org', HasCertificate: true }],
+      });
+    pool
+      .intercept({ path: '/dnszone/784669', method: 'GET' })
+      .reply(200, {
+        Id: 784669,
+        Domain: 'bytek.org',
+        Records: [
+          { Id: 100, Type: 3, Name: '', Value: 'v=spf1 ...' },
+          { Id: 101, Type: 4, Name: '', Value: 'mx1.privateemail.com' },
+        ],
+      });
+    pool
+      .intercept({ path: '/dnszone/784669/records', method: 'PUT' })
+      .reply(201, { Id: 999, Type: 7, Name: '', Value: 'bytek' });
+
+    const created = await addRecord(784669, {
+      type: 'PULLZONE',
+      name: '',
+      value: 'bytek',
+      linkName: '5789465',
+    });
+    expect(created.Id).toBe(999);
+  });
+
   it('passes pre-flight and POSTs the record when hostname is linked and cert is provisioned', async () => {
     const pool = getMockAgent().get('https://api.bunny.net');
     pool

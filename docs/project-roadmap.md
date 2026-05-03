@@ -1,7 +1,7 @@
 # bunny-tools Project Roadmap
 
 **Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.26 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management + SSL Provisioning Live ✓
-**Current Version:** v0.1.0-rc.28 (shipped 2026-05-03)  
+**Current Version:** v0.1.0-rc.29 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
 **Release Cadence:** 13 RCs shipped (rc.14–rc.26) after rc.13
 **Last Updated:** 2026-05-03
@@ -28,6 +28,7 @@ bunny-tools v0.1.0-rc.26 ships all **55 commands** live on npm (latest & alpha d
 - **rc.26:** **Pull zone SSL provisioning** — `pullzone hostname enable-ssl` wraps `loadFreeCertificate` and polls cert status (90s timeout); `dns record add --pull-zone` cert pre-flight surfaces missing cert with actionable next command; 1 new MCP tool; 143 unit tests
 - **rc.27:** **Fix `loadFreeCertificate` HTTP shape** — endpoint is GET not POST (Bunny was returning 400 "The request is invalid"); add `useOnlyHttp01=false` so DNS-01 is preferred for Bunny-DNS-managed zones (works without pre-existing A records)
 - **rc.28:** **Centralize PULLZONE pre-flight in core** — MCP `dns_record_set` and CLI `dns record add` without `--pull-zone` now also surface the helpful "hostname not linked / no SSL cert" error instead of Bunny's misleading "The pull zone ID is not valid"; test setup recreates MockAgent per-test (stops intercept leaks); 146 unit tests
+- **rc.29:** **PULLZONE conflict detection** — pre-flight scans existing zone records for A/AAAA/CNAME/REDIRECT/FLATTEN/PULLZONE at the same Name and surfaces a copy-pasteable delete hint instead of letting Bunny return its opaque rejection; 149 unit tests
 
 **Status:** GA-ready. All phases + MCP harness + DNS REDIRECT e2e live. Current backlog for v0.2: containers app create (Bunny v3 schema fix pending), headers/rewrites sugar, live emulator.
 

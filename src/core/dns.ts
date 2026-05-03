@@ -165,6 +165,20 @@ export async function addRecord(zoneId: number, raw: unknown): Promise<DnsRecord
   return client().addDnsRecord(zoneId, toApiBody(parsed));
 }
 
+// DNS record types that resolve a name to a destination — mutually exclusive
+// at the same Name. Bunny silently rejects a new PULLZONE record at a Name
+// that already carries any of these (with the same misleading "The pull zone
+// ID is not valid" error). Auxiliary types (TXT, MX, NS, SRV, CAA, PTR,
+// SCRIPT) coexist fine and are not blocking.
+const RESOLVING_TYPES = new Set([
+  RECORD_TYPE_CODES['A'],
+  RECORD_TYPE_CODES['AAAA'],
+  RECORD_TYPE_CODES['CNAME'],
+  RECORD_TYPE_CODES['REDIRECT'],
+  RECORD_TYPE_CODES['FLATTEN'],
+  RECORD_TYPE_CODES['PULLZONE'],
+]);
+
 async function preflightPullzoneRecord(
   zoneId: number,
   name: string,
@@ -193,6 +207,21 @@ async function preflightPullzoneRecord(
     throw new ValidationError(
       `${fqdn} is linked to pull zone "${pz.Name}" (#${pz.Id}) but has no SSL certificate yet. ` +
         `Run: bunny pullzone hostname enable-ssl ${pz.Id} ${fqdn}`,
+    );
+  }
+
+  // Conflict detection: another resolving record at the same Name will cause
+  // Bunny to reject the new PULLZONE record. Surface the conflict with a
+  // copy-pasteable delete command instead of letting the API fail opaquely.
+  const conflicting = (dnsZone.Records ?? []).find(
+    (r) => r.Name === name && RESOLVING_TYPES.has(r.Type),
+  );
+  if (conflicting) {
+    const conflictType = recordTypeName(conflicting.Type);
+    throw new ValidationError(
+      `Conflicting ${conflictType} record at ${fqdn} (id=${conflicting.Id} value=${conflicting.Value}). ` +
+        `Bunny rejects PULLZONE at a name that already has another resolving record. ` +
+        `Run: bunny dns record delete ${zoneId} ${conflicting.Id}`,
     );
   }
 }

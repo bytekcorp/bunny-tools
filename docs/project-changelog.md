@@ -4,6 +4,17 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.29] — 2026-05-03 (PULLZONE conflict detection in pre-flight)
+
+### Fixed
+- **`dns record add PULLZONE` now detects existing resolving records at the same Name** — Bunny silently rejects PULLZONE-at-apex (and other names) when an A/AAAA/CNAME/REDIRECT/FLATTEN/PULLZONE already exists there, with the same misleading "The pull zone ID is not valid" error. Pre-flight now scans `dnsZone.Records[]` (already fetched, no extra API call) and surfaces: `Conflicting <type> record at <fqdn> (id=<X> value=<Y>). Run: bunny dns record delete <zoneId> <X>`.
+- Auxiliary types (TXT, MX, NS, SRV, CAA, PTR, SCRIPT) coexist fine at the same Name and are not flagged.
+
+### Test Coverage
+- 149/149 (up from 146; +3 conflict-detection branches: A-conflict at apex, CNAME-conflict at subdomain, no-conflict-with-TXT/MX happy path).
+
+---
+
 ## [0.1.0-rc.28] — 2026-05-03 (Centralize PULLZONE pre-flight in core)
 
 ### Fixed
