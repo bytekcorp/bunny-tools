@@ -1,16 +1,43 @@
-# bunny-tools
+# Bunny CLI and MCP Server
 
-> Bunny.net CLI for storage deploy, CDN purge, and full resource management. AI-friendly via MCP.
+> Bunny.net CLI for storage deploy, CDN purge, and full resource management. Ships with an MCP stdio server so AI agents (Claude Code, Claude Desktop) can drive every command.
 
 [![CI](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/bunny-tools/alpha.svg)](https://www.npmjs.com/package/bunny-tools)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+**Package name on npm:** `bunny-tools` &middot; **Binary:** `bunny`
+
 ## Install
+
+### As a CLI
 
 ```bash
 npm install -g bunny-tools@alpha
 ```
+
+### As an MCP server (recommended for AI workflows)
+
+For Claude Code:
+
+```bash
+claude mcp add bunny-tools npx -y bunny-tools mcp
+```
+
+For Claude Desktop, add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "bunny-tools": {
+      "command": "npx",
+      "args": ["-y", "bunny-tools", "mcp"]
+    }
+  }
+}
+```
+
+Once installed, any Claude session can use 15 high-level tools (`bunny.deploy`, `bunny.purge`, zone/dns CRUD) plus 3 resources (`bunny://manifest`, `bunny://agents`, `bunny://config/current`) without needing prior context. See [MCP server](#mcp-server-ai-integration) below for the full tool surface.
 
 ## Quickstart
 
@@ -278,29 +305,21 @@ See [`action/README.md`](./action/README.md) for full inputs.
 
 ## MCP server (AI integration)
 
-`bunny-tools` ships an MCP stdio server with 15 tools and 3 resources.
+Install steps are at the top under [Install → As an MCP server](#as-an-mcp-server-recommended-for-ai-workflows). Once configured, the server exposes:
 
-Install for Claude Code:
+**Tools (15):** `bunny.deploy`, `bunny.purge`, `bunny.init`, `bunny.manifest`, `bunny.whoami`, storage zone CRUD, pull zone CRUD, DNS zone + record CRUD, plus `bunny.run` as an escape hatch for any CLI invocation.
 
-```bash
-claude mcp add bunny-tools npx -y bunny-tools mcp
+**Resources (3):**
+- `bunny://manifest` — full command registry as JSON
+- `bunny://agents` — AGENTS.md (workflows, gotchas, conventions for AI agents)
+- `bunny://config/current` — resolved config from `bunny.json` + active alias
+
+**Cross-project usage.** With the MCP server installed, drop a 2-line hint into any new project's `CLAUDE.md` to anchor Claude to bunny-tools for that project:
+
+```markdown
+## Deploy
+This project uses bunny-tools. Run `bunny init` for first-time setup, then `bunny deploy`. See `bunny manifest --pretty` for the full command surface.
 ```
-
-Or for Claude Desktop, add to `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "bunny-tools": {
-      "command": "npx",
-      "args": ["-y", "bunny-tools", "mcp"]
-    }
-  }
-}
-```
-
-**Tools:** `bunny.deploy`, `bunny.purge`, `bunny.init`, `bunny.manifest`, zone/dns CRUD, plus `bunny.run` as an escape hatch for any CLI invocation.
-**Resources:** `bunny://manifest`, `bunny://agents`, `bunny://config/current`.
 
 ## Development
 
