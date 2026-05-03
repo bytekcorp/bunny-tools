@@ -47,6 +47,12 @@ function buildProgram(): Command {
   return program;
 }
 
+// Group metadata (description + optional aliases) keyed by space-delimited path.
+const groupMetaByPath = new Map<string, { description: string; aliases: string[] }>();
+for (const g of registry.groups ?? []) {
+  groupMetaByPath.set(g.name, { description: g.description, aliases: g.aliases ?? [] });
+}
+
 // Walk the space-delimited name and create intermediate group commands as needed.
 // Example: "pullzone edgerule add" → pullzone (group) → edgerule (group) → add (leaf).
 function registerCommand(root: Command, spec: CommandSpec): void {
@@ -54,20 +60,43 @@ function registerCommand(root: Command, spec: CommandSpec): void {
   if (parts.length === 0) return;
 
   let parent: Command = root;
+  let groupPath = '';
   for (let i = 0; i < parts.length - 1; i++) {
     const groupName = parts[i]!;
+    groupPath = groupPath ? `${groupPath} ${groupName}` : groupName;
     let group = parent.commands.find((c) => c.name() === groupName);
     if (!group) {
+      const meta = groupMetaByPath.get(groupPath);
+      const description = meta?.description ?? `${groupName} commands`;
       group = parent
         .command(groupName)
-        .description(`${groupName} commands`)
+        .description(description)
         .helpOption('-h, --help', 'Show help for command.');
+      // Group-level aliases. Each alias is a single segment (the alternative name
+      // for THIS group level). E.g. `pullzone` group → alias `pull-zone`.
+      // Compatibility paths like `bunny pull-zone edge-rule list` work because
+      // each group level has its own alias; Commander walks each segment.
+      if (meta?.aliases) {
+        const seen = new Set<string>([groupName]);
+        for (const alias of meta.aliases) {
+          if (alias.length === 0 || seen.has(alias)) continue;
+          group.alias(alias);
+          seen.add(alias);
+        }
+      }
     }
     parent = group;
   }
 
   const leaf = parts[parts.length - 1]!;
   const cmd = parent.command(leaf).description(spec.summary);
+
+  // Register Commander aliases. These don't appear in `--help`; both forms route to the same action.
+  if (spec.aliases && spec.aliases.length > 0) {
+    for (const alias of spec.aliases) {
+      cmd.alias(alias);
+    }
+  }
 
   for (const arg of spec.args ?? []) {
     const decoration = arg.variadic ? '...' : '';
@@ -117,10 +146,28 @@ function registerCommand(root: Command, spec: CommandSpec): void {
       const code = await mod.run(invocation);
       if (typeof code === 'number' && code !== 0) process.exit(code);
     } catch (err) {
-      logger.error((err as Error).message);
+      logger.error(formatError(err));
       process.exit(1);
     }
   });
+}
+
+// rc.10 (M4): when Bunny returns a typed error envelope, surface errorKey + field
+// in the CLI message so users can grep docs / logs for the key.
+function formatError(err: unknown): string {
+  if (err && typeof err === 'object') {
+    const e = err as { name?: string; message?: string; errorKey?: string; field?: string; status?: number };
+    if (e.errorKey || e.field) {
+      const parts: string[] = [];
+      if (e.errorKey) parts.push(`[${e.errorKey}]`);
+      parts.push(e.message ?? 'unknown error');
+      if (e.field) parts.push(`(field: ${e.field})`);
+      if (e.status) parts.push(`(HTTP ${e.status})`);
+      return parts.join(' ');
+    }
+    if (e.message) return e.message;
+  }
+  return String(err);
 }
 
 function zipArgs(spec: CommandSpec, positional: unknown[]): Record<string, unknown> {

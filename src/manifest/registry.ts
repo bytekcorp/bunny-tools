@@ -8,8 +8,23 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.9',
+  version: '0.1.0-rc.10',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
+  groups: [
+    { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
+    { name: 'storage', description: 'File operations within a storage zone (upload/download/list/delete/sync).' },
+    { name: 'storagezone', description: 'Manage storage zones (CRUD).', aliases: ['storage-zone'] },
+    { name: 'pullzone', description: 'Manage pull zones (CDN) and their edge rules.', aliases: ['pull-zone'] },
+    { name: 'pullzone edgerule', description: 'Manage edge rules on a pull zone.', aliases: ['edge-rule'] },
+    { name: 'dns', description: 'Manage DNS zones and records.' },
+    { name: 'dns record', description: 'Manage DNS records within a zone.' },
+    { name: 'stream', description: 'Manage Stream video libraries and videos.' },
+    { name: 'stream library', description: 'Manage Stream video libraries.' },
+    { name: 'stream video', description: 'Manage videos within a Stream library.' },
+    { name: 'containers', description: 'Manage Magic Containers apps.' },
+    { name: 'containers app', description: 'Manage Magic Containers application instances.' },
+    { name: 'scripting', description: 'Manage Edge Scripting deployments.' },
+  ],
   commands: [
     // Phase 1
     {
@@ -24,10 +39,17 @@ export const registry: Registry = {
           hasValue: false,
           defaultValue: false,
         },
+        {
+          name: 'names',
+          description: 'Emit one active command name per line (rc.10).',
+          hasValue: false,
+          defaultValue: false,
+        },
       ],
       examples: [
         { command: 'bunny manifest', description: 'Compact JSON to stdout.' },
         { command: 'bunny manifest --pretty', description: 'Pretty-printed JSON.' },
+        { command: 'bunny manifest --names', description: 'One command name per line.' },
       ],
       mcp: { tool: 'bunny.manifest', description: 'Returns the full bunny-tools registry as JSON.' },
       status: 'active',

@@ -1,5 +1,5 @@
 import type { ParsedInvocation } from '../../manifest/types.js';
-import { listPath } from '../../core/storage-ops.js';
+import { listPath, resolveActiveZone } from '../../core/storage-ops.js';
 import { createProgress } from '../../ui/progress.js';
 import { renderTable } from '../../ui/table.js';
 
@@ -7,12 +7,15 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   const progress = createProgress();
   const args = inv.args as { path?: string };
   const flags = inv.flags as { zone?: string; recursive?: boolean; json?: boolean; region?: string };
-  if (!flags.zone) {
-    progress.fail('--zone required.');
+  let zone: string;
+  try {
+    zone = await resolveActiveZone(flags.zone);
+  } catch (err) {
+    progress.fail((err as Error).message);
     return 1;
   }
   const path = args.path ?? '/';
-  const entries = await listPath(flags.zone, path, {
+  const entries = await listPath(zone, path, {
     ...(flags.recursive ? { recursive: true } : {}),
     ...(flags.region ? { region: flags.region } : {}),
   });

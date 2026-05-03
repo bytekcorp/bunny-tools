@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.9",
+  "version": "0.1.0-rc.10",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -19,6 +19,14 @@
           "hasValue": false,
           "valueHint": null,
           "defaultValue": false
+        },
+        {
+          "name": "names",
+          "short": null,
+          "description": "Emit one active command name per line (rc.10).",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": false
         }
       ],
       "examples": [
@@ -29,6 +37,10 @@
         {
           "command": "bunny manifest --pretty",
           "description": "Pretty-printed JSON."
+        },
+        {
+          "command": "bunny manifest --names",
+          "description": "One command name per line."
         }
       ],
       "mcp": {

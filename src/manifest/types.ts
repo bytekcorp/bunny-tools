@@ -42,11 +42,23 @@ export type CommandSpec = {
   status: CommandStatus;
   // Phase number this command lands in (for AGENTS.md grouping).
   phase: number;
+  // Optional alias names (e.g. `pull-zone` for `pullzone`). Both forms work; help renders the canonical.
+  aliases?: string[];
   // Lazy import. Only `active` commands have a loader. Returning a module
   // with a `run({args, flags, raw})` async function keeps cold-start fast.
   load?: () => Promise<{
     run: (invocation: ParsedInvocation) => Promise<number>;
   }>;
+};
+
+// Per-group description override. Without this, intermediate group commands
+// fall back to the auto-generated `<name> commands` placeholder. `aliases`
+// adds compatibility names (e.g. `pull-zone` for `pullzone`); both forms route
+// to the same group subtree.
+export type GroupSpec = {
+  name: string;
+  description: string;
+  aliases?: string[];
 };
 
 export type ParsedInvocation = {
@@ -61,4 +73,5 @@ export type Registry = {
   version: string;
   description: string;
   commands: CommandSpec[];
+  groups?: GroupSpec[];
 };

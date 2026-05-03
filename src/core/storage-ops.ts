@@ -7,6 +7,25 @@ import { createAccountClient, regionCodeToSubdomain } from '../api/account.js';
 import { createStorageClient, listRecursive } from '../api/storage.js';
 import { resolveCredential } from '../config/credential-resolver.js';
 import { contentTypeFor } from '../util/content-type.js';
+import { loadBunnyJson } from '../config/bunny-json.js';
+import { getActiveAliasOverlay } from './aliases.js';
+
+// Resolve the storage zone to use when none provided by user.
+// Precedence: override (--zone flag) > active alias overlay > bunny.json#deploy.storageZone > error.
+export async function resolveActiveZone(override?: string): Promise<string> {
+  if (override && override.length > 0) return override;
+  const alias = await getActiveAliasOverlay().catch(() => null);
+  if (alias?.storageZone) return alias.storageZone;
+  try {
+    const { config } = await loadBunnyJson();
+    if (config.deploy.storageZone) return config.deploy.storageZone;
+  } catch {
+    // bunny.json not found; fall through
+  }
+  throw new Error(
+    'No storage zone specified. Pass --zone=<name>, run `bunny init` to set bunny.json#deploy.storageZone, or `bunny use <alias>`.',
+  );
+}
 
 async function resolveRegion(zone: string, override?: string): Promise<string> {
   if (override !== undefined) return override;
