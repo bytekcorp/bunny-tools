@@ -29,3 +29,4 @@ credentials.json
 my-api-key.txt
 *.api-key.txt
 *.secret.txt
+repomix-output.xml
