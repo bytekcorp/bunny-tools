@@ -36,19 +36,232 @@ bunny init --non-interactive --features=storage \
   --pull-zone=12345
 ```
 
-## Commands at a glance
+---
 
-| Area | Commands |
-|---|---|
-| **Setup** | `init`, `auth:set`, `auth:list`, `auth:clear`, `use` |
-| **Deploy** | `deploy`, `purge` |
-| **Storage** | `storage:upload`, `storage:download`, `storage:list`, `storage:delete`, `storage:sync` |
-| **Zones** | `storage-zone:{list,get,create,update,delete}`, `pull-zone:{list,get,create,update,delete}`, `pull-zone:edge-rule:{list,add,delete}` |
-| **DNS** | `dns:{list,get,create,delete}`, `dns:record:{list,add,update,delete}` |
-| **Discovery** | `manifest`, `<any> --help-json` |
-| **AI** | `mcp` (stdio MCP server) |
+## Setup & Auth
 
-Run `bunny manifest --pretty` for the full machine-readable surface, or read [`AGENTS.md`](./AGENTS.md) for AI-agent guidance.
+| Command | Description |
+| --- | --- |
+| `bunny init` | Interactive setup — auth + feature picker + bunny.json |
+| `bunny configure` | Walkthrough — store credentials in a named profile |
+| `bunny configure list` | List all credential profiles + scopes (masked) |
+| `bunny configure switch <name>` | Set the active profile |
+| `bunny configure remove <name> [scope]` | Remove a profile, or a single scope inside one |
+| `bunny use [alias]` | Switch active alias from `.bunnyrc` (or list aliases) |
+| `bunny whoami` | Show current account context + reachable zone counts |
+| `bunny docs [topic]` | Open Bunny.net docs in browser |
+
+**Example**
+
+```bash
+bunny configure --profile=staging
+bunny configure switch staging
+```
+
+## Deploy & Purge
+
+| Command | Description |
+| --- | --- |
+| `bunny deploy` | Sync public dir to storage zone and purge CDN cache |
+| `bunny purge <target>` | Purge by URL, `tag:<name>`, or `pullzone:<id>` |
+
+**Example**
+
+```bash
+bunny deploy --dry-run
+bunny purge tag:release-2026-05
+```
+
+## Storage (file operations)
+
+| Command | Description |
+| --- | --- |
+| `bunny storage upload <local> <remote>` | Upload a single file to the active zone |
+| `bunny storage download <remote> <local>` | Download a single file from a zone |
+| `bunny storage list [path]` | List a storage-zone path |
+| `bunny storage delete <path>` | Delete a file or path (use `--recursive` for dirs) |
+| `bunny storage sync <local-dir>` | Mirror local dir to zone — SHA-cached diff, parallel upload |
+
+**Example**
+
+```bash
+bunny storage sync ./dist --zone=my-app
+```
+
+## Storage Zones
+
+| Command | Description |
+| --- | --- |
+| `bunny storagezone list` | List storage zones |
+| `bunny storagezone get <id\|name>` | Get a storage zone |
+| `bunny storagezone create <name>` | Create a storage zone |
+| `bunny storagezone update <id> --body=<json>` | Update a storage zone (raw JSON body) |
+| `bunny storagezone delete <id>` | Delete a storage zone |
+
+> Hyphenated alias also works: `storage-zone`.
+
+## Pull Zones (CDN)
+
+| Command | Description |
+| --- | --- |
+| `bunny pullzone list` | List pull zones |
+| `bunny pullzone get <id>` | Get a pull zone |
+| `bunny pullzone create <name>` | Create a pull zone |
+| `bunny pullzone update <id> --body=<json>` | Update a pull zone (raw JSON body) |
+| `bunny pullzone delete <id>` | Delete a pull zone |
+| `bunny pullzone edgerule list <id>` | List edge rules on a pull zone |
+| `bunny pullzone edgerule add <id> --body=<json>` | Add an edge rule (raw JSON rule) |
+| `bunny pullzone edgerule delete <id> <rule-id>` | Delete an edge rule |
+
+> Hyphenated aliases also work: `pull-zone`, `edge-rule`.
+
+**Example**
+
+```bash
+bunny pullzone edgerule list 12345
+```
+
+## DNS
+
+| Command | Description |
+| --- | --- |
+| `bunny dns list` | List DNS zones |
+| `bunny dns get <id\|domain>` | Get a DNS zone |
+| `bunny dns create <domain>` | Create a DNS zone |
+| `bunny dns delete <id>` | Delete a DNS zone |
+| `bunny dns record list <zone>` | List records on a zone |
+| `bunny dns record add <zone> --type=A --name=... --value=...` | Add a record |
+| `bunny dns record update <zone> <record-id> --body=<json>` | Update a record |
+| `bunny dns record delete <zone> <record-id>` | Delete a record |
+
+**Example**
+
+```bash
+bunny dns record add example.com --type=A --name=www --value=1.2.3.4
+```
+
+## Stream
+
+| Command | Description |
+| --- | --- |
+| `bunny stream library list` | List Stream libraries |
+| `bunny stream library create <name>` | Create a Stream library |
+| `bunny stream video list --library=<id>` | List videos in a library |
+| `bunny stream video upload <file> --library=<id>` | Upload a video to a library |
+| `bunny stream video delete <video-id> --library=<id>` | Delete a video |
+
+**Example**
+
+```bash
+bunny stream video upload ./demo.mp4 --library=42
+```
+
+## Magic Containers
+
+| Command | Description |
+| --- | --- |
+| `bunny containers app list` | List container apps |
+| `bunny containers app create <name>` | Create a container app |
+| `bunny containers app delete <id>` | Delete a container app |
+
+## Edge Scripting
+
+| Command | Description |
+| --- | --- |
+| `bunny scripting list` | List edge scripts |
+| `bunny scripting deploy <name> --code=<file>` | Create or update a script (dual-mode) |
+| `bunny scripting delete <id>` | Delete a script |
+
+**Example**
+
+```bash
+bunny scripting deploy my-router --code=./worker.js
+```
+
+## Discovery & AI
+
+| Command | Description |
+| --- | --- |
+| `bunny manifest --pretty` | Full registry as JSON (machine-readable surface) |
+| `bunny manifest --names` | One command name per line — handy for shell completion |
+| `bunny <any-command> --help-json` | Help for any command as JSON |
+| `bunny mcp` | Boot MCP stdio server (15 tools, 3 resources) |
+
+See [`AGENTS.md`](./AGENTS.md) for AI-agent guidance.
+
+---
+
+## Global flags
+
+Apply to any command:
+
+| Flag | Effect |
+| --- | --- |
+| `-c, --config <path>` | Override `bunny.json` location |
+| `--cwd <dir>` | Run as if launched from this directory |
+| `-e, --env <alias>` | One-shot `.bunnyrc` alias |
+| `-p, --profile <name>` | One-shot credential profile |
+
+**Example**
+
+```bash
+bunny --profile=staging deploy
+```
+
+## Configuration
+
+**`bunny.json`** (per-project, git-tracked):
+
+```jsonc
+{
+  "$schema": "https://unpkg.com/bunny-tools/schema/bunny.schema.json",
+  "deploy": {
+    "publicDir": "dist",
+    "ignore": ["bunny.json", ".bunnyrc", "**/.*", "**/node_modules/**"],
+    "storageZone": "my-app",
+    "region": "ny",
+    "concurrency": 8,
+    "pullZones": [{ "id": 12345, "purge": "all" }]
+  }
+}
+```
+
+**`.bunnyrc`** (per-developer aliases, gitignored):
+
+```json
+{
+  "default": "prod",
+  "aliases": {
+    "prod":    { "storageZone": "my-app",     "pullZones": [12345] },
+    "staging": { "storageZone": "my-app-stg", "pullZones": [12346] }
+  }
+}
+```
+
+**Multi-account profiles** (`~/.config/bunny-tools/credentials.json`):
+
+```jsonc
+{
+  "active": "default",
+  "profiles": {
+    "default": { "account": "...", "storage:my-app": "..." },
+    "staging": { "account": "...", "storage:my-app-stg": "..." }
+  }
+}
+```
+
+Switch the active profile with `bunny configure switch <name>`, or one-shot with `bunny --profile=<name> <cmd>` or `BUNNY_PROFILE=<name>`.
+
+## Auth model
+
+Four credential scopes (all use the `AccessKey` HTTP header):
+
+- `account` — Account API key
+- `storage:<zone>` — Storage zone password (per zone)
+- `stream:<lib>` — Stream library API key (per library)
+- `database:<name>` — Database access key
+
+**Resolver chain (per call site):** `--flag` → scoped env (e.g. `BUNNY_STORAGE_PASSWORD_MY_APP`) → generic env (`BUNNY_STORAGE_PASSWORD`) → OS keychain (`<profile>:<scope>` keys) → `~/.config/bunny-tools/credentials.json` → interactive prompt.
 
 ## GitHub Action
 
@@ -63,7 +276,9 @@ See [`action/README.md`](./action/README.md) for full inputs.
 
 ## MCP server (AI integration)
 
-`bunny-tools` ships an MCP stdio server. Install for Claude Code:
+`bunny-tools` ships an MCP stdio server with 15 tools and 3 resources.
+
+Install for Claude Code:
 
 ```bash
 claude mcp add bunny-tools npx -y bunny-tools mcp
@@ -82,48 +297,8 @@ Or for Claude Desktop, add to `claude_desktop_config.json`:
 }
 ```
 
-The server exposes ~10 high-level tools (`bunny.deploy`, `bunny.purge`, zone/dns CRUD), an escape hatch (`bunny.run`) for any CLI invocation, and three resources (`bunny://manifest`, `bunny://agents`, `bunny://config/current`).
-
-## Configuration
-
-`bunny.json` (per-project, git-tracked):
-
-```jsonc
-{
-  "$schema": "https://unpkg.com/bunny-tools/schema/bunny.schema.json",
-  "deploy": {
-    "publicDir": "dist",
-    "ignore": ["bunny.json", ".bunnyrc", "**/.*", "**/node_modules/**"],
-    "storageZone": "my-app",
-    "region": "ny",
-    "concurrency": 8,
-    "pullZones": [{ "id": 12345, "purge": "all" }]
-  }
-}
-```
-
-`.bunnyrc` (per-developer aliases, gitignored):
-
-```json
-{
-  "default": "prod",
-  "aliases": {
-    "prod":    { "storageZone": "my-app",     "pullZones": [12345] },
-    "staging": { "storageZone": "my-app-stg", "pullZones": [12346] }
-  }
-}
-```
-
-## Auth
-
-Four credential scopes (all use the `AccessKey` HTTP header):
-
-- `account` — Account API key
-- `storage:<zone>` — Storage zone password (per zone)
-- `stream:<lib>` — Stream library API key
-- `database:<name>` — Database access key
-
-Resolved per call site with this fallback chain: `--flag` → scoped env (e.g. `BUNNY_STORAGE_PASSWORD_MY_APP`) → generic env (e.g. `BUNNY_STORAGE_PASSWORD`) → OS keychain → `~/.config/bunny-tools/credentials.json` → interactive prompt.
+**Tools:** `bunny.deploy`, `bunny.purge`, `bunny.init`, `bunny.manifest`, zone/dns CRUD, plus `bunny.run` as an escape hatch for any CLI invocation.
+**Resources:** `bunny://manifest`, `bunny://agents`, `bunny://config/current`.
 
 ## Development
 
