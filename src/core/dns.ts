@@ -7,14 +7,22 @@ import { resolveCredential } from '../config/credential-resolver.js';
 import { ValidationError } from '../api/errors.js';
 
 // Bunny DNS record type → numeric code (per Bunny API spec).
+// REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT are Bunny-specific routing types
+// not present in standard DNS. The standard types map to the same codes
+// used by RFC 1035 numbering for clarity.
 export const RECORD_TYPE_CODES: Record<string, number> = {
   A: 0,
   AAAA: 1,
   CNAME: 2,
   TXT: 3,
   MX: 4,
+  REDIRECT: 5,
+  FLATTEN: 6,
+  PULLZONE: 7,
   SRV: 8,
   CAA: 9,
+  PTR: 10,
+  SCRIPT: 11,
   NS: 12,
 };
 
@@ -48,6 +56,21 @@ const CAARecord = baseFields.extend({
   tag: z.string().min(1),
 });
 const NSRecord = baseFields.extend({ type: z.literal('NS') });
+// Bunny-specific routing types. REDIRECT/FLATTEN/PTR carry only a Value
+// (URL/hostname/target). PULLZONE/SCRIPT need a `linkName` carrying the
+// linked resource id (pull zone id or script id), which Bunny stores on
+// the record so the dashboard can backfill the live state.
+const RedirectRecord = baseFields.extend({ type: z.literal('REDIRECT') });
+const FlattenRecord = baseFields.extend({ type: z.literal('FLATTEN') });
+const PullzoneRecord = baseFields.extend({
+  type: z.literal('PULLZONE'),
+  linkName: z.string().min(1),
+});
+const PtrRecord = baseFields.extend({ type: z.literal('PTR') });
+const ScriptRecord = baseFields.extend({
+  type: z.literal('SCRIPT'),
+  linkName: z.string().min(1),
+});
 
 export const RecordInputSchema = z.discriminatedUnion('type', [
   ARecord,
@@ -58,6 +81,11 @@ export const RecordInputSchema = z.discriminatedUnion('type', [
   SRVRecord,
   CAARecord,
   NSRecord,
+  RedirectRecord,
+  FlattenRecord,
+  PullzoneRecord,
+  PtrRecord,
+  ScriptRecord,
 ]);
 
 export type RecordInput = z.infer<typeof RecordInputSchema>;
@@ -86,6 +114,7 @@ function toApiBody(rec: RecordInput): Record<string, unknown> {
   if ('port' in rec) body['Port'] = rec.port;
   if ('flags' in rec) body['Flags'] = rec.flags;
   if ('tag' in rec) body['Tag'] = rec.tag;
+  if ('linkName' in rec) body['LinkName'] = rec.linkName;
   return body;
 }
 

@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.23',
+  version: '0.1.0-rc.24',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -440,12 +440,15 @@ export const registry: Registry = {
     },
     {
       name: 'dns record add',
-      summary: 'Add a DNS record (A, AAAA, CNAME, TXT, MX, SRV, CAA, NS).',
+      summary:
+        'Add a DNS record (A, AAAA, CNAME, TXT, MX, REDIRECT, FLATTEN, PULLZONE, SRV, CAA, PTR, SCRIPT, NS).',
       args: [
         { name: 'zoneId', description: 'DNS zone id.', required: true },
         { name: 'type', description: 'Record type.', required: true },
         { name: 'name', description: 'Record name.', required: true },
-        { name: 'value', description: 'Record value.', required: true },
+        // Optional when --pull-zone is used; the convenience flag fills it
+        // from the pull zone\'s registered Name.
+        { name: 'value', description: 'Record value (optional with --pull-zone).', required: false },
       ],
       flags: [
         { name: 'ttl', description: 'TTL in seconds.', hasValue: true },
@@ -454,6 +457,8 @@ export const registry: Registry = {
         { name: 'port', description: 'Port (SRV).', hasValue: true },
         { name: 'flags', description: 'Flags (CAA).', hasValue: true },
         { name: 'tag', description: 'Tag (CAA).', hasValue: true },
+        { name: 'link-name', description: 'Linked resource id as string (PULLZONE/SCRIPT).', hasValue: true },
+        { name: 'pull-zone', description: 'Convenience for PULLZONE: numeric pz id; auto-fills value + link-name.', hasValue: true },
       ],
       mcp: { tool: 'bunny.dns_record_set' },
       status: 'active',

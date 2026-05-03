@@ -178,10 +178,14 @@ export const TOOLS: ToolDef[] = [
   },
   {
     name: 'bunny.dns_record_set',
-    description: 'Add a DNS record. Type-specific required fields validated server-side.',
+    description:
+      'Add a DNS record. Standard types (A/AAAA/CNAME/TXT/MX/SRV/CAA/NS) plus Bunny routing types (REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT). PULLZONE and SCRIPT require linkName.',
     inputSchema: z.object({
       zoneId: z.number().int().positive(),
-      type: z.enum(['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'SRV', 'CAA', 'NS']),
+      type: z.enum([
+        'A', 'AAAA', 'CNAME', 'TXT', 'MX', 'REDIRECT', 'FLATTEN', 'PULLZONE',
+        'SRV', 'CAA', 'PTR', 'SCRIPT', 'NS',
+      ]),
       name: z.string(),
       value: z.string(),
       ttl: z.number().int().positive().optional(),
@@ -190,6 +194,7 @@ export const TOOLS: ToolDef[] = [
       port: z.number().int().positive().optional(),
       flags: z.number().int().nonnegative().optional(),
       tag: z.string().optional(),
+      linkName: z.string().optional(),
     }),
     run: async (raw) => {
       // Validate at the MCP boundary BEFORE addRecord runs its own
@@ -198,7 +203,10 @@ export const TOOLS: ToolDef[] = [
       const parsed = z
         .object({
           zoneId: z.number().int().positive(),
-          type: z.enum(['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'SRV', 'CAA', 'NS']),
+          type: z.enum([
+            'A', 'AAAA', 'CNAME', 'TXT', 'MX', 'REDIRECT', 'FLATTEN', 'PULLZONE',
+            'SRV', 'CAA', 'PTR', 'SCRIPT', 'NS',
+          ]),
           name: z.string(),
           value: z.string(),
           ttl: z.number().int().positive().optional(),
@@ -207,6 +215,7 @@ export const TOOLS: ToolDef[] = [
           port: z.number().int().positive().optional(),
           flags: z.number().int().nonnegative().optional(),
           tag: z.string().optional(),
+          linkName: z.string().optional(),
         })
         .parse(raw);
       const { zoneId, ...rest } = parsed;

@@ -63,4 +63,21 @@ describe.skipIf(!E2E_ENABLED)('e2e: DNS zones + records', () => {
     const after = await bunnyCliOk(['dns', 'record', 'list', String(zoneId)]);
     expect(after.stdout).not.toMatch(/www/);
   });
+
+  it('REDIRECT record round-trip (rc.24 — Bunny routing types)', async () => {
+    // REDIRECT is a Bunny-specific routing type that the CLI didn't accept
+    // before rc.24. This test fails on rc.23 and earlier with "Unknown type
+    // \"REDIRECT\"". It passes once Bunny code 5 is wired through the type
+    // map + zod union.
+    await bunnyCliOk([
+      'dns', 'record', 'add', String(zoneId), 'REDIRECT', 'redir', 'https://example.com',
+    ]);
+    const list = await bunnyCliOk(['dns', 'record', 'list', String(zoneId), '--json']);
+    const records = JSON.parse(list.stdout) as Array<{ Id: number; Type: number; Name: string; Value: string }>;
+    const redir = records.find((r) => r.Name === 'redir');
+    expect(redir).toBeDefined();
+    expect(redir?.Type).toBe(5); // REDIRECT
+    expect(redir?.Value).toBe('https://example.com');
+    await bunnyCliOk(['dns', 'record', 'delete', String(zoneId), String(redir!.Id), '--yes']);
+  });
 });

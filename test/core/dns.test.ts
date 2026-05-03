@@ -58,6 +58,60 @@ describe('core/dns record validation', () => {
   it('recordTypeName round-trips known codes', () => {
     expect(recordTypeName(RECORD_TYPE_CODES['A']!)).toBe('A');
     expect(recordTypeName(RECORD_TYPE_CODES['SRV']!)).toBe('SRV');
+    expect(recordTypeName(RECORD_TYPE_CODES['REDIRECT']!)).toBe('REDIRECT');
+    expect(recordTypeName(RECORD_TYPE_CODES['PULLZONE']!)).toBe('PULLZONE');
     expect(recordTypeName(99)).toBe('code:99');
+  });
+
+  // -- Bunny-specific routing types ----------------------------------------
+
+  it('accepts REDIRECT with just a URL value', () => {
+    const r = parseRecordInput({ type: 'REDIRECT', name: 'www', value: 'https://example.com' });
+    expect(r.type).toBe('REDIRECT');
+    expect(r.value).toBe('https://example.com');
+  });
+
+  it('accepts FLATTEN with a target hostname', () => {
+    const r = parseRecordInput({ type: 'FLATTEN', name: '@', value: 'origin.example.com' });
+    expect(r.type).toBe('FLATTEN');
+  });
+
+  it('accepts PTR with a target', () => {
+    const r = parseRecordInput({ type: 'PTR', name: '1.0.0.127.in-addr.arpa', value: 'host.example.com' });
+    expect(r.type).toBe('PTR');
+  });
+
+  it('accepts PULLZONE with linkName', () => {
+    const r = parseRecordInput({
+      type: 'PULLZONE',
+      name: 'cdn',
+      value: 'my-pz-name',
+      linkName: '12345',
+    });
+    expect(r.type).toBe('PULLZONE');
+    if (r.type === 'PULLZONE') expect(r.linkName).toBe('12345');
+  });
+
+  it('rejects PULLZONE without linkName', () => {
+    expect(() =>
+      parseRecordInput({ type: 'PULLZONE', name: 'cdn', value: 'my-pz-name' }),
+    ).toThrowError(ValidationError);
+  });
+
+  it('accepts SCRIPT with linkName', () => {
+    const r = parseRecordInput({
+      type: 'SCRIPT',
+      name: 'edge',
+      value: 'my-script',
+      linkName: '987',
+    });
+    expect(r.type).toBe('SCRIPT');
+    if (r.type === 'SCRIPT') expect(r.linkName).toBe('987');
+  });
+
+  it('rejects SCRIPT without linkName', () => {
+    expect(() =>
+      parseRecordInput({ type: 'SCRIPT', name: 'edge', value: 'my-script' }),
+    ).toThrowError(ValidationError);
   });
 });

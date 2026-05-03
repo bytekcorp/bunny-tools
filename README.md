@@ -182,10 +182,22 @@ bunny cdn edgerule list 12345
 | `bunny dns record update <zone> <record-id> --body=<json>` | Update a record |
 | `bunny dns record delete <zone> <record-id>` | Delete a record |
 
-**Example**
+**Supported record types:** standard `A`, `AAAA`, `CNAME`, `TXT`, `MX`, `SRV`, `CAA`, `NS` plus Bunny routing types `REDIRECT`, `FLATTEN`, `PULLZONE`, `PTR`, `SCRIPT`. `PULLZONE` and `SCRIPT` need `--link-name=<id>` (the linked pull zone / script id). For `PULLZONE` you can use the convenience flag `--pull-zone=<id>` instead and the CLI will fill in both the value and link-name from the pull zone's metadata.
+
+**Examples**
 
 ```bash
+# Standard A record
 bunny dns record add 783181 A www 1.2.3.4 --ttl=300
+
+# Redirect www → https://example.com
+bunny dns record add 783181 REDIRECT www https://example.com
+
+# Wire DNS to a pull zone — auto-fills value + link-name
+bunny dns record add 783181 PULLZONE "" --pull-zone=5780316
+
+# Or raw form if you already know the pz name
+bunny dns record add 783181 PULLZONE "" my-pz-name --link-name=5780316
 ```
 
 ## Stream

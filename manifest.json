@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.23",
+  "version": "0.1.0-rc.24",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -1194,7 +1194,7 @@
     },
     {
       "name": "dns record add",
-      "summary": "Add a DNS record (A, AAAA, CNAME, TXT, MX, SRV, CAA, NS).",
+      "summary": "Add a DNS record (A, AAAA, CNAME, TXT, MX, REDIRECT, FLATTEN, PULLZONE, SRV, CAA, PTR, SCRIPT, NS).",
       "description": null,
       "status": "active",
       "phase": 4,
@@ -1219,8 +1219,8 @@
         },
         {
           "name": "value",
-          "description": "Record value.",
-          "required": true,
+          "description": "Record value (optional with --pull-zone).",
+          "required": false,
           "variadic": false
         }
       ],
@@ -1269,6 +1269,22 @@
           "name": "tag",
           "short": null,
           "description": "Tag (CAA).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "link-name",
+          "short": null,
+          "description": "Linked resource id as string (PULLZONE/SCRIPT).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "pull-zone",
+          "short": null,
+          "description": "Convenience for PULLZONE: numeric pz id; auto-fills value + link-name.",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
