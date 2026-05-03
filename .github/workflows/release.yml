@@ -31,14 +31,9 @@ jobs:
         run: |
           npm run gen:all
           git diff --exit-code manifest.json AGENTS.md schema/bunny.schema.json
-      - name: Determine npm dist-tag
-        id: tag
-        run: |
-          REF="${GITHUB_REF##*/}"
-          if [[ "$REF" == *-alpha.* || "$REF" == *-rc.* || "$REF" == *-beta.* ]]; then
-            echo "dist=alpha" >> "$GITHUB_OUTPUT"
-          else
-            echo "dist=latest" >> "$GITHUB_OUTPUT"
-          fi
+      # Pre-1.0 we treat every RC as `latest` — there's no stable channel
+      # yet, so users want `npm i bunny-tools` to give them the newest RC.
+      # When 1.0.0 GA ships, revisit: prereleases (`-rc.*`, `-beta.*`) should
+      # then publish to a `next` tag instead of clobbering `latest`.
       - name: Publish (OIDC trusted publishing — no token needed)
-        run: npm publish --provenance --tag "${{ steps.tag.outputs.dist }}"
+        run: npm publish --provenance --tag latest
