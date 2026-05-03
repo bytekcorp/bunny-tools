@@ -149,20 +149,37 @@ function commandGroupPath(cmd: Command): string {
   return parts.join(' ');
 }
 
-// Render every active root-level command in the COMMAND_GROUPS order. Skips
-// `planned`/`deferred` commands so the help output reflects what users can
-// actually run today.
+// Render every active root-level command in the COMMAND_GROUPS order. To keep
+// alignment clean, root help shows at most TWO segments: 1- and 2-segment
+// commands render in full; 3+ segment commands collapse to a 2-segment
+// sub-group pointer (e.g. `bunny pullzone edgerule ...`). Pointers are
+// deduplicated and ordered by the position of their first member command in
+// the registry, so progressive disclosure is consistent with the rest of the
+// help layout.
 function renderRootCommands(): string[] {
   const active = registry.commands.filter((c) => c.status === 'active');
+  const groupMeta = new Map((registry.groups ?? []).map((g) => [g.name, g]));
   const out: string[] = [];
 
   for (let i = 0; i < COMMAND_GROUPS.length; i++) {
     const group = COMMAND_GROUPS[i]!;
     const matches = active.filter((c) => belongsToGroup(c.name, group.prefixes));
     if (matches.length === 0) continue;
-    if (out.length > 0) out.push(''); // blank line between groups
+    if (out.length > 0) out.push('');
+
+    const seenPointers = new Set<string>();
     for (const cmd of matches) {
-      out.push(formatCommandRow(cmd));
+      const parts = cmd.name.split(/\s+/).filter(Boolean);
+      if (parts.length <= 2) {
+        out.push(formatCommandRow(cmd));
+        continue;
+      }
+      const pointerPath = parts.slice(0, 2).join(' ');
+      if (seenPointers.has(pointerPath)) continue;
+      seenPointers.add(pointerPath);
+      const meta = groupMeta.get(pointerPath);
+      const summary = meta?.description ?? `${pointerPath} commands`;
+      out.push(formatRow(`${registry.binary} ${pointerPath} ...`, summary));
     }
   }
   return out.map((l) => (l === '' ? '' : '  ' + l));
