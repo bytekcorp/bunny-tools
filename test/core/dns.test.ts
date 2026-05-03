@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { parseRecordInput, RECORD_TYPE_CODES, recordTypeName } from '../../src/core/dns.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { addRecord, parseRecordInput, RECORD_TYPE_CODES, recordTypeName } from '../../src/core/dns.js';
 import { ValidationError } from '../../src/api/errors.js';
+import { getMockAgent } from '../setup.js';
 
 describe('core/dns record validation', () => {
   it('accepts an A record with required fields', () => {
@@ -113,5 +117,108 @@ describe('core/dns record validation', () => {
     expect(() =>
       parseRecordInput({ type: 'SCRIPT', name: 'edge', value: 'my-script' }),
     ).toThrowError(ValidationError);
+  });
+});
+
+describe('core/dns addRecord PULLZONE pre-flight', () => {
+  let scratch: string;
+  let envBackup: Record<string, string | undefined> = {};
+
+  beforeEach(async () => {
+    scratch = await mkdtemp(join(tmpdir(), 'dns-preflight-'));
+    envBackup['XDG_CONFIG_HOME'] = process.env['XDG_CONFIG_HOME'];
+    envBackup['BUNNY_ACCOUNT_KEY'] = process.env['BUNNY_ACCOUNT_KEY'];
+    process.env['XDG_CONFIG_HOME'] = scratch;
+    process.env['BUNNY_ACCOUNT_KEY'] = 'test-key';
+  });
+
+  afterEach(async () => {
+    for (const [k, v] of Object.entries(envBackup)) {
+      if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+    envBackup = {};
+    await rm(scratch, { recursive: true, force: true });
+  });
+
+  it('rejects PULLZONE record when hostname is not linked to the pull zone', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/5789465', method: 'GET' })
+      .reply(200, {
+        Id: 5789465,
+        Name: 'bytek',
+        OriginUrl: null,
+        Enabled: true,
+        Hostnames: [{ Value: 'bytek.b-cdn.net', HasCertificate: true }],
+      });
+    pool
+      .intercept({ path: '/dnszone/784669', method: 'GET' })
+      .reply(200, { Id: 784669, Domain: 'bytek.org' });
+
+    await expect(
+      addRecord(784669, {
+        type: 'PULLZONE',
+        name: '',
+        value: 'bytek',
+        linkName: '5789465',
+      }),
+    ).rejects.toThrow(/not linked to pull zone/);
+  });
+
+  it('rejects PULLZONE record when hostname is linked but has no SSL certificate', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/5789465', method: 'GET' })
+      .reply(200, {
+        Id: 5789465,
+        Name: 'bytek',
+        OriginUrl: null,
+        Enabled: true,
+        Hostnames: [
+          { Value: 'bytek.b-cdn.net', HasCertificate: true },
+          { Value: 'bytek.org', HasCertificate: false },
+        ],
+      });
+    pool
+      .intercept({ path: '/dnszone/784669', method: 'GET' })
+      .reply(200, { Id: 784669, Domain: 'bytek.org' });
+
+    await expect(
+      addRecord(784669, {
+        type: 'PULLZONE',
+        name: '',
+        value: 'bytek',
+        linkName: '5789465',
+      }),
+    ).rejects.toThrow(/no SSL certificate yet/);
+  });
+
+  it('passes pre-flight and POSTs the record when hostname is linked and cert is provisioned', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/5789465', method: 'GET' })
+      .reply(200, {
+        Id: 5789465,
+        Name: 'bytek',
+        OriginUrl: null,
+        Enabled: true,
+        Hostnames: [{ Value: 'bytek.org', HasCertificate: true }],
+      });
+    pool
+      .intercept({ path: '/dnszone/784669', method: 'GET' })
+      .reply(200, { Id: 784669, Domain: 'bytek.org' });
+    pool
+      .intercept({ path: '/dnszone/784669/records', method: 'PUT' })
+      .reply(201, { Id: 999, Type: 7, Name: '', Value: 'bytek' });
+
+    const created = await addRecord(784669, {
+      type: 'PULLZONE',
+      name: '',
+      value: 'bytek',
+      linkName: '5789465',
+    });
+    expect(created.Id).toBe(999);
+    expect(created.Type).toBe(7);
   });
 });

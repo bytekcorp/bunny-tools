@@ -4,6 +4,19 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.28] — 2026-05-03 (Centralize PULLZONE pre-flight in core)
+
+### Fixed
+- **MCP `bunny.dns_record_set` and CLI `dns record add` (without --pull-zone) now also pre-flight PULLZONE records.** Previously the pre-flight (hostname-linked + cert-issued) lived only in the CLI command's `--pull-zone` flag handler; MCP and the bare CLI path bypassed it and surfaced Bunny's misleading "The pull zone ID is not valid" error. Pre-flight moved to `core/dns.addRecord` so every caller gets the friendly "Run: bunny pullzone hostname enable-ssl <id> <fqdn>" hint.
+
+### Internal
+- **Test isolation:** `test/setup.ts` now recreates the undici `MockAgent` per test (was per-suite). Stops `.times(N)` and `.persist()` interceptors from leaking across tests. Surfaced as flaky failures in rc.26/rc.27 development.
+
+### Test Coverage
+- 146/146 (up from 143; +3 PULLZONE pre-flight branches: hostname-not-linked, hostname-linked-but-no-cert, happy path).
+
+---
+
 ## [0.1.0-rc.27] — 2026-05-03 (Fix loadFreeCertificate HTTP shape)
 
 ### Fixed

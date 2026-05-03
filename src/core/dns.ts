@@ -6,6 +6,15 @@ import type { DnsRecord, DnsZone } from '../api/account.js';
 import { resolveCredential } from '../config/credential-resolver.js';
 import { ValidationError } from '../api/errors.js';
 
+// Compute the FQDN that Bunny would assign to a record. Apex (`@` or empty)
+// resolves to the bare zone domain; trailing-dot inputs are treated as
+// already-qualified; everything else is `<name>.<domain>`.
+export function computeFqdn(name: string, domain: string): string {
+  if (name === '' || name === '@') return domain;
+  if (name.endsWith('.')) return name.slice(0, -1);
+  return `${name}.${domain}`;
+}
+
 // Bunny DNS record type → numeric code (per Bunny API spec).
 // REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT are Bunny-specific routing types
 // not present in standard DNS. The standard types map to the same codes
@@ -145,7 +154,47 @@ export async function listRecords(zoneId: number): Promise<DnsRecord[]> {
 
 export async function addRecord(zoneId: number, raw: unknown): Promise<DnsRecord> {
   const parsed = parseRecordInput(raw);
+  // Centralized pre-flight for PULLZONE (Type-7). Bunny's API responds with
+  // the misleading error "The pull zone ID is not valid" when the matched
+  // hostname isn't linked to the pz, OR when it's linked but has no SSL
+  // certificate. Catching this here covers the CLI command, MCP tool, and
+  // any other caller that goes through addRecord.
+  if (parsed.type === 'PULLZONE') {
+    await preflightPullzoneRecord(zoneId, parsed.name, parsed.linkName);
+  }
   return client().addDnsRecord(zoneId, toApiBody(parsed));
+}
+
+async function preflightPullzoneRecord(
+  zoneId: number,
+  name: string,
+  linkName: string,
+): Promise<void> {
+  const pzId = Number.parseInt(linkName, 10);
+  if (!Number.isFinite(pzId) || pzId <= 0) {
+    throw new ValidationError(
+      `linkName must be a numeric pull zone id, got "${linkName}"`,
+    );
+  }
+  const c = client();
+  const [pz, dnsZone] = await Promise.all([
+    c.getPullZone(pzId),
+    c.getDnsZone(zoneId),
+  ]);
+  const fqdn = computeFqdn(name, dnsZone.Domain);
+  const matched = (pz.Hostnames ?? []).find((h) => h.Value === fqdn);
+  if (!matched) {
+    throw new ValidationError(
+      `${fqdn} is not linked to pull zone "${pz.Name}" (#${pz.Id}). ` +
+        `Run: bunny pullzone hostname add ${pz.Id} ${fqdn}`,
+    );
+  }
+  if (matched.HasCertificate !== true) {
+    throw new ValidationError(
+      `${fqdn} is linked to pull zone "${pz.Name}" (#${pz.Id}) but has no SSL certificate yet. ` +
+        `Run: bunny pullzone hostname enable-ssl ${pz.Id} ${fqdn}`,
+    );
+  }
 }
 
 export async function updateRecord(zoneId: number, recordId: number, body: Record<string, unknown>): Promise<DnsRecord> {
