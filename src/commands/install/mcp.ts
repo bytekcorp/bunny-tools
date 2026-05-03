@@ -39,10 +39,15 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     return 1;
   }
 
-  const args = ['mcp', 'add', 'bunny-tools', 'npx', '-y', 'bunny-tools', 'mcp'];
+  // `claude mcp add` requires `--` to separate its own options from the
+  // subprocess command — without it, `-y` is parsed as a (nonexistent)
+  // claude option and the command fails. Per `claude mcp add --help`:
+  //   claude mcp add my-server -- my-command --some-flag arg1
+  const args = ['mcp', 'add'];
   if (flags.scope) {
     args.push('--scope', flags.scope);
   }
+  args.push('bunny-tools', '--', 'npx', '-y', 'bunny-tools', 'mcp');
 
   progress.info(`Running: claude ${args.join(' ')}`);
   const code = await spawnAndPassthrough('claude', args);
