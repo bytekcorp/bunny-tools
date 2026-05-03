@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+bun.lock
 .bunny-state.json
 .bunnyrc
 
