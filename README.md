@@ -146,7 +146,6 @@ bunny storage sync ./dist --zone=my-app
 | `bunny storagezone update <id> --body=<json>` | Update a storage zone (raw JSON body) |
 | `bunny storagezone delete <id>` | Delete a storage zone |
 
-> Hyphenated alias also works: `storage-zone`.
 
 ## Pull Zones (CDN)
 
@@ -163,7 +162,6 @@ bunny storage sync ./dist --zone=my-app
 | `bunny pullzone edgerule add <id> --rule=<json>` | Add an edge rule (raw JSON rule) |
 | `bunny pullzone edgerule delete <id> <rule-id>` | Delete an edge rule |
 
-> Other aliases: `pull-zone`, `edge-rule`.
 
 **Example**
 
