@@ -17,21 +17,28 @@ import type { Command, Help } from 'commander';
 import { registry } from './registry.js';
 import type { CommandSpec } from './types.js';
 
-// Domain ordering for the COMMANDS section. Each entry is a list of
-// command-name prefixes that belong together (rendered as a single group
-// with a blank line above the next group). Sub-resource commands appear
-// AFTER their parent group's leaf commands.
-const COMMAND_GROUPS: Array<{ label: string; prefixes: string[] }> = [
-  { label: 'Setup', prefixes: ['init', 'configure', 'use', 'whoami', 'docs'] },
-  { label: 'Deploy & purge', prefixes: ['deploy', 'purge'] },
-  { label: 'Storage (file ops)', prefixes: ['storage upload', 'storage download', 'storage list', 'storage delete', 'storage sync'] },
-  { label: 'Storage zones', prefixes: ['storagezone'] },
-  { label: 'Pull zones (CDN)', prefixes: ['pullzone'] },
-  { label: 'DNS', prefixes: ['dns'] },
-  { label: 'Stream', prefixes: ['stream'] },
-  { label: 'Magic Containers', prefixes: ['containers'] },
-  { label: 'Edge Scripting', prefixes: ['scripting'] },
-  { label: 'Discovery & AI', prefixes: ['manifest', 'mcp', 'install', 'update'] },
+// Root help is sectioned wrangler/gh/aws-style: GETTING STARTED for the daily
+// workflow commands, SERVICES collapsing each top-level group to a single
+// `bunny <group> <subcmd>` pointer (count appended), UTILITIES for the
+// discovery + maintenance commands. Sub-groups (e.g. `pullzone hostname`)
+// are folded INTO their parent service's count, not split into their own
+// pointer rows — that pattern was fragmenting root help in rc.20–37.
+//
+// Sub-group help (e.g. `bunny pullzone --help`) still expands every leaf
+// — see renderGroupChildren.
+const SECTIONS: Array<{ label: string; prefixes: string[] }> = [
+  {
+    label: 'GETTING STARTED',
+    prefixes: ['init', 'deploy', 'configure'],
+  },
+  {
+    label: 'SERVICES',
+    prefixes: ['pullzone', 'domain', 'dns', 'stream', 'storage', 'storagezone', 'containers', 'scripting'],
+  },
+  {
+    label: 'UTILITIES',
+    prefixes: ['purge', 'use', 'whoami', 'docs', 'manifest', 'mcp', 'install', 'update'],
+  },
 ];
 
 // Total minimum width for the "command" column before description starts.
@@ -63,10 +70,12 @@ function formatGroupOrRoot(cmd: Command, isRoot: boolean): string {
   }
   lines.push('');
 
-  // COMMANDS block. Root pulls from the full registry and groups by domain.
-  // Sub-group help just lists immediate subcommands without domain grouping.
+  // COMMANDS block. Root renders sectioned (GETTING STARTED / SERVICES /
+  // UTILITIES) with each top-level group collapsed to a single
+  // `bunny <group> <subcmd>` pointer + command count. Sub-group help still
+  // expands every leaf so users can see all runnable commands one drill-down
+  // from the root.
   if (isRoot) {
-    lines.push('COMMANDS');
     const rendered = renderRootCommands();
     lines.push(...rendered);
   } else {
@@ -149,40 +158,54 @@ function commandGroupPath(cmd: Command): string {
   return parts.join(' ');
 }
 
-// Render every active root-level command in the COMMAND_GROUPS order. To keep
-// alignment clean, root help shows at most TWO segments: 1- and 2-segment
-// commands render in full; 3+ segment commands collapse to a 2-segment
-// sub-group pointer (e.g. `bunny pullzone edgerule ...`). Pointers are
-// deduplicated and ordered by the position of their first member command in
-// the registry, so progressive disclosure is consistent with the rest of the
-// help layout.
+// Sectioned root help: GETTING STARTED / SERVICES / UTILITIES. Each top-level
+// group (pullzone, dns, stream, etc.) collapses to ONE pointer row at root
+// — `bunny <group> <subcmd>     <description> (N cmds)`. Sub-groups
+// (pullzone hostname, dns record, etc.) fold INTO the parent count rather
+// than getting their own pointer line.
+//
+// Section labels are emitted at column 0 (no indent); command rows are
+// indented 2 spaces to keep the section header visually distinct.
 function renderRootCommands(): string[] {
   const active = registry.commands.filter((c) => c.status === 'active');
   const groupMeta = new Map((registry.groups ?? []).map((g) => [g.name, g]));
   const out: string[] = [];
 
-  for (let i = 0; i < COMMAND_GROUPS.length; i++) {
-    const group = COMMAND_GROUPS[i]!;
-    const matches = active.filter((c) => belongsToGroup(c.name, group.prefixes));
-    if (matches.length === 0) continue;
-    if (out.length > 0) out.push('');
+  for (let i = 0; i < SECTIONS.length; i++) {
+    const section = SECTIONS[i]!;
+    if (i > 0) out.push('');
 
-    const seenPointers = new Set<string>();
-    for (const cmd of matches) {
-      const parts = cmd.name.split(/\s+/).filter(Boolean);
-      if (parts.length <= 2) {
-        out.push(formatCommandRow(cmd));
+    // Bucket active commands by their top-level word so we can decide
+    // per-prefix whether to collapse or render bare.
+    const byTop = new Map<string, CommandSpec[]>();
+    for (const cmd of active) {
+      if (!belongsToGroup(cmd.name, section.prefixes)) continue;
+      const top = cmd.name.split(/\s+/)[0]!;
+      if (!byTop.has(top)) byTop.set(top, []);
+      byTop.get(top)!.push(cmd);
+    }
+    if (byTop.size === 0) continue;
+
+    out.push(section.label);
+    for (const top of section.prefixes) {
+      const cmds = byTop.get(top);
+      if (!cmds || cmds.length === 0) continue;
+      const bareCmd = cmds.find((c) => c.name === top);
+      if (cmds.length === 1 && bareCmd) {
+        // Single bare command (e.g. `bunny init`) — render the row as-is.
+        out.push('  ' + formatCommandRow(bareCmd));
         continue;
       }
-      const pointerPath = parts.slice(0, 2).join(' ');
-      if (seenPointers.has(pointerPath)) continue;
-      seenPointers.add(pointerPath);
-      const meta = groupMeta.get(pointerPath);
-      const summary = meta?.description ?? `${pointerPath} commands`;
-      out.push(formatRow(`${registry.binary} ${pointerPath} ...`, summary));
+      // Group with subcommands. Render one collapsed pointer row.
+      const meta = groupMeta.get(top);
+      const desc = meta?.description ?? bareCmd?.summary ?? `${top} commands`;
+      const tag = ` (${cmds.length} ${cmds.length === 1 ? 'cmd' : 'cmds'})`;
+      out.push(
+        '  ' + formatRow(`${registry.binary} ${top} <subcmd>`, desc + tag),
+      );
     }
   }
-  return out.map((l) => (l === '' ? '' : '  ' + l));
+  return out;
 }
 
 function belongsToGroup(commandName: string, prefixes: string[]): boolean {

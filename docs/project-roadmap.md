@@ -1,7 +1,7 @@
 # bunny-tools Project Roadmap
 
 **Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.26 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management + SSL Provisioning Live ✓
-**Current Version:** v0.1.0-rc.37 (shipped 2026-05-03)  
+**Current Version:** v0.1.0-rc.38 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
 **Release Cadence:** 13 RCs shipped (rc.14–rc.26) after rc.13
 **Last Updated:** 2026-05-03
@@ -37,6 +37,7 @@ bunny-tools v0.1.0-rc.26 ships all **55 commands** live on npm (latest & alpha d
 - **rc.35:** **rc.34 live-test fixes + e2e** — SetResponseHeader compile fix (P1=name, P2=value; was combined string); idempotent sync no longer reports false `updated` count (trust description hash for identity); MCP `domain_connect` e2e gated on `BUNNY_E2E_CERT_DOMAIN`+`BUNNY_E2E_DNS_ZONE_ID`; live-verified on bytek.org (domain connect end-to-end in 2.5s; sync 4-stage round-trip clean); 173 unit + 46 e2e tests
 - **rc.36:** **Auto-ForceSSL + orphan rule cleanup** — `enable-ssl` and `domain connect` auto-flip `ForceSSL=true` after cert lands (HTTP→HTTPS redirect, 2026 default), `--no-force-ssl` opt-out; new `pullzone hostname force-ssl` command + MCP tool; edge-rule sync now runs unconditionally with non-empty pullZones (was skipped when both arrays empty → orphaned managed rules on un-configure); 174 unit tests; 57 commands, 20 MCP tools
 - **rc.37:** **Idempotent hostname `add` collapses 3 subcommands; `--no-X` flag bug fix** — BREAKING: removed `pullzone hostname enable-ssl` and `pullzone hostname force-ssl`; both rolled into idempotent `pullzone hostname add` (default: link + cert + ForceSSL on; `--no-force-ssl` flips OFF); fixed latent rc.30+ bug where Commander's `--no-X` negation was read incorrectly (silently always undefined); 55 commands, 18 MCP tools
+- **rc.38:** **Sectioned root help; one line per service** — `bunny --help` now buckets commands into `GETTING STARTED` / `SERVICES` / `UTILITIES`; each top-level group (pullzone, dns, stream, etc.) collapses to a single `bunny <group> <subcmd>     <description> (N cmds)` row instead of fragmenting into multiple sub-group pointer rows; sub-group help unchanged (still expands all leaves); matches wrangler/gh/aws pattern; 174 unit tests
 
 **Status:** GA-ready. All phases + MCP harness + DNS REDIRECT e2e live. Current backlog for v0.2: containers app create (Bunny v3 schema fix pending), headers/rewrites sugar, live emulator.
 

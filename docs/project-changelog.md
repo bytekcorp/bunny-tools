@@ -4,6 +4,31 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.38] — 2026-05-03 (Sectioned root help; one line per service)
+
+### Added
+- **Root help (`bunny --help`) now sectioned wrangler/gh/aws-style:**
+  - `GETTING STARTED` — daily-workflow commands (init, deploy, configure).
+  - `SERVICES` — one line per top-level group (pullzone, domain, dns, stream, storage, storagezone, containers, scripting). Each row reads `bunny <group> <subcmd>     <description> (N cmds)`.
+  - `UTILITIES` — discovery + maintenance (purge, use, whoami, manifest, mcp, install, update, docs).
+- **Sub-group help unchanged** — `bunny pullzone --help` still expands all 11 leaves (including former sub-groups like `pullzone hostname add`, `pullzone edgerule list`).
+
+### Fixed
+- **Sub-group fragmentation.** Previously root help split each top-level service into multiple pointer rows (e.g. `pullzone ...`, `pullzone edgerule ...`, `pullzone hostname ...` — 3 rows for one service). Now collapsed into a single `bunny pullzone <subcmd>` line per service.
+
+### Internal
+- `COMMAND_GROUPS` (rc.20–37) replaced with three categorical `SECTIONS`. Renderer auto-collapses any top-level word with sub-commands; renders bare commands directly when no subcommands exist.
+
+### Test Coverage
+- 174/174 unit (unchanged; help renderer has no dedicated tests yet — output is human-only and verified by inspection).
+- 46 e2e (unchanged).
+
+### Surface (unchanged)
+- 55 active commands.
+- 18 MCP tools.
+
+---
+
 ## [0.1.0-rc.37] — 2026-05-03 (Idempotent hostname `add` collapses 3 subcommands; `--no-X` flag bug fix)
 
 Surface simplification + a real bug found via live testing.
