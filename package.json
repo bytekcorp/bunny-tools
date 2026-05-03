@@ -35,6 +35,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "vitest run --config vitest.config.e2e.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src test scripts --ext .ts,.mjs",
     "lint:fix": "eslint src test scripts --ext .ts,.mjs --fix",

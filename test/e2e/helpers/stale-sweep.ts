@@ -1,0 +1,101 @@
+// Vitest globalSetup — before the suite starts, find any `bt-e2e-*` resource
+// older than 24h and delete it. Catches leftovers from prior runs that
+// failed before their cleanup phase. Returns no teardown hook.
+
+import { bunnyCli } from './bunny-cli.js';
+import { parseStaleAge } from './prefix.js';
+import type { ResourceType } from './cleanup-registry.js';
+
+const STALE_AFTER_SEC = 24 * 60 * 60; // 24h
+
+type ListedRow = { type: ResourceType; id: string; name: string };
+
+export default async function setup(): Promise<void> {
+  if (process.env['BUNNY_E2E'] !== '1') return;
+  if (!process.env['BUNNY_ACCOUNT_KEY']) return;
+
+  const stale: ListedRow[] = [];
+  for (const type of ['storagezone', 'pullzone', 'dns', 'stream-library', 'scripting'] as const) {
+    try {
+      const rows = await listResources(type);
+      for (const r of rows) {
+        const age = parseStaleAge(r.name);
+        if (age !== null && age > STALE_AFTER_SEC) stale.push(r);
+      }
+    } catch (err) {
+      // Don't gate the suite on a sweep error, but make the failure visible
+      // in the captured log so it lands in the GH issue body. A silent sweep
+      // failure would let orphans pile up undetected.
+      console.error(`[stale-sweep] list ${type} failed: ${(err as Error).message}`);
+    }
+  }
+
+  for (const r of stale) {
+    await deleteOne(r).catch((err) => {
+      console.error(`[stale-sweep] delete ${r.type}:${r.id} failed: ${(err as Error).message}`);
+    });
+  }
+}
+
+async function listResources(type: ResourceType): Promise<ListedRow[]> {
+  // Use --json instead of parsing the human table. Table column order is
+  // a UI concern that may change with renderer tweaks; the JSON shape is
+  // tied to the underlying Bunny API and is therefore much more stable.
+  const args = (() => {
+    switch (type) {
+      case 'storagezone':
+        return ['storagezone', 'list', '--json'];
+      case 'pullzone':
+        return ['pullzone', 'list', '--json'];
+      case 'dns':
+        return ['dns', 'list', '--json'];
+      case 'stream-library':
+        return ['stream', 'library', 'list', '--json'];
+      case 'scripting':
+        return ['scripting', 'list', '--json'];
+      case 'containers-app':
+        return ['containers', 'app', 'list', '--json'];
+    }
+  })();
+  const r = await bunnyCli(args);
+  if (r.exitCode !== 0) return [];
+  let rows: unknown;
+  try {
+    rows = JSON.parse(r.stdout);
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(rows)) return [];
+  const out: ListedRow[] = [];
+  for (const raw of rows) {
+    if (raw === null || typeof raw !== 'object') continue;
+    const obj = raw as Record<string, unknown>;
+    const id = obj['Id'];
+    const name = (obj['Name'] ?? obj['Domain']) as unknown;
+    if (typeof id !== 'number' && typeof id !== 'string') continue;
+    if (typeof name !== 'string') continue;
+    if (!name.startsWith('bt-e2e-')) continue;
+    out.push({ type, id: String(id), name });
+  }
+  return out;
+}
+
+async function deleteOne(r: ListedRow): Promise<void> {
+  const args = (() => {
+    switch (r.type) {
+      case 'storagezone':
+        return ['storagezone', 'delete', r.id, '--yes'];
+      case 'pullzone':
+        return ['pullzone', 'delete', r.id, '--yes'];
+      case 'dns':
+        return ['dns', 'delete', r.id, '--yes'];
+      case 'stream-library':
+        return ['stream', 'library', 'delete', r.id, '--yes'];
+      case 'scripting':
+        return ['scripting', 'delete', r.id, '--yes'];
+      case 'containers-app':
+        return ['containers', 'app', 'delete', r.id, '--yes'];
+    }
+  })();
+  await bunnyCli(args);
+}
