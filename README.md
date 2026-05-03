@@ -110,7 +110,7 @@ bunny storage sync ./dist --zone=my-app
 | `bunny pullzone update <id> --body=<json>` | Update a pull zone (raw JSON body) |
 | `bunny pullzone delete <id>` | Delete a pull zone |
 | `bunny pullzone edgerule list <id>` | List edge rules on a pull zone |
-| `bunny pullzone edgerule add <id> --body=<json>` | Add an edge rule (raw JSON rule) |
+| `bunny pullzone edgerule add <id> --rule=<json>` | Add an edge rule (raw JSON rule) |
 | `bunny pullzone edgerule delete <id> <rule-id>` | Delete an edge rule |
 
 > Hyphenated aliases also work: `pull-zone`, `edge-rule`.
@@ -130,14 +130,14 @@ bunny pullzone edgerule list 12345
 | `bunny dns create <domain>` | Create a DNS zone |
 | `bunny dns delete <id>` | Delete a DNS zone |
 | `bunny dns record list <zone>` | List records on a zone |
-| `bunny dns record add <zone> --type=A --name=... --value=...` | Add a record |
+| `bunny dns record add <zone> <type> <name> <value>` | Add a record (positional args) |
 | `bunny dns record update <zone> <record-id> --body=<json>` | Update a record |
 | `bunny dns record delete <zone> <record-id>` | Delete a record |
 
 **Example**
 
 ```bash
-bunny dns record add example.com --type=A --name=www --value=1.2.3.4
+bunny dns record add 783181 A www 1.2.3.4 --ttl=300
 ```
 
 ## Stream
@@ -146,14 +146,15 @@ bunny dns record add example.com --type=A --name=www --value=1.2.3.4
 | --- | --- |
 | `bunny stream library list` | List Stream libraries |
 | `bunny stream library create <name>` | Create a Stream library |
-| `bunny stream video list --library=<id>` | List videos in a library |
-| `bunny stream video upload <file> --library=<id>` | Upload a video to a library |
-| `bunny stream video delete <video-id> --library=<id>` | Delete a video |
+| `bunny stream library delete <id>` | Delete a Stream library |
+| `bunny stream video list <library>` | List videos in a library |
+| `bunny stream video upload <library> <file>` | Upload a video to a library |
+| `bunny stream video delete <library> <video-id>` | Delete a video |
 
 **Example**
 
 ```bash
-bunny stream video upload ./demo.mp4 --library=42
+bunny stream video upload 42 ./demo.mp4 --title="My demo"
 ```
 
 ## Magic Containers
@@ -161,8 +162,9 @@ bunny stream video upload ./demo.mp4 --library=42
 | Command | Description |
 | --- | --- |
 | `bunny containers app list` | List container apps |
-| `bunny containers app create <name>` | Create a container app |
 | `bunny containers app delete <id>` | Delete a container app |
+
+> `containers app create` is deferred to v0.2 — Bunny's v3 schema requires `runtimeType` + `containerTemplates[]` + `autoScaling` which the current CLI surface doesn't yet model. Manage creation via the Bunny dashboard for now.
 
 ## Edge Scripting
 
