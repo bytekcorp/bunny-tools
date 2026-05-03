@@ -1,9 +1,10 @@
 # bunny-tools: Product Overview & Development Requirements
 
-**Status:** v0.1.0 GA SHIPPED (Phases 1–4, 6–7 complete; Phase 5 → v0.2)  
-**Version:** v0.1.0  
+**Status:** v0.1.0-rc.10 (Live on npm; alpha channel. GA pending live integration tests.)  
+**Version:** 0.1.0-rc.10  
 **Created:** 2026-05-02  
-**GA Released:** 2026-05-02  
+**Current Release:** 2026-05-03  
+**Next Gate:** Live integration testing on real Bunny account  
 **Package:** `bunny-tools` (npm)  
 **Binary:** `bunny`  
 **License:** MIT  
@@ -105,52 +106,69 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 | 2 | alpha.1 | `bunny deploy` E2E (dry-run + real) | ✅ Nock-mocked, working |
 | 3 | alpha.2 | Storage + zone CRUD functional | ✅ All 18 commands active |
 | 4 | alpha.3 | DNS CRUD functional | ✅ All 8 commands active |
-| 5 | (deferred) | Stream/Containers/Scripting | 📦 v0.2 (scope cut for faster GA) |
-| 6 | rc.1 | MCP server + docs | ✅ ~14 tools, 3 resources |
-| 7 | 0.1.0 GA | GH Action + npm publish | ✅ SHIPPED 2026-05-02 |
-| **Actual** | 49 commands | All active + tested | ✅ 91+ tests passing |
+| 5 | shipped rc.10 | Stream/Containers/Scripting | ✅ All 11 commands active |
+| 6 | rc.1 | MCP server + docs | ✅ 15 tools, 3 resources |
+| 7 | rc.10 | GH Action + npm publish (OIDC) | ✅ Tagged v0.1.0-rc.10 |
+| **Live now** | npm/alpha | 49 commands + 117 tests | ✅ rc.2–rc.10 shipped |
+| **GA gate** | — | Live integration testing | ⏳ Next phase |
 
 ---
 
-## Release Cadence (Actual)
+## Release Cadence (rc.2 through rc.10)
 
-- **v0.1.0-alpha.0** — Phase 1 (2026-05-02): foundations + manifest
-- **v0.1.0-alpha.1** — Phase 2 (2026-05-02): deploy loop
-- **v0.1.0-alpha.2** — Phase 3 (2026-05-02): storage + zones
-- **v0.1.0-alpha.3** — Phase 4 (2026-05-02): DNS
-- **v0.1.0-rc.1** — Phase 6 (2026-05-02): MCP + docs (Phase 5 deferred)
-- **v0.1.0** — Phase 7 (2026-05-02): GH Action + npm publish [✅ SHIPPED]
+All releases published to npm under `@alpha` dist-tag (via OIDC trusted publishing; no NPM_TOKEN).
 
-**Note:** All phases 2–4, 6–7 shipped on same day. Phase 5 preemptively cut to v0.2.
+- **v0.1.0-rc.2** (2026-05-02): Manual OTP. Unified init/configure (firebase-style feature picker).
+- **v0.1.0-rc.3** (2026-05-02): init simplification followed. configure removed (moved to auth).
+- **v0.1.0-rc.4/rc.5** (never published): OIDC setup / debugging; tombstones during GitHub token migration.
+- **v0.1.0-rc.6** (2026-05-02): First OIDC publish. repository.url + bin path fixes.
+- **v0.1.0-rc.7** (2026-05-02): Wrangler-style space-delimited subcommands (rc.6→rc.7 BREAKING). Added whoami, docs, global flags (-c, --cwd, -e, -p), init [dir] positional.
+- **v0.1.0-rc.8** (2026-05-02): 6 wrangler wins follow-up. Global -p/--profile added; init [dir] finalized.
+- **v0.1.0-rc.9** (2026-05-03): Multi-account profiles. configure restored (profile-aware). auth removed (rc.7→rc.9 BREAKING). Auto-migration from rc.8 flat credentials.json shape.
+- **v0.1.0-rc.10** (2026-05-03): UX polish. Zone auto-defaults, group descriptions, hyphen aliases, error detail, --names flag. Phase 5 commands shipped (stream, containers, scripting).
+
+All shipped same project (no split); 117 tests passing; 49 active commands.
 
 ---
 
-## Command Taxonomy (v0.1 Complete)
+## Command Taxonomy (v0.1.0-rc.10 — 49 Active Commands)
 
-```
-bunny init [--non-interactive --features=storage,dns,... --account-key=... --storage-zone=... --storage-password=... --pull-zone=... --purge=...]
-bunny auth set|list|clear
-bunny use <alias>
-bunny deploy [--dry-run]
-bunny purge <target>
+**Setup & Daily:**
+- `bunny init [dir]` — auth + feature multi-select + per-feature config
+- `bunny configure` — profile-aware credential walkthrough (rc.9+)
+- `bunny configure list|switch|remove` — multi-account management (rc.9+)
+- `bunny deploy [--dry-run]` — storage sync + CDN purge (the main command)
+- `bunny purge <target>` — standalone cache purge by URL/tag/zone
+- `bunny whoami` — show active credentials (rc.8+)
+- `bunny docs [topic]` — quick help (rc.8+)
 
-bunny storage:upload|download|list|delete|sync
-bunny storage-zone:list|get|create|update|delete
-bunny pull-zone:list|get|create|update|delete
-bunny pull-zone:edge-rule:list|add|delete
+**Storage (with auto-default zone rc.10+):**
+- `bunny storage upload|download|list|delete|sync`
 
-bunny dns:list|get|create|delete
-bunny dns:record:list|add|update|delete
+**Zones (space-delimited syntax rc.7+; hyphen aliases rc.10+):**
+- `bunny storagezone list|get|create|update|delete` (aliases: storage-zone)
+- `bunny pullzone list|get|create|update|delete` (aliases: pull-zone)
+- `bunny pullzone edgerule list|add|delete` (aliases: edge-rule)
 
-bunny stream:library:list|create|delete
-bunny stream:video:list|upload|delete
+**DNS:**
+- `bunny dns list|get|create|delete`
+- `bunny dns record list|add|update|delete`
 
-bunny containers:list|create|deploy|delete
-bunny scripting:list|deploy|delete
+**Stream (Phase 5, shipped rc.10):**
+- `bunny stream library list|create|get|delete` (get/delete rc.10+)
+- `bunny stream video list|upload|delete`
 
-bunny manifest (Phase 1 ✓)
-bunny mcp (Phase 6)
-```
+**Magic Containers (Phase 5, shipped rc.10):**
+- `bunny containers app list|create|delete`
+
+**Edge Scripting (Phase 5, shipped rc.10):**
+- `bunny scripting list|deploy|delete`
+
+**Discovery & Config:**
+- `bunny manifest [--pretty --names]` (--names rc.10+)
+- `bunny mcp` — MCP stdio server
+- `bunny use <alias>` — alias switching
+
 
 ---
 

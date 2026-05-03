@@ -4,6 +4,126 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.10] — 2026-05-03 (UX Polish & Phase 5 Shipped)
+
+### Added
+- **Zone auto-defaults (H1):** `storage` commands default `--zone` from bunny.json or active alias. No `--zone` required when config present.
+- **Group descriptions (H3):** `bunny --help` shows real subcommand descriptions (`storage` → "File operations within a storage zone"), not stubs.
+- **Hyphenated aliases (H4, rc.10):** `pull-zone`, `storage-zone`, `edge-rule` all work alongside canonical flat forms.
+- **Error detail surfacing (M4):** CLI errors now format as `[errorKey] message (field: X)` when Bunny returns structured error JSON.
+- **`bunny manifest --names` (M5):** Emit one command name per line (useful for shell completion).
+- **Phase 5 un-deferred:** Stream/Containers/Scripting all 11 commands shipped (was planned for v0.2).
+  - `bunny stream library get|delete` (get/delete added rc.10)
+  - `bunny stream video list|upload|delete`
+  - `bunny containers app list|create|delete`
+  - `bunny scripting list|deploy|delete`
+
+### Changed
+- `src/core/storage-ops.ts` — New `resolveActiveZone()` helper for zone defaulting.
+- `src/manifest/registry.ts` — 49 active commands total (up from 38 in rc.9).
+- `src/manifest/types.ts` — Added `groups?: { name, description, aliases? }` to registry structure.
+- `src/cli.ts` — Walker now honors group descriptions and registers aliases per group.
+- Pull zone create: origin moved to positional arg (was `--origin=<url>`).
+
+### Fixed
+- Zone resolution no longer prompts redundantly when keychain has existing zone password.
+
+### Known Limitations (v0.2)
+- No live e2e harness (Nock mocking sufficient for v0.1)
+- Headers/rewrites/redirects sugar deferred (raw CRUD only)
+
+---
+
+## [0.1.0-rc.9] — 2026-05-03 (Multi-Account Profiles)
+
+### Added (BREAKING)
+- **Multi-account profiles (rc.9):** Credentials now stored per-profile in `~/.config/bunny-tools/credentials.json`.
+  ```json
+  {
+    "active": "default",
+    "profiles": {
+      "default": { "account": "...", "storage:my-app": "..." },
+      "work": { "account": "...", "storage:work-zone": "..." }
+    }
+  }
+  ```
+- **Global `-p/--profile` flag:** One-shot profile override for any command (mirrors AWS `--profile`).
+- **`BUNNY_PROFILE` env var:** Set active profile per-shell or per-direnv.
+- **`bunny configure` restored (rc.9, replaces auth):** Profile-aware interactive walkthrough.
+  - `bunny configure` — update active profile
+  - `bunny configure --profile=work` — update/create work profile
+  - `bunny configure list` — show all profiles + active marker
+  - `bunny configure switch <profile>` — change active profile
+  - `bunny configure remove [--profile=<name>] [--scope=<scope>]` — delete profile or scope
+- **Auto-migration (transparent):** rc.8 flat credentials shape automatically wrapped into `default` profile on first read.
+
+### Removed (BREAKING)
+- `bunny auth set`, `bunny auth list`, `bunny auth clear` — replaced by `bunny configure *`.
+
+### Changed
+- Credential resolver now profiles-aware. 6-step chain per active profile (flag > scoped env > generic env > keychain > file > prompt).
+- `bunny init` now interactive: if you run `bunny configure` first, `bunny init` remembers and doesn't re-ask storage zone + password.
+
+---
+
+## [0.1.0-rc.8] — 2026-05-02 (Wrangler Follow-up)
+
+### Added
+- **Global flag:** `-p/--profile <name>` (prepared for rc.9 multi-account; not yet used).
+- **`bunny whoami`:** Show active credentials (masked).
+- **`bunny docs [topic]`:** Quick help for topic.
+- **`bunny init [dir]` positional:** Optional target directory (was `--init <dir>`).
+
+### Changed
+- Global flags finalized: `-c/--config`, `--cwd`, `-e/--env`, `-p/--profile`.
+
+---
+
+## [0.1.0-rc.7] — 2026-05-02 (Wrangler-Style Space-Delimited)
+
+### Changed (BREAKING)
+- **Space-delimited subcommands (rc.7):** Replaced colon syntax with space-delimited (wrangler-style).
+  - Old: `bunny storage:upload`, `bunny pull-zone:edge-rule:add`
+  - New: `bunny storage upload`, `bunny pullzone edgerule add`
+  - Registry drives flat name expansion into nested Commander tree.
+
+### Added
+- **Global flags:** `-c/--config <path>`, `--cwd <dir>`, `-e/--env <alias>`.
+  - Applied via preAction hook; `--cwd` chdir's before config search.
+- **`bunny whoami`:** Show current account key (masked).
+- **`bunny docs [topic]`:** Quick help dispatcher.
+
+---
+
+## [0.1.0-rc.6] — 2026-05-02 (First OIDC Publish)
+
+### Added
+- **OIDC trusted publishing:** npm secrets via GitHub OIDC (no NPM_TOKEN in secrets).
+- **Workflow:** `.github/workflows/release.yml` publishes on tag push `v*`.
+
+### Changed
+- `package.json` — `repository.url` added for provenance.
+- `bin` path — standardized to `dist/cli.js`.
+
+---
+
+## [0.1.0-rc.3] — 2026-05-02 (Init Simplification)
+
+### Changed
+- **Firebase-style `bunny init` (rc.3):** Feature multi-select + per-feature config in one command.
+- `bunny configure` temporarily removed (reintroduced rc.9 as profile-aware).
+
+---
+
+## [0.1.0-rc.2] — 2026-05-02 (Manual OTP)
+
+### Added
+- **Unified auth + init flow:** `bunny init` handles both credentials + project setup.
+- **Feature picker:** Checkbox UI for Storage, DNS, Stream, Containers, Scripting.
+- Published manually via OTP (rc.2 only; rc.6+ use OIDC).
+
+---
+
 ## [0.1.0-rc.1] — 2026-05-02 (Phases 2–4, 6–7 Shipped; Phase 5 → v0.2)
 
 All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Scripting) preemptively deferred to v0.2 for faster GA stabilization.

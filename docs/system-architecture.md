@@ -1,7 +1,8 @@
 # bunny-tools System Architecture
 
-**Version:** v0.1.0-alpha.0 (Phase 1)  
-**Last Updated:** 2026-05-02
+**Version:** v0.1.0-rc.10  
+**Last Updated:** 2026-05-03
+**Status:** 49 active commands, 117 tests, 15 MCP tools, live on npm @alpha
 
 ---
 
@@ -87,11 +88,31 @@ bunny-tools is a **registry-driven CLI + MCP server** that abstracts Bunny.net's
 
 - Reads `src/manifest/registry.ts` at startup
 - Builds Commander.js tree dynamically (no hand-wired subcommands)
+- **Space-delimited syntax (rc.7+):** Command names split on whitespace, walk up tree
+  - E.g., `pullzone edgerule add` → create subgroup `pullzone` → subgroup `edgerule` → leaf `add`
+  - **Hyphenated aliases (rc.10+):** `pull-zone`, `storage-zone`, `edge-rule` all work via Commander.alias()
+- **Group descriptions (rc.10+):** Groups display descriptions in `--help` (not `pullzone commands`)
+- **Global flags:** `-c/--config <path>`, `--cwd <dir>`, `-e/--env <alias>`, `-p/--profile <name>` (rc.8+)
+  - Applied via preAction hook; `--cwd` chdir's first so config search is relative to new cwd
 - Intercepts `--help --json` → delegates to `src/manifest/render-help.ts`
-- Lazy-loads `coreFn` only when command invoked (keeps cold-start <50ms)
+- Lazy-loads `load()` only when command invoked (keeps cold-start <50ms)
 - Never imports `src/api/*` directly; only `src/manifest/*`
 
 **Entry point:** `dist/cli.js` → `bin: { bunny: dist/cli.js }` in package.json
+
+**Example command tree (rc.10):**
+```
+bunny init|deploy|purge|whoami|docs|mcp|use|manifest|configure          (leaf commands)
+bunny storage upload|download|list|delete|sync                           (nested: storage/…)
+bunny storagezone list|get|create|update|delete                          (nested: storagezone/…)
+bunny pullzone list|get|create|update|delete                             (nested: pullzone/…)
+  └─ bunny pullzone edgerule list|add|delete                             (3-level deep)
+bunny dns list|get|create|delete                                         (nested: dns/…)
+  └─ bunny dns record list|add|update|delete                             (3-level deep)
+bunny stream library|video (subgroups)                                    (nested: stream/…)
+bunny containers app (subgroup)                                          (nested: containers/…)
+bunny scripting list|deploy|delete                                       (nested: scripting/…)
+```
 
 ---
 
@@ -106,9 +127,9 @@ The registry is a declarative list of `CommandSpec` objects. Every surface deriv
 - **`schema/bunny.schema.json`** — zod schemas → JSON Schema
 - **MCP tool definitions** — command → MCP tool mapping (P6)
 
-**Current state (Phases 1–7 shipped):**
-- **Active:** 49 commands (manifest, auth, configure, init, deploy, purge, storage, zones, dns, mcp)
-- **Deferred to v0.2:** stream, containers, scripting (13 commands)
+**Current state (rc.10):**
+- **Active:** 49 commands (all phases 1–7 shipped; Phase 5 un-deferred rc.10)
+- **Deferred to v0.2:** only advanced features (headers/rewrites sugar, live emulator, plugins)
 
 Each entry carries:
 - `name`, `summary`, `description`
@@ -116,8 +137,9 @@ Each entry carries:
 - `examples[]` (all active commands)
 - `mcp?: {tool, description}` (MCP mapping for all active)
 - `status: 'active' | 'planned' | 'deferred'`
-- `phase: 1–7 (Phase 5 demoted)`
+- `phase: 1–7`
 - `load?: () => Promise<{ run }>` (lazy import)
+- `groups?: { name, description, aliases? }` (rc.10: group descriptions + hyphen aliases)
 
 **Key invariant:** Commands NEVER imported at startup; registry read once, cached.
 
@@ -166,9 +188,38 @@ type BunnyrcSchema = {
 
 Resolves active alias via CLI flag → env `BUNNY_ALIAS` → file default.
 
+#### **Credentials** (`~/.config/bunny-tools/credentials.json`, rc.9+ multi-account)
+
+Profile-based storage (mode 0600):
+
+```json
+{
+  "active": "default",
+  "profiles": {
+    "default": {
+      "account": "abc123...",
+      "storage:my-app": "pw-xyz...",
+      "stream:42": "lib-key..."
+    },
+    "work": {
+      "account": "def456...",
+      "storage:work-zone": "..."
+    }
+  }
+}
+```
+
+**Active profile selection (rc.9+):**
+1. `-p/--profile` CLI flag (one-shot override)
+2. `BUNNY_PROFILE` env var
+3. File's `active` field
+4. Default to `default` profile
+
+**Auto-migration (rc.9):** rc.8 flat shape automatically wrapped into `default` profile on first read.
+
 #### **Credential Resolver** (`src/config/credential-resolver.ts`)
 
-4-step credential resolution chain per scope:
+6-step credential resolution chain per scope, per active profile:
 
 ```ts
 type AuthScope =
@@ -177,18 +228,18 @@ type AuthScope =
   | { kind: 'stream'; libraryId: string }
   | { kind: 'database'; name: string };
 
-// Resolution order:
+// Resolution order (per active profile):
 // 1. Explicit CLI flag (--account-key, --storage-password, etc.)
-// 2. Scoped env var (BUNNY_ACCOUNT_KEY, BUNNY_STORAGE_PASSWORD_<ZONE>, etc.)
-// 3. Generic env fallback (BUNNY_STORAGE_PASSWORD for all zones, etc.)
-// 4. OS keychain via keytar (service: 'bunny-tools')
-// 5. JSON file (~/.config/bunny-tools/credentials.json, mode 0600)
+// 2. Scoped env per profile (BUNNY_ACCOUNT_KEY_<PROFILE>, BUNNY_STORAGE_PASSWORD_<PROFILE>_<ZONE>)
+// 3. Generic env fallback (BUNNY_STORAGE_PASSWORD — treated as active profile)
+// 4. OS keychain at <profile>:<scope> (service: 'bunny-tools')
+// 5. JSON file profiles[active_profile][scope]
 // 6. Interactive prompt (TTY only; CI fails fast with actionable error)
 
-export async function resolveCredential(scope: AuthScope): Promise<string>;
+export async function resolveCredential(scope: AuthScope, profile?: string): Promise<string>;
 ```
 
-**Key property:** Credentials NEVER logged, NEVER embedded in error messages.
+**Key property:** Credentials NEVER logged, NEVER embedded in error messages. Masked as `****…<last4>`.
 
 ---
 
@@ -322,12 +373,11 @@ Every command's surface is derived from `src/manifest/registry.ts`:
    - Lazy-loads `src/commands/manifest.js`
 3. Command executor (`src/commands/manifest.ts`):
    - Calls `run({ flags: { pretty: true }, ... })`
-   - Invokes `renderManifest(registry, { pretty: true })`
-   - Writes JSON to `stdout`
-4. `renderManifest()`:
-   - Serializes registry as JSON
-   - If `--pretty`, indents
-   - Returns string
+   - Invokes `renderRegistryHelpJson(registry)` from `src/manifest/render-help.ts`
+   - Writes JSON to `stdout` via `JSON.stringify(data, null, pretty ? 2 : 0)`
+4. `--names` mode (rc.10):
+   - Filters `registry.commands` to `status === 'active'`
+   - Writes one command name per line to `stdout`
 5. CLI writes to stdout (command reserved, not logging layer)
 
 **Zero network calls.** Registry in-memory already.

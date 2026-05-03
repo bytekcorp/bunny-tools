@@ -1,17 +1,18 @@
 # bunny-tools Project Roadmap
 
-**Status:** Phases 2–4, 6–7 Complete ✓ | Phase 5 Deferred to v0.2  
-**Current Version:** v0.1.0-rc.1 (shipped 2026-05-02)  
-**Target GA:** v0.1.0 (post-Phase 7 release)  
-**Last Updated:** 2026-05-02
+**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.10 Live | GA Pending Live Integration Tests  
+**Current Version:** v0.1.0-rc.10 (shipped 2026-05-03)  
+**Install:** `npm i -g bunny-tools@alpha`
+**Next Gate:** Live integration testing on real Bunny account  
+**Last Updated:** 2026-05-03
 
 ---
 
 ## Executive Summary
 
-bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 weeks, with internal alpha releases every week. Phase 1 (this sprint) delivers foundations: registry-driven CLI, HTTP client with rate-limit resilience, config system, and credential resolution. Users can dogfood deploy loop in week 2 (Phase 2 alpha.1).
+bunny-tools v0.1.0-rc.10 ships all 49 commands live on npm (@alpha dist-tag). Phases 1–7 complete. Two breaking changes shipped (rc.7: space-delimited syntax; rc.9: auth → configure with multi-account profiles). Phase 5 commands shipped rc.10 (stream, containers, scripting). 
 
-**Slip gate:** If Phase 4 (DNS) extends >2 weeks, Phase 5 (Stream/Containers/Scripting) demotes to v0.2; Phase 7 ships 0.1.0 after Phase 4 + 6.
+**Next gate:** Live integration testing on real Bunny account before v0.1.0 GA. Current backlog: H2 init prefill, H5 configure pull-zone step, M1 origin positional, M3 stream library get/delete (deferred from rc.10 plan, now shipped rc.10).
 
 ---
 
@@ -252,7 +253,26 @@ bunny-tools v0.1 ships the complete Bunny.net CLI surface in 7 phases over 7 wee
 
 ---
 
-## Timeline (Completed 2026-05-02)
+## RC Progression (rc.2 through rc.10)
+
+Post-Phase-7, 9 release candidates shipped to npm (@alpha dist-tag) via OIDC trusted publishing.
+
+| RC | Date | Key Changes | Breaking? |
+|----|----|---|---|
+| rc.2 | 2026-05-02 | Unified init (firebase-style feature picker). Manual OTP publish. | — |
+| rc.3 | 2026-05-02 | Init simplification; removed `configure` (briefly). | Yes |
+| rc.4/5 | — | Tombstones (OIDC setup, never published). | — |
+| rc.6 | 2026-05-02 | First OIDC publish. repository.url, bin path fixes. | — |
+| rc.7 | 2026-05-02 | **Wrangler-style space-delimited** `pullzone edgerule add`. Global `-c/--cwd/-e/-p` flags. `whoami`, `docs`, `init [dir]`. | **Yes** (colon → space) |
+| rc.8 | 2026-05-02 | Wrangler wins follow-up. Global `-p/--profile` multi-account prep. | — |
+| rc.9 | 2026-05-03 | **Multi-account profiles.** `configure` restored (profile-aware). `auth` removed. Auto-migration rc.8→rc.9. | **Yes** (auth → configure) |
+| rc.10 | 2026-05-03 | UX polish. Zone auto-defaults (H1). Group descriptions (H3). Hyphen aliases (H4). Error detail (M4). `--names` flag. **Phase 5 shipped** (stream, containers, scripting). | — |
+
+**Install:** `npm i -g bunny-tools@alpha` (installs rc.10)
+
+---
+
+## Timeline (Phases Completed 2026-05-02; RCs through 2026-05-03)
 
 ```
 Week 1 (May 2–8)      Phase 1: Bootstrap & Foundations       ✅ COMPLETE

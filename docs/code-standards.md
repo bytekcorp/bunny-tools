@@ -1,7 +1,8 @@
 # bunny-tools Code Standards & Engineering Rules
 
-**Version:** Phases 1–4, 6–7 shipped  
-**Last Updated:** 2026-05-02
+**Version:** v0.1.0-rc.10  
+**Last Updated:** 2026-05-03
+**Status:** 49 active commands, space-delimited naming, multi-account profiles, zone auto-defaults
 
 ---
 
@@ -21,10 +22,15 @@
 |------|-----------|---------|
 | TypeScript source | kebab-case | `credential-resolver.ts`, `render-help.ts` |
 | Test files | `{source}.test.ts` | `http.test.ts` |
-| Build scripts | kebab-case .mjs | `post-build.ts`, `generate-manifest.mjs` |
-| Directories | kebab-case | `src/api/`, `src/manifest/` |
+| Build scripts | kebab-case .ts | `post-build.ts`, `generate-manifest.ts` (tsx runner) |
+| Directories | kebab-case | `src/api/`, `src/manifest/`, `src/commands/pull-zone/` |
+| Command names (registry) | space-delimited | `pullzone edgerule add` (directory: `src/commands/pull-zone/edge-rule/`) |
+| Command names (CLI output) | flattened or hyphenated | `bunny pullzone edgerule add` or `bunny pull-zone edge-rule add` (aliases, rc.10+) |
 
-**Rationale:** Self-documenting names help LLM tools (Grep, Glob) understand purpose without reading content.
+**Rationale:** 
+- Source files: kebab-case for filesystem readability
+- Command names: space-delimited in registry (canonical); directories use kebab-case; both forms (flat + hyphenated) work at CLI via aliases (rc.10+)
+- Self-documenting names help LLM tools understand purpose without reading content
 
 ### File Size
 
@@ -80,6 +86,88 @@ scripts/
 
 ---
 
+## Command Registration (rc.7+ Space-Delimited)
+
+### Registry Entry
+
+Commands declared in `src/manifest/registry.ts` with space-delimited names:
+
+```ts
+{
+  name: 'pullzone edgerule add',              // Space-delimited canonical
+  summary: 'Add edge rule to a pull zone',
+  description: '...',
+  args: [
+    { name: 'pullZoneId', ... },
+    { name: 'ruleJson', ... }
+  ],
+  flags: [ ... ],
+  examples: [ ... ],
+  load: () => import('../commands/pull-zone/edge-rule/add.js'),
+}
+```
+
+### File Organization
+
+Directory structure mirrors CLI tree but uses kebab-case:
+
+```
+src/commands/
+├── manifest.ts
+├── init.ts
+├── deploy.ts
+├── storage/
+│   ├── upload.ts
+│   └── ...
+├── pull-zone/              # Directory: kebab-case
+│   ├── list.ts
+│   ├── create.ts
+│   └── edge-rule/          # Nested subdir for 3-level commands
+│       ├── list.ts
+│       ├── add.ts
+│       └── delete.ts
+```
+
+### Group Descriptions (rc.10+)
+
+Registry groups declare metadata used by CLI:
+
+```ts
+{
+  groups: [
+    { name: 'pullzone', description: 'Manage pull zones (CDN).', aliases: ['pull-zone'] },
+    { name: 'pullzone edgerule', description: 'Manage edge rules.', aliases: ['edge-rule'] },
+  ],
+}
+```
+
+CLI walker creates intermediate group commands with these descriptions; `bunny --help` shows real prose, not stubs.
+
+### Hyphen Aliases (rc.10+)
+
+Any group can declare aliases in `.aliases[]`:
+
+```ts
+// In cli.ts walker:
+if (meta?.aliases) {
+  const seen = new Set([groupName]);
+  for (const alias of meta.aliases) {
+    if (!seen.has(alias)) {
+      group.alias(alias);
+      seen.add(alias);
+    }
+  }
+}
+
+// User can now run:
+bunny pull-zone list           // alias
+bunny pullzone list            // canonical
+bunny storage-zone create ...  // alias
+bunny storagezone create ...   // canonical
+```
+
+---
+
 ## Language & Syntax
 
 ### TypeScript
@@ -109,32 +197,16 @@ scripts/
 
 ### Naming
 
-| Entity | Convention | Example |
-|--------|-----------|---------|
-| Files | kebab-case | `credential-resolver.ts` |
-| Types | PascalCase | `CommandSpec`, `BunnyApiError` |
-| Functions/vars | camelCase | `resolveCredential()`, `configDir` |
-| Constants | UPPER_SNAKE | `DEFAULT_RETRY`, `KEYCHAIN_SERVICE` |
-| Private (module scope) | underscore prefix | `_internal`, `_parseError()` |
+| Entity | Convention |
+|--------|-----------|
+| Files | kebab-case (`credential-resolver.ts`) |
+| Types | PascalCase (`CommandSpec`, `BunnyApiError`) |
+| Functions/vars | camelCase (`resolveCredential()`, `configDir`) |
+| Constants | UPPER_SNAKE (`DEFAULT_RETRY`, `KEYCHAIN_SERVICE`) |
 
 ### Imports
 
-**Preferred order:**
-1. Node builtins (`fs`, `path`, `http`)
-2. npm packages (`undici`, `zod`, `commander`)
-3. Relative imports from sibling/parent modules
-
-```ts
-import { request } from 'undici';
-import { z } from 'zod';
-import type { AuthScope } from '../api/http.js';
-import { logger } from '../util/logger.js';
-```
-
-**Import paths:**
-- Always use full `.js` extension (bundler requirement)
-- Prefer relative paths within `src/`
-- Never `..` more than 2 levels; if needed, split the file
+Prefer: builtins → npm packages → relative imports. Always use `.js` extension (bundler). No `..` >2 levels.
 
 ---
 
@@ -171,21 +243,7 @@ Controlled via `LOG_LEVEL` environment variable:
 
 ### Credential Handling
 
-**Never log credentials at ANY level.**
-
-✗ **Bad:**
-```ts
-logger.debug(`Resolved credential: ${credential}`);
-logger.info(`Auth scope: account, Key: ${key}`);
-```
-
-✓ **Good:**
-```ts
-logger.debug(`Resolved credential for account scope`);
-logger.info(`Auth scope: account (masked: ${maskCredential(key)})`);
-```
-
-**Tested via spy:** `test/config/credentials.test.ts` asserts credentials never appear in logs.
+Never log credentials. Test via spy assertion (credentials.test.ts).
 
 ---
 
@@ -208,74 +266,48 @@ logger.info(`Auth scope: account (masked: ${maskCredential(key)})`);
 
 ### No Side Effects in Core
 
-`src/core/*` functions must be:
-- **Pure:** same inputs → same outputs (modulo network)
-- **Typeful:** explicit arg + return types
-- **Validating:** zod at boundaries
-- **Stateless:** no instance variables, no closure state
-- **Transparent:** throw on errors, return results
-
-✗ **Bad (belongs in command layer):**
-```ts
-export async function deploy(config: Config): Promise<void> {
-  const spinner = ora('Deploying...').start();
-  try {
-    await uploadFiles(...);
-    spinner.succeed('Done');
-  } catch (err) {
-    spinner.fail('Failed');
-    process.exit(1);
-  }
-}
-```
-
-✓ **Good (core function):**
-```ts
-export async function deploy(config: Config): Promise<DeployResult> {
-  const plan = computePlan(config);  // no side effects
-  const result = await executeUploads(plan);  // network only
-  return result;  // caller renders spinner, handles exit
-}
-```
-
-**Command layer wraps:**
-```ts
-export async function run({ flags, raw }: ParsedInvocation): Promise<number> {
-  const config = loadBunnyJson();
-  const spinner = ora('Deploying...').start();
-  try {
-    const result = await core.deploy(config);
-    spinner.succeed(`Deployed ${result.count} files`);
-    return 0;
-  } catch (err) {
-    spinner.fail(err.message);
-    return 1;
-  }
-}
-```
+`src/core/*` functions: pure (same input → same output), typed, validated, stateless, transparent. Never UI/exit/console.log. Commands wrap core + handle UI.
 
 ---
 
 ## HTTP & Network
 
-### Single Client
+### Single HTTP Client
 
-**All HTTP goes through `src/api/http.ts`.**
+All HTTP via `src/api/http.ts` (callBunny function). No direct fetch/undici elsewhere.
 
-No direct `fetch`, `undici.request`, or `http.request` elsewhere.
+### Zone Defaults (rc.10+)
+
+Storage commands (`upload`, `download`, `list`, `delete`, `sync`) auto-default `--zone` in precedence order:
 
 ```ts
-import { callBunny } from '../api/http.js';
-
-const zones = await callBunny({
-  base: 'https://api.bunny.net',
-  path: '/storagezone',
-  method: 'GET',
-  query: { page: 1, perPage: 1000 },
-  scope: { kind: 'account' },
-  retry: { max: 5, baseMs: 500 },
-});
+// src/core/storage-ops.ts helper (rc.10+)
+export function resolveActiveZone(
+  override?: string,              // --zone flag
+  bunnyJson?: BunnyJson,         // loaded config
+  activeAlias?: string           // from BUNNY_ALIAS env or cli.ts flag
+): string {
+  if (override) return override;
+  if (activeAlias?.storageZone) return activeAlias.storageZone;
+  if (bunnyJson?.deploy?.storageZone) return bunnyJson.deploy.storageZone;
+  throw new ConfigError('Storage zone required; provide --zone, set bunny.json, or use an alias');
+}
 ```
+
+**Usage in commands:**
+```ts
+export async function run({ flags, raw }: ParsedInvocation): Promise<number> {
+  const zone = resolveActiveZone(
+    flags.zone,
+    loadBunnyJson(),
+    resolveBunnyrc()?.aliases?.[BUNNY_ALIAS]
+  );
+  logger.info(`Uploading to zone: ${zone}`);  // Confirm resolved zone to user
+  // ... proceed
+}
+```
+
+**Consequence:** `bunny storage upload x.txt /x` works if bunny.json or active alias has `storageZone` defined.
 
 ### Pagination Contract
 
@@ -520,288 +552,24 @@ describe('credential-resolver', () => {
 });
 ```
 
-### Mocking HTTP Responses
+### HTTP Mocking
 
-```ts
-import nock from 'nock';
-import { callBunny } from '../api/http.js';
-
-it('retries on 429 with Retry-After', async () => {
-  nock('https://api.bunny.net')
-    .get('/storagezone')
-    .reply(429, {}, { 'Retry-After': '2' })
-    .get('/storagezone')
-    .reply(200, [{ Id: 1, Name: 'zone-1' }]);
-
-  const result = await callBunny({
-    base: 'https://api.bunny.net',
-    path: '/storagezone',
-    scope: { kind: 'account' },
-  });
-
-  expect(result).toEqual([{ Id: 1, Name: 'zone-1' }]);
-});
-```
-
-### No Real Network in Tests
-
-✗ **Bad:**
-```ts
-it('deploys to real Bunny', async () => {
-  const result = await callBunny({
-    base: 'https://api.bunny.net',
-    path: '/storagezone',
-    scope: { kind: 'account' },
-  });
-  expect(result).toBeDefined();
-});
-```
-
-✓ **Good:**
-```ts
-it('calls storage zone API', async () => {
-  nock('https://api.bunny.net')
-    .get('/storagezone')
-    .reply(200, []);
-
-  const result = await callBunny({
-    base: 'https://api.bunny.net',
-    path: '/storagezone',
-    scope: { kind: 'account' },
-  });
-
-  expect(result).toEqual([]);
-});
-```
+Use Nock to mock API responses. No real network calls. Vitest enforces via Nock failover on unmocked requests.
 
 ---
 
 ## Build & Distribution
 
-### Build Pipeline
+### Build & Generators
 
-```bash
-npm run build
-# 1. tsc -p tsconfig.build.json  → compiles src/ → dist/
-# 2. tsx scripts/post-build.ts   → runs generators
-```
+Generators read `src/manifest/registry.ts` and produce: `manifest.json`, `AGENTS.md`, `schema/bunny.schema.json`. CI drift-check verifies checked-in artifacts match. Never hand-edit generated files.
 
-### Post-Build Generators
+### Performance
 
-Three generators run automatically:
-
-1. **`generate-manifest.mjs`** → `manifest.json`
-2. **`generate-agents.mjs`** → `AGENTS.md`
-3. **`generate-schema.mjs`** → `schema/bunny.schema.json`
-
-All read `src/manifest/registry.ts` and produce checked-in artifacts.
-
-### CI Drift Check
-
-In `.github/workflows/ci.yml`:
-
-```yaml
-- run: npm run build
-- run: git diff --exit-code manifest.json AGENTS.md schema/bunny.schema.json
-```
-
-If generated artifacts differ from checked-in ones, CI fails. Prevents manual edits to generated files.
+Cold-start (`bunny --help`): <50ms. Lazy loading + single registry parse achieve this.
 
 ---
 
-## Generated Artifacts
+## MCP Rules (Phase 6+)
 
-**Checked into git:**
-- `manifest.json` — registry as JSON
-- `AGENTS.md` — command tree + human-curated sections
-- `schema/bunny.schema.json` — JSON Schema for bunny.json
-
-**Not edited by hand.** Regenerated on every build.
-
-**Structure:** Handcurated sections preserved in AGENTS.md between markers:
-
-```markdown
-<!-- HANDCURATED:START -->
-[User writes/edits this section]
-<!-- HANDCURATED:END -->
-
-<!-- AUTO:START -->
-[Auto-generated command tree, overwritten on build]
-<!-- AUTO:END -->
-```
-
----
-
-## Performance
-
-### Cold-Start Budget
-
-`bunny --help` must complete <50ms (measured locally via `hyperfine`).
-
-| Component | Target |
-|-----------|--------|
-| Node startup | ~5ms |
-| Load bundled JS | ~5ms |
-| Parse registry | ~3ms |
-| Build Commander tree | ~2ms |
-| Render help | ~0.5ms |
-| **Total** | <20ms (lots of headroom) |
-
-### Warm-Start (Credential Cache)
-
-Phase 2+ will cache zone→region lookups to `.bunny-state.json` (gitignored) for fast subsequent runs.
-
----
-
-## Linting & Formatting
-
-### ESLint
-
-```bash
-npm run lint
-```
-
-**Key rules:**
-- No `console.log` (use logger)
-- No `any` without comment
-- No unused variables
-- No `var` (use `const`/`let`)
-- No `require` (use ESM)
-- No `..` imports >2 levels
-- Boundary: commands/mcp must not import api
-
-### Prettier
-
-```bash
-npm run format
-```
-
-No strict formatting rules; Prettier handles.
-
----
-
-## MCP-Specific Rules
-
-### MCP Tools (Phase 6)
-
-**Pattern:** All tools are wrappers around `src/core/*` functions.
-
-**Critical:** MCP uses stdout for JSON-RPC transport. NEVER write to stdout in MCP tools.
-
-✗ **Bad:**
-```ts
-export async function deploy(args) {
-  console.log('Starting deploy...');  // BREAKS MCP JSON-RPC!
-  await core.deploy(args);
-}
-```
-
-✓ **Good:**
-```ts
-export async function deploy(args) {
-  logger.info('Starting deploy...');  // Logs to stderr
-  const result = await core.deploy(args);
-  return result;  // Return tool result, not log
-}
-```
-
-### MCP Resources
-
-**Pattern:** Read-only resources expose registry, AGENTS.md, current config (redacted).
-
-**Security:** Never expose credentials in resources. Mask sensitive fields.
-
----
-
-## Code Review Checklist
-
-Before merging, verify:
-
-- [ ] No raw HTTP outside `src/api/http.ts` (callBunny only)
-- [ ] No credentials in error messages or logs
-- [ ] All HTTP errors funnel through `parseBunnyErrorBody`
-- [ ] Strict TS; no `any` without justification
-- [ ] Commands/MCP only import core/manifest/util/config/ui, NOT api
-- [ ] Core logic has no side effects (no UI, no exit, no console)
-- [ ] List commands support `--json` flag
-- [ ] Destructive ops require `--yes` in non-TTY
-- [ ] DNS record types zod-validated before API call
-- [ ] Tests cover happy path + error cases + boundary conditions
-- [ ] No real network calls in tests (Nock enforced)
-- [ ] MCP tools never write stdout (stderr only)
-- [ ] Pagination always page=1, perPage=1000
-- [ ] Commit message follows conventional commits
-
----
-
-## Commit Messages
-
-Use conventional commits:
-
-```
-feat: add bunny deploy command with dry-run support
-fix: handle 429 rate limit with Retry-After header
-refactor: extract zone-cache logic to src/core/zones.ts
-test: add 80% coverage for http client retry logic
-docs: update architecture diagram for Phase 2
-chore: bump Commander to 12.0
-```
-
-No AI references. Focus on the "why," not just the "what."
-
----
-
-## Documentation
-
-### Code Comments
-
-Only comment **why**, not **what**. Code is the what.
-
-✗ **Bad:**
-```ts
-// Add 1 to count
-count++;
-```
-
-✓ **Good:**
-```ts
-// Bunny pagination is 1-indexed; increment for next batch
-page++;
-```
-
-### Module Docstrings
-
-Each module starts with a one-line purpose:
-
-```ts
-// Credential-resolver chain: flag → scoped env → generic env → keychain → file → prompt.
-// This module reads/writes the *location* of credentials at runtime; it never embeds them.
-
-import { ... };
-```
-
-### Function Docstrings (JSDoc for public APIs)
-
-```ts
-/**
- * Resolve a credential for the given scope, walking the chain:
- * 1) Explicit CLI flag override
- * 2) Scoped environment variables (BUNNY_ACCOUNT_KEY, etc.)
- * 3) OS keychain via keytar
- * 4) File store (~/.config/bunny-tools/credentials.json)
- * 5) Interactive prompt (TTY only)
- * 
- * Throws AuthError if no credential found and not TTY.
- */
-export async function resolveCredential(scope: AuthScope): Promise<string>;
-```
-
----
-
-## References
-
-- `.eslintrc.cjs` — linting rules
-- `.prettierrc` — formatting rules
-- `tsconfig.json` — TypeScript config
-- `vitest.config.ts` — test runner config
-- `src/core/README.md` — core invariant documentation
+MCP tools wrap `src/core/*`. Critical: stdout is JSON-RPC transport. Use stderr/logger only, never stdout.

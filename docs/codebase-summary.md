@@ -1,9 +1,12 @@
 # bunny-tools Codebase Summary
 
-**Version:** v0.1.0-rc.1 (Phases 1–4, 6–7 shipped)  
-**Last Updated:** 2026-05-02  
-**Total Files:** 39 source + 16 test + 3 config files  
-**Lines of Code (src/):** ~2,400 LOC  
+**Version:** v0.1.0-rc.10  
+**Last Updated:** 2026-05-03  
+**Total Files:** ~65 source + 20 test + 3 config files  
+**Lines of Code (src/):** ~4,200 LOC
+**Commands:** 49 active (all phases 1–7 shipped)
+**Tests:** 117 passing across 20 test files
+**Test Coverage:** ≥80% core layers enforced  
 
 ---
 
@@ -52,20 +55,25 @@ Commander.js entry point. Reads `src/manifest/registry.ts`, builds dynamic CLI t
 
 ### Manifest (Registry & Help Rendering)
 
-**`src/manifest/registry.ts`** (160+ lines)
+**`src/manifest/registry.ts`** (500+ lines, rc.10)
 
-★ **Single source of truth** for all v0.1 commands. Declarative list of 47 `CommandSpec` objects:
-- 1 active (`manifest`)
-- 46 planned stubs (phases 2–6)
+★ **Single source of truth** for all v0.1 commands. Declarative list of 49 active `CommandSpec` objects:
+- Phase 1: `manifest` (registry as JSON)
+- Phase 2: `init`, `configure`, `configure list|switch|remove`, `deploy`, `purge`, `use`, `whoami`, `docs`
+- Phase 3: `storage` (5), `storagezone` (5), `pullzone` (5), `pullzone edgerule` (3)
+- Phase 4: `dns` (4), `dns record` (4)
+- Phase 5: `stream library` (4), `stream video` (3), `containers app` (3), `scripting` (3)
+- Phase 6: `mcp` (MCP server)
 
 Each entry carries:
-- `name`, `summary`, `description`
+- `name` (space-delimited, rc.7+), `summary`, `description`
 - `args[]`, `flags[]` (with zod schemas in Phase 2+)
-- `examples[]`
-- `mcp?: {tool, description}` (MCP mapping)
-- `status: 'active' | 'planned' | 'deprecated'`
-- `phase: number`
+- `examples[]` (all active commands)
+- `mcp?: {tool, description}` (MCP mapping, Phase 6)
+- `status: 'active' | 'planned' | 'deferred'`
+- `phase: 1–7`
 - `load?: () => Promise<{run}>` (lazy loader, active commands only)
+- (Top-level) `groups?: { name, description, aliases? }` (rc.10: group metadata for space-delimited tree)
 
 **Key insight:** All generated artifacts (help, JSON, AGENTS.md, schema, MCP defs) derive from this file.
 
@@ -83,7 +91,7 @@ TypeScript type definitions for registry:
 
 **Dependencies:** none
 
-**`src/manifest/render-help.ts`** (80+ lines)
+**`src/manifest/render-help.ts`** (120+ lines)
 
 Renders registry → human-readable help + JSON help.
 
@@ -106,12 +114,13 @@ Used by:
 - `src/commands/manifest.ts` — Registry as JSON
 
 **Phase 2 (Deploy Loop)**
-- `src/commands/configure.ts` — Global credential setup
-- `src/commands/init.ts` — Project init wizard
+- `src/commands/init.ts` — Project init with feature multi-select
+- `src/commands/configure/{index,list,switch,remove}.ts` — Profile-aware creds (rc.9+, replaces auth)
 - `src/commands/deploy.ts` — Storage sync + purge
 - `src/commands/purge.ts` — Standalone purge
 - `src/commands/use.ts` — Alias switching
-- `src/commands/auth/{set,list,clear}.ts` — Credential management (3 files)
+- `src/commands/whoami.ts` — Show active credentials (rc.8+)
+- `src/commands/docs.ts` — Quick help command (rc.8+)
 
 **Phase 3 (Storage & Zones)**
 - `src/commands/storage/{upload,download,list,delete,sync}.ts` (5 files)
@@ -126,14 +135,18 @@ Used by:
 **Phase 6 (MCP)**
 - `src/commands/mcp.ts` — MCP stdio server entry
 
-**Phase 5 (Stream/Containers/Scripting) → Deferred to v0.2**
-- Not shipped in v0.1
+**Phase 5 (Stream/Containers/Scripting) — Shipped rc.10**
+- `src/commands/stream/library/{list,create,get,delete}.ts` (4 commands; get/delete rc.10+)
+- `src/commands/stream/video/{list,upload,delete}.ts` (3 commands)
+- `src/commands/containers/app/{list,create,delete}.ts` (3 commands)
+- `src/commands/scripting/{list,deploy,delete}.ts` (3 commands)
 
 **All commands:**
 - Export `run(ParsedInvocation): Promise<number>`
 - Call into `src/core/*` for business logic
 - Never call `src/api/*` directly
 - Render output via `src/ui/*` helpers
+- Space-delimited names in registry; kebab-case directory structure (rc.7+)
 
 ---
 
