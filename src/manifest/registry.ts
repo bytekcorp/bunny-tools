@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.20',
+  version: '0.1.0-rc.21',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },

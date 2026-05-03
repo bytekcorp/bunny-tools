@@ -189,41 +189,21 @@ function belongsToGroup(commandName: string, prefixes: string[]): boolean {
   return prefixes.some((p) => commandName === p || commandName.startsWith(p + ' '));
 }
 
-// Group help (e.g. `bunny storage --help`, `bunny pullzone --help`):
-// list immediate leaf descendants AND any sub-group pointers so the reader
-// knows further nesting exists (e.g. `pullzone edgerule`).
+// Group help (e.g. `bunny stream --help`, `bunny pullzone --help`): list
+// ALL leaf descendants of this group regardless of depth. Earlier behaviour
+// stopped at immediate leaves + sub-group pointers, but that left groups
+// like `stream` (no direct leaves, only `library` / `video` subgroups)
+// showing nothing actionable — users had to drill twice to find a runnable
+// command. Showing every descendant collapses that into one help page.
+//
+// Long arg signatures (e.g. `bunny pullzone edgerule delete <pullZoneId>
+// <ruleGuid>`) may overflow the alignment column at this level; that's
+// acceptable here — root help is where alignment matters most, and root
+// already collapses 3+ segment commands to subgroup pointers.
 function renderGroupChildren(groupPath: string): string[] {
   const active = registry.commands.filter((c) => c.status === 'active');
-  const out: string[] = [];
-
-  // 1. Immediate leaves (exactly one segment past the group path).
-  for (const c of active) {
-    if (!c.name.startsWith(groupPath + ' ')) continue;
-    const tail = c.name.slice(groupPath.length + 1);
-    if (tail.length === 0 || tail.includes(' ')) continue;
-    out.push('  ' + formatCommandRow(c));
-  }
-
-  // 2. Sub-group pointers — collect unique 2nd-segment names that have
-  // descendants but aren't themselves leaves. Render each with its registry
-  // description so users see what's deeper without listing every leaf.
-  const subgroups = new Set<string>();
-  for (const c of active) {
-    if (!c.name.startsWith(groupPath + ' ')) continue;
-    const tail = c.name.slice(groupPath.length + 1);
-    if (!tail.includes(' ')) continue;
-    const head = tail.split(' ')[0];
-    if (head) subgroups.add(head);
-  }
-  const groupMeta = new Map((registry.groups ?? []).map((g) => [g.name, g]));
-  for (const sg of subgroups) {
-    const subPath = `${groupPath} ${sg}`;
-    const meta = groupMeta.get(subPath);
-    const summary = meta?.description ?? `${sg} commands`;
-    const left = `${registry.binary} ${subPath} ...`;
-    out.push('  ' + formatRow(left, summary));
-  }
-  return out;
+  const matches = active.filter((c) => c.name.startsWith(groupPath + ' '));
+  return matches.map((c) => '  ' + formatCommandRow(c));
 }
 
 // Format a single command row with a left "name + args" column and a right

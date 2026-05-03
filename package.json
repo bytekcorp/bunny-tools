@@ -1,6 +1,6 @@
 {
   "name": "bunny-tools",
-  "version": "0.1.0-rc.20",
+  "version": "0.1.0-rc.21",
   "description": "Bunny.net CLI for storage deploy, CDN purge, and full resource management. AI-friendly via MCP.",
   "license": "MIT",
   "type": "module",
@@ -49,27 +49,27 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "commander": "^12.1.0",
-    "fast-glob": "^3.3.2",
+    "fast-glob": "^3.3.3",
     "ignore": "^6.0.2",
     "keytar": "^7.9.0",
-    "ora": "^8.1.1",
+    "ora": "^8.2.0",
     "picocolors": "^1.1.1",
     "prompts": "^2.4.2",
-    "undici": "^6.21.0",
-    "zod": "^3.23.8",
-    "zod-to-json-schema": "^3.23.5"
+    "undici": "^6.25.0",
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
-    "@types/node": "^20.16.10",
+    "@types/node": "^20.19.39",
     "@types/prompts": "^2.4.9",
-    "@typescript-eslint/eslint-plugin": "^8.18.2",
-    "@typescript-eslint/parser": "^8.18.2",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
+    "@typescript-eslint/parser": "^8.59.1",
     "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^8.57.1",
     "nock": "^13.5.6",
-    "prettier": "^3.4.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
+    "prettier": "^3.8.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.5"
   }
 }
