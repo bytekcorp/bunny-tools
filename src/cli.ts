@@ -6,6 +6,7 @@ import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { registry } from './manifest/registry.js';
+import { formatHelp } from './manifest/format-help.js';
 import { renderCommandHelpJson, renderRegistryHelpJson } from './manifest/render-help.js';
 import type { CommandSpec, ParsedInvocation } from './manifest/types.js';
 import { logger } from './util/logger.js';
@@ -17,6 +18,10 @@ function buildProgram(): Command {
     .version(registry.version, '-v, --version', 'Show CLI version.')
     .helpOption('-h, --help', 'Show help for command.')
     .showHelpAfterError(true)
+    // Wrangler-style help layout: TITLE → USAGE → COMMANDS (grouped by domain)
+    // → GLOBAL FLAGS. Cascades to all subcommands so leaf and group help pages
+    // share the visual language.
+    .configureHelp({ formatHelp })
     // Wrangler-style global flags. Applied via env vars + chdir in preAction hook.
     .option('-c, --config <path>', 'Path to a bunny.json config (overrides walk-up search).')
     .option('--cwd <dir>', 'Run as if launched from this directory.')

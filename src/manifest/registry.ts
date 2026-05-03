@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.18',
+  version: '0.1.0-rc.19',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -24,6 +24,7 @@ export const registry: Registry = {
     { name: 'containers', description: 'Manage Magic Containers apps.' },
     { name: 'containers app', description: 'Manage Magic Containers application instances.' },
     { name: 'scripting', description: 'Manage Edge Scripting deployments.' },
+    { name: 'install', description: 'One-shot bootstrap helpers (MCP config, CI scaffolds, ...).' },
   ],
   commands: [
     // Phase 1
@@ -75,6 +76,7 @@ export const registry: Registry = {
         { name: 'purge', description: 'Purge strategy: all|none|tag:<name>.', hasValue: true },
         { name: 'stream-library', description: 'Stream library id (when `stream` feature selected).', hasValue: true },
         { name: 'stream-key', description: 'Stream library API key.', hasValue: true },
+        { name: 'no-agents-md', description: 'Skip writing the AGENTS.md deploy hint (default: write).', hasValue: false },
       ],
       examples: [
         { command: 'bunny init', description: 'Interactive wizard with feature multi-select.' },
@@ -612,6 +614,35 @@ export const registry: Registry = {
       status: 'active',
       phase: 5,
       load: () => import('../commands/scripting/delete.js'),
+    },
+
+    // rc.19 — DX polish (install bootstrap + self-update)
+    {
+      name: 'install mcp',
+      summary: 'Register bunny-tools as an MCP server in Claude Code (one-shot bootstrap).',
+      flags: [
+        { name: 'scope', description: 'MCP scope: user | project | local (default: user).', hasValue: true },
+      ],
+      examples: [
+        { command: 'bunny install mcp', description: 'Add bunny-tools to Claude\'s user-scope MCP config.' },
+        { command: 'bunny install mcp --scope=project', description: 'Add to the current project\'s .claude config.' },
+      ],
+      status: 'active',
+      phase: 7,
+      load: () => import('../commands/install/mcp.js'),
+    },
+    {
+      name: 'update',
+      summary: 'Self-update bunny-tools to the latest version on npm.',
+      flags: [
+        { name: 'yes', description: 'Skip confirmation prompt.', hasValue: false },
+      ],
+      examples: [
+        { command: 'bunny update', description: 'npm install -g bunny-tools@latest.' },
+      ],
+      status: 'active',
+      phase: 7,
+      load: () => import('../commands/update.js'),
     },
 
     // Phase 6 — MCP server

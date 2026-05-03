@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.18",
+  "version": "0.1.0-rc.19",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -156,6 +156,14 @@
           "short": null,
           "description": "Stream library API key.",
           "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "no-agents-md",
+          "short": null,
+          "description": "Skip writing the AGENTS.md deploy hint (default: write).",
+          "hasValue": false,
           "valueHint": null,
           "defaultValue": null
         }
@@ -1702,6 +1710,60 @@
         }
       ],
       "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "install mcp",
+      "summary": "Register bunny-tools as an MCP server in Claude Code (one-shot bootstrap).",
+      "description": null,
+      "status": "active",
+      "phase": 7,
+      "args": [],
+      "flags": [
+        {
+          "name": "scope",
+          "short": null,
+          "description": "MCP scope: user | project | local (default: user).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [
+        {
+          "command": "bunny install mcp",
+          "description": "Add bunny-tools to Claude's user-scope MCP config."
+        },
+        {
+          "command": "bunny install mcp --scope=project",
+          "description": "Add to the current project's .claude config."
+        }
+      ],
+      "mcp": null
+    },
+    {
+      "name": "update",
+      "summary": "Self-update bunny-tools to the latest version on npm.",
+      "description": null,
+      "status": "active",
+      "phase": 7,
+      "args": [],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation prompt.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [
+        {
+          "command": "bunny update",
+          "description": "npm install -g bunny-tools@latest."
+        }
+      ],
       "mcp": null
     },
     {
