@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.25  |  **Active commands:** 54/55
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.26  |  **Active commands:** 55/56
 
 <!-- HANDCURATED:START -->
 
@@ -82,6 +82,7 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 - `bunny pullzone hostname list` [active] — List custom hostnames linked to a pull zone.
 - `bunny pullzone hostname add` [active] — Link a custom hostname to a pull zone (required before Type-7 PULLZONE DNS records resolve).
 - `bunny pullzone hostname remove` [active] — Unlink a custom hostname from a pull zone.
+- `bunny pullzone hostname enable-ssl` [active] — Request a free Let's Encrypt certificate for a hostname and wait until provisioned (required before Type-7 PULLZONE DNS records resolve).
 
 ### Phase 4
 

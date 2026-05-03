@@ -4,6 +4,27 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.26] — 2026-05-03 (Pull Zone SSL Provisioning + Cert Pre-flight)
+
+### Added
+- **`bunny pullzone hostname enable-ssl <pzId> <hostname>`** — wraps `POST /pullzone/loadFreeCertificate?hostname=<host>`. Polls PZ.Hostnames[].HasCertificate every 5s up to 90s; returns when Let's Encrypt cert is provisioned.
+- **`dns record add --pull-zone <id>` cert pre-flight** — also checks `HasCertificate` on the matched hostname. If false, fails with copy-pasteable `bunny pullzone hostname enable-ssl <id> <fqdn>` instead of letting Bunny return the misleading "The pull zone ID is not valid" error.
+- **MCP tool:** `bunny.pullzone_hostname_enable_ssl` — same shape as add/remove, returns `{ ok, hasCertificate, waitedMs }`.
+- **`PullZoneHostname` type extended** — now exposes `Id`, `HasCertificate`, `ForceSSL`, `IsSystemHostname` (was `{ Value }` only).
+
+### Fixed
+- **Cert chicken-and-egg surfaced clearly** — users no longer hit Bunny's silent rejection when wiring DNS to PZ without prior cert provisioning.
+
+### Test Coverage
+- **Unit tests:** 143 total (up from 139 in rc.25); +4 enable-ssl coverage.
+- **E2E tests:** 44 (unchanged).
+
+### Surface
+- 55 active commands (was 54).
+- 18 MCP tools (was 17). Hard-cap raised to 20.
+
+---
+
 ## [0.1.0-rc.25] — 2026-05-03 (Pull Zone Hostname Management)
 
 ### Added

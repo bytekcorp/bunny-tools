@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.25',
+  version: '0.1.0-rc.26',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -421,6 +421,18 @@ export const registry: Registry = {
       status: 'active',
       phase: 3,
       load: () => import('../commands/pull-zone/hostname/remove.js'),
+    },
+    {
+      name: 'pullzone hostname enable-ssl',
+      summary:
+        'Request a free Let\'s Encrypt certificate for a hostname and wait until provisioned (required before Type-7 PULLZONE DNS records resolve).',
+      args: [
+        { name: 'pullZoneId', description: 'Pull zone id.', required: true },
+        { name: 'hostname', description: 'Custom hostname already linked to the pull zone.', required: true },
+      ],
+      status: 'active',
+      phase: 3,
+      load: () => import('../commands/pull-zone/hostname/enable-ssl.js'),
     },
 
     // Phase 4 — DNS

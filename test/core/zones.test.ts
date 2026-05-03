@@ -6,6 +6,7 @@ import {
   addEdgeRule,
   addPullZoneHostname,
   deleteEdgeRule,
+  enablePullZoneSSL,
   listEdgeRules,
   listPullZoneHostnames,
   listStorageZones,
@@ -145,6 +146,111 @@ describe('core/zones', () => {
 
     const hosts = await removePullZoneHostname(42, 'example.com');
     expect(hosts).toEqual([]);
+  });
+
+  it('enablePullZoneSSL POSTs loadFreeCertificate and polls until HasCertificate flips true', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    // 1. Pre-flight getPullZone — hostname is linked but no cert yet.
+    pool
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [{ Id: 1, Value: 'example.com', HasCertificate: false }],
+      });
+    // 2. loadFreeCertificate
+    pool
+      .intercept({ path: /\/pullzone\/loadFreeCertificate.*/, method: 'POST' })
+      .reply(204);
+    // 3. First poll — still no cert.
+    pool
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [{ Id: 1, Value: 'example.com', HasCertificate: false }],
+      });
+    // 4. Second poll — cert ready.
+    pool
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [{ Id: 1, Value: 'example.com', HasCertificate: true }],
+      });
+
+    const result = await enablePullZoneSSL(42, 'example.com', {
+      timeoutMs: 5_000,
+      pollIntervalMs: 10,
+    });
+    expect(result.hasCertificate).toBe(true);
+    expect(result.waitedMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('enablePullZoneSSL throws when hostname is not on the pull zone', async () => {
+    getMockAgent()
+      .get('https://api.bunny.net')
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [{ Id: 1, Value: 'other.com', HasCertificate: true }],
+      });
+
+    await expect(
+      enablePullZoneSSL(42, 'example.com', { timeoutMs: 1_000, pollIntervalMs: 10 }),
+    ).rejects.toThrow(/not linked to pull zone/);
+  });
+
+  it('enablePullZoneSSL returns immediately when cert already present', async () => {
+    getMockAgent()
+      .get('https://api.bunny.net')
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [{ Id: 1, Value: 'example.com', HasCertificate: true }],
+      });
+
+    const result = await enablePullZoneSSL(42, 'example.com', {
+      timeoutMs: 1_000,
+      pollIntervalMs: 10,
+    });
+    expect(result).toEqual({ hasCertificate: true, waitedMs: 0 });
+  });
+
+  it('enablePullZoneSSL throws on timeout when cert never flips true', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    const noCertPz = {
+      Id: 42,
+      Name: 'pz',
+      OriginUrl: 'https://x',
+      Enabled: true,
+      Hostnames: [{ Id: 1, Value: 'example.com', HasCertificate: false }],
+    };
+    // 1 pre-flight + 3 polls before the timeout check fires (timeoutMs=30,
+    // pollIntervalMs=10 → loop iterations 0/10/20 sleep+poll, iteration 30 throws).
+    pool
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, noCertPz)
+      .times(4);
+    pool
+      .intercept({ path: /\/pullzone\/loadFreeCertificate.*/, method: 'POST' })
+      .reply(204);
+
+    await expect(
+      enablePullZoneSSL(42, 'example.com', { timeoutMs: 30, pollIntervalMs: 10 }),
+    ).rejects.toThrow(/Timed out/);
   });
 
   it('listPullZoneHostnames extracts the Value field from each Hostname entry', async () => {

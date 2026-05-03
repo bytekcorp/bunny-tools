@@ -164,6 +164,7 @@ bunny storage sync ./dist --zone=my-app
 | `bunny pullzone hostname list <id>` | List custom hostnames linked to a pull zone |
 | `bunny pullzone hostname add <id> <hostname>` | Link a custom hostname (e.g. `example.com`) |
 | `bunny pullzone hostname remove <id> <hostname>` | Unlink a custom hostname |
+| `bunny pullzone hostname enable-ssl <id> <hostname>` | Provision a Let's Encrypt cert and wait until ready (required for Type-7 DNS records) |
 
 
 **Example**
@@ -171,9 +172,10 @@ bunny storage sync ./dist --zone=my-app
 ```bash
 bunny cdn edgerule list 12345
 
-# Wire DNS to a pull zone (2 steps — Bunny silently rejects PULLZONE records
-# whose FQDN isn't already linked here):
+# Wire DNS to a pull zone (3 steps — Bunny rejects PULLZONE records whose
+# FQDN isn't linked AND has a valid SSL certificate):
 bunny pullzone hostname add 5780316 example.com
+bunny pullzone hostname enable-ssl 5780316 example.com   # blocks ~30-90s
 bunny dns record add 783181 PULLZONE @ --pull-zone=5780316
 ```
 

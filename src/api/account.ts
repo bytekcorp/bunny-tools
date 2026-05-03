@@ -16,12 +16,23 @@ export type StorageZone = {
   PullZones: Array<{ Id: number; Name: string }>;
 };
 
+export type PullZoneHostname = {
+  Id?: number;
+  Value: string;
+  // Bunny populates these after `loadFreeCertificate` finishes provisioning a
+  // Let's Encrypt cert. PULLZONE-type DNS records are silently rejected when
+  // the matched hostname has HasCertificate=false.
+  HasCertificate?: boolean;
+  ForceSSL?: boolean;
+  IsSystemHostname?: boolean;
+};
+
 export type PullZone = {
   Id: number;
   Name: string;
   OriginUrl: string | null;
   Enabled: boolean;
-  Hostnames: Array<{ Value: string }>;
+  Hostnames: PullZoneHostname[];
 };
 
 export type AccountClientOptions = {
@@ -113,6 +124,20 @@ export function createAccountClient(opts: AccountClientOptions) {
         method: 'POST',
         scope: { kind: 'account' },
         body: { Hostname: hostname },
+      }),
+
+    // Request a Let's Encrypt certificate for a custom hostname. The endpoint
+    // is account-scoped (Bunny resolves the PZ from hostname); response is
+    // typically 200/204 immediately, but actual cert provisioning is async
+    // and only flips Hostnames[].HasCertificate to true after Let's Encrypt
+    // completes (usually 30-60s for DNS-01 when Bunny NS is authoritative).
+    loadFreeCertificate: (hostname: string) =>
+      callBunny<void>({
+        base,
+        path: '/pullzone/loadFreeCertificate',
+        method: 'POST',
+        scope: { kind: 'account' },
+        query: { hostname },
       }),
 
     purgeByUrl: (url: string, async = false) =>

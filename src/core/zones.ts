@@ -118,3 +118,66 @@ export async function removePullZoneHostname(pullZoneId: number, hostname: strin
   await client().removePullZoneHostname(pullZoneId, hostname);
   return listPullZoneHostnames(pullZoneId);
 }
+
+// Request a Let's Encrypt cert for a hostname on a pull zone, then poll the
+// PZ until that hostname's HasCertificate flips true (or timeout). Validates
+// the hostname is on the PZ before firing — Bunny's loadFreeCertificate
+// endpoint accepts any hostname and resolves PZ from it, but failing fast
+// produces a better error than waiting for the cert that will never arrive.
+
+export type EnableSslResult = {
+  hasCertificate: boolean;
+  waitedMs: number;
+};
+
+const DEFAULT_SSL_TIMEOUT_MS = 90_000;
+const DEFAULT_SSL_POLL_INTERVAL_MS = 5_000;
+
+export async function enablePullZoneSSL(
+  pullZoneId: number,
+  hostname: string,
+  opts: { timeoutMs?: number; pollIntervalMs?: number } = {},
+): Promise<EnableSslResult> {
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_SSL_TIMEOUT_MS;
+  const pollIntervalMs = opts.pollIntervalMs ?? DEFAULT_SSL_POLL_INTERVAL_MS;
+
+  const c = client();
+
+  // Pre-flight: verify hostname is on the PZ. Saves a 90s wait when the
+  // user forgot to run `pullzone hostname add` first.
+  const pzBefore = await c.getPullZone(pullZoneId);
+  const matchedBefore = (pzBefore.Hostnames ?? []).find((h) => h.Value === hostname);
+  if (!matchedBefore) {
+    throw new Error(
+      `${hostname} is not linked to pull zone "${pzBefore.Name}" (#${pzBefore.Id}). ` +
+        `Run: bunny pullzone hostname add ${pzBefore.Id} ${hostname}`,
+    );
+  }
+  if (matchedBefore.HasCertificate === true) {
+    return { hasCertificate: true, waitedMs: 0 };
+  }
+
+  await c.loadFreeCertificate(hostname);
+
+  const startedAt = Date.now();
+  for (;;) {
+    const elapsed = Date.now() - startedAt;
+    if (elapsed >= timeoutMs) {
+      throw new Error(
+        `Timed out after ${Math.round(elapsed / 1000)}s waiting for SSL certificate on ${hostname}. ` +
+          `Cert provisioning may still complete in the background; re-run this command or inspect with ` +
+          `\`bunny pullzone get ${pullZoneId}\`.`,
+      );
+    }
+    await sleep(pollIntervalMs);
+    const pz = await c.getPullZone(pullZoneId);
+    const matched = (pz.Hostnames ?? []).find((h) => h.Value === hostname);
+    if (matched?.HasCertificate === true) {
+      return { hasCertificate: true, waitedMs: Date.now() - startedAt };
+    }
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

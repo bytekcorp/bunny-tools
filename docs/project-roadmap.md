@@ -1,18 +1,18 @@
 # bunny-tools Project Roadmap
 
-**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.25 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management Live ✓
-**Current Version:** v0.1.0-rc.25 (shipped 2026-05-03)  
+**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.26 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management + SSL Provisioning Live ✓
+**Current Version:** v0.1.0-rc.26 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
-**Release Cadence:** 12 RCs shipped (rc.14–rc.25) after rc.13
+**Release Cadence:** 13 RCs shipped (rc.14–rc.26) after rc.13
 **Last Updated:** 2026-05-03
 
 ---
 
 ## Executive Summary
 
-bunny-tools v0.1.0-rc.25 ships all **54 commands** live on npm (latest & alpha dist-tags). Phases 1–7 complete. **13 RCs shipped post-rc.13** (rc.14–rc.25).
+bunny-tools v0.1.0-rc.26 ships all **55 commands** live on npm (latest & alpha dist-tags). Phases 1–7 complete. **14 RCs shipped post-rc.13** (rc.14–rc.26).
 
-**Key milestones (rc.14–rc.25):**
+**Key milestones (rc.14–rc.26):**
 - **rc.14:** README rewrite; MCP front-and-center
 - **rc.15:** CRITICAL: ESM main detection fix (bare `bunny` on -g installs)
 - **rc.16:** `bunny --help` prints to stdout (wrangler convention)
@@ -25,6 +25,7 @@ bunny-tools v0.1.0-rc.25 ships all **54 commands** live on npm (latest & alpha d
 - **rc.23:** **MCP e2e harness shipped** (13 active tools + 2 skipped); stdio recv fix
 - **rc.24:** **DNS routing types extended** (REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT = 13 types total); rc.24 brings 129 unit + 44 e2e tests live
 - **rc.25:** **Pull zone hostname management** — `pullzone hostname {list,add,remove}` wraps `addHostname`/`removeHostname` subresource (silent-drop fix); `dns record add --pull-zone` pre-flight check fails fast with copy-pasteable next command when hostname unlinked; 3 new MCP tools; 139 unit tests
+- **rc.26:** **Pull zone SSL provisioning** — `pullzone hostname enable-ssl` wraps `loadFreeCertificate` and polls cert status (90s timeout); `dns record add --pull-zone` cert pre-flight surfaces missing cert with actionable next command; 1 new MCP tool; 143 unit tests
 
 **Status:** GA-ready. All phases + MCP harness + DNS REDIRECT e2e live. Current backlog for v0.2: containers app create (Bunny v3 schema fix pending), headers/rewrites sugar, live emulator.
 

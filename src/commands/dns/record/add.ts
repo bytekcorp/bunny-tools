@@ -54,11 +54,20 @@ export async function run(inv: ParsedInvocation): Promise<number> {
       // exact next command so users don't waste time debugging an opaque API.
       const dnsZone = await getZone(Number.parseInt(args.zoneId, 10));
       const fqdn = computeFqdn(args.name, dnsZone.Domain);
-      const linked = (pz.Hostnames ?? []).some((h) => h.Value === fqdn);
-      if (!linked) {
+      const matched = (pz.Hostnames ?? []).find((h) => h.Value === fqdn);
+      if (!matched) {
         progress.fail(
           `${fqdn} is not linked to pull zone "${pz.Name}" (#${pz.Id}). ` +
             `Run: bunny pullzone hostname add ${pz.Id} ${fqdn}`,
+        );
+        return 1;
+      }
+      // Bunny silently rejects PULLZONE records when the matched hostname has
+      // no SSL cert ("The pull zone ID is not valid" — misleading error).
+      if (matched.HasCertificate !== true) {
+        progress.fail(
+          `${fqdn} is linked to pull zone "${pz.Name}" (#${pz.Id}) but has no SSL certificate yet. ` +
+            `Run: bunny pullzone hostname enable-ssl ${pz.Id} ${fqdn}`,
         );
         return 1;
       }

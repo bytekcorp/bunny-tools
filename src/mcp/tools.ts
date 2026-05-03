@@ -20,6 +20,7 @@ import {
   addPullZoneHostname,
   removePullZoneHostname,
   listPullZoneHostnames,
+  enablePullZoneSSL,
 } from '../core/zones.js';
 import { listZones as listDnsZones, listRecords, addRecord, deleteRecord } from '../core/dns.js';
 import { loadBunnyJson } from '../config/bunny-json.js';
@@ -207,6 +208,22 @@ export const TOOLS: ToolDef[] = [
         .parse(raw);
       const hostnames = await removePullZoneHostname(pullZoneId, hostname);
       return { ok: true, hostnames };
+    },
+  },
+  {
+    name: 'bunny.pullzone_hostname_enable_ssl',
+    description:
+      'Request a free Let\'s Encrypt certificate for a hostname and wait until provisioned (up to 90s). Required before Type-7 (PULLZONE) DNS records resolve. Returns { ok, hasCertificate, waitedMs }.',
+    inputSchema: z.object({
+      pullZoneId: z.number().int().positive(),
+      hostname: z.string().min(1),
+    }),
+    run: async (raw) => {
+      const { pullZoneId, hostname } = z
+        .object({ pullZoneId: z.number().int().positive(), hostname: z.string().min(1) })
+        .parse(raw);
+      const result = await enablePullZoneSSL(pullZoneId, hostname);
+      return { ok: true, ...result };
     },
   },
   {
