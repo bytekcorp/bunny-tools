@@ -28,6 +28,8 @@ describe('maybeMigrateIgnoreDefaults', () => {
         publicDir: 'dist',
         ignore: [...ignore],
         mimeTypes: {},
+        headers: [],
+        edgeRules: [],
         storageZone: 'test-zone',
         concurrency: 8,
         pullZones: [],

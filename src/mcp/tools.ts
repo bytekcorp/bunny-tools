@@ -212,6 +212,32 @@ export const TOOLS: ToolDef[] = [
     },
   },
   {
+    name: 'bunny.domain_connect',
+    description:
+      'Atomic Connect Domain: link hostname to pull zone, provision Let\'s Encrypt cert (waits up to 90s), optionally create apex Type-7 DNS record. Mirrors the Bunny dashboard "Connect Domain" button. Idempotent — safe to re-run. Pass `dnsZoneId` to also create the DNS record.',
+    inputSchema: z.object({
+      pullZoneId: z.number().int().positive(),
+      hostname: z.string().min(1),
+      dnsZoneId: z.number().int().positive().optional(),
+      recordName: z.string().optional(),
+    }),
+    run: async (raw) => {
+      const args = z
+        .object({
+          pullZoneId: z.number().int().positive(),
+          hostname: z.string().min(1),
+          dnsZoneId: z.number().int().positive().optional(),
+          recordName: z.string().optional(),
+        })
+        .parse(raw);
+      const { connectDomain } = await import('../core/domain.js');
+      return connectDomain(args.pullZoneId, args.hostname, {
+        ...(args.dnsZoneId !== undefined ? { dnsZoneId: args.dnsZoneId } : {}),
+        ...(args.recordName !== undefined ? { recordName: args.recordName } : {}),
+      });
+    },
+  },
+  {
     name: 'bunny.pullzone_hostname_enable_ssl',
     description:
       'Request a free Let\'s Encrypt certificate for a hostname and wait until provisioned (up to 90s). Required before Type-7 (PULLZONE) DNS records resolve. Returns { ok, hasCertificate, waitedMs }.',

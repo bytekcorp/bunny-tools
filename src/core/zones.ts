@@ -73,11 +73,24 @@ export async function deletePullZone(id: number): Promise<void> {
 // drops EdgeRules in the body, so list-then-update with the rules array
 // looks successful but never persists — we must hit /edgerules/addOrUpdate.
 
+// Bunny edge-rule trigger entry. Multiple triggers per rule are AND'd by
+// default (matching TriggerMatchingType). Each trigger has its own pattern
+// list and matching mode.
+export type EdgeRuleTrigger = {
+  Type: number;
+  PatternMatches: string[];
+  PatternMatchingType?: number;
+  // Bunny also accepts these per-trigger fields for response-header /
+  // request-header matching; we don't generate them today but pass-through
+  // when the user supplies a raw rule.
+  Parameter1?: string;
+};
+
 export type EdgeRule = {
   Guid?: string;
   ActionType: number;
   TriggerMatchingType?: number;
-  Triggers?: unknown[];
+  Triggers?: EdgeRuleTrigger[];
   ActionParameter1?: string;
   ActionParameter2?: string;
   Description?: string;

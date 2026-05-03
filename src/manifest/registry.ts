@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.33',
+  version: '0.1.0-rc.34',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -17,6 +17,7 @@ export const registry: Registry = {
     { name: 'pullzone', description: 'Manage pull zones (CDN) and their edge rules.', aliases: ['cdn'] },
     { name: 'pullzone edgerule', description: 'Manage edge rules on a pull zone.' },
     { name: 'pullzone hostname', description: 'Manage custom hostnames linked to a pull zone.' },
+    { name: 'domain', description: 'High-level domain operations (atomic Connect Domain flow).' },
     { name: 'dns', description: 'Manage DNS zones and records.' },
     { name: 'dns record', description: 'Manage DNS records within a zone.' },
     { name: 'stream', description: 'Manage Stream video libraries and videos.' },
@@ -77,6 +78,7 @@ export const registry: Registry = {
         { name: 'purge', description: 'Purge strategy: all|none|tag:<name>.', hasValue: true },
         { name: 'stream-library', description: 'Stream library id (when `stream` feature selected).', hasValue: true },
         { name: 'stream-key', description: 'Stream library API key.', hasValue: true },
+        { name: 'ci', description: 'Generate .github/workflows/bunny-deploy.yml after init (GitHub Actions).', hasValue: false },
       ],
       examples: [
         { command: 'bunny init', description: 'Interactive wizard with feature multi-select.' },
@@ -433,6 +435,29 @@ export const registry: Registry = {
       status: 'active',
       phase: 3,
       load: () => import('../commands/pull-zone/hostname/enable-ssl.js'),
+    },
+
+    {
+      name: 'domain connect',
+      summary:
+        'Atomic Connect Domain: link hostname to PZ, provision Let\'s Encrypt cert, optionally create the apex Type-7 DNS record. Idempotent — safe to re-run.',
+      args: [
+        { name: 'pullZoneId', description: 'Pull zone id.', required: true },
+        { name: 'hostname', description: 'FQDN to connect (e.g. example.com).', required: true },
+      ],
+      flags: [
+        { name: 'dns-zone', description: 'Also create the Type-7 PULLZONE DNS record in this DNS zone id.', hasValue: true },
+        { name: 'name', description: 'DNS record name when --dns-zone is given. Empty/`@` for apex (default).', hasValue: true },
+        { name: 'no-wait', description: 'Skip cert provisioning poll (advanced; caller verifies separately).', hasValue: false },
+        { name: 'timeout', description: 'Cert wait timeout in seconds (default 90).', hasValue: true, defaultValue: '90' },
+      ],
+      examples: [
+        { command: 'bunny domain connect 5789465 example.com', description: 'Link hostname + provision cert. Add DNS record separately.' },
+        { command: 'bunny domain connect 5789465 example.com --dns-zone=784669', description: 'End-to-end: hostname + cert + apex Type-7 record.' },
+      ],
+      status: 'active',
+      phase: 3,
+      load: () => import('../commands/domain/connect.js'),
     },
 
     // Phase 4 — DNS

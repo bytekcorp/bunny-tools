@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.33",
+  "version": "0.1.0-rc.34",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -156,6 +156,14 @@
           "short": null,
           "description": "Stream library API key.",
           "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "ci",
+          "short": null,
+          "description": "Generate .github/workflows/bunny-deploy.yml after init (GitHub Actions).",
+          "hasValue": false,
           "valueHint": null,
           "defaultValue": null
         }
@@ -1168,6 +1176,72 @@
       ],
       "flags": [],
       "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "domain connect",
+      "summary": "Atomic Connect Domain: link hostname to PZ, provision Let's Encrypt cert, optionally create the apex Type-7 DNS record. Idempotent — safe to re-run.",
+      "description": null,
+      "status": "active",
+      "phase": 3,
+      "args": [
+        {
+          "name": "pullZoneId",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "hostname",
+          "description": "FQDN to connect (e.g. example.com).",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "dns-zone",
+          "short": null,
+          "description": "Also create the Type-7 PULLZONE DNS record in this DNS zone id.",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "name",
+          "short": null,
+          "description": "DNS record name when --dns-zone is given. Empty/`@` for apex (default).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "no-wait",
+          "short": null,
+          "description": "Skip cert provisioning poll (advanced; caller verifies separately).",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "timeout",
+          "short": null,
+          "description": "Cert wait timeout in seconds (default 90).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": "90"
+        }
+      ],
+      "examples": [
+        {
+          "command": "bunny domain connect 5789465 example.com",
+          "description": "Link hostname + provision cert. Add DNS record separately."
+        },
+        {
+          "command": "bunny domain connect 5789465 example.com --dns-zone=784669",
+          "description": "End-to-end: hostname + cert + apex Type-7 record."
+        }
+      ],
       "mcp": null
     },
     {

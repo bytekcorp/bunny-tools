@@ -21,20 +21,70 @@ const PullZoneEntry = z.object({
   tag: z.string().optional(),
 });
 
+// `headers` — Netlify/Cloudflare-style declarative response headers per path
+// pattern. Compiled to edge rules at deploy time; one rule per (pattern, key)
+// pair. `Cache-Control: max-age=N` is special-cased to OverrideCacheTime +
+// OverrideBrowserCacheTime; other directives fall through to SetResponseHeader.
+const HeaderRule = z.object({
+  pattern: z.string().min(1),
+  headers: z.record(z.string().min(1), z.string()),
+});
+
+// `edgeRules` — raw edge rule declarations. Pass-through after marker. Each
+// entry maps 1:1 to a Bunny edge rule on the configured pull zones.
+const EdgeRuleSpec = z.object({
+  description: z.string().min(1),
+  actionType: z.enum([
+    'ForceSSL',
+    'Redirect',
+    'OriginUrl',
+    'OverrideCacheTime',
+    'BlockRequest',
+    'SetResponseHeader',
+    'SetRequestHeader',
+    'ForceDownload',
+    'DisableTokenAuthentication',
+    'EnableTokenAuthentication',
+    'OverrideCacheTimePublic',
+    'IgnoreCacheControl',
+    'DisableCors',
+    'EnableCors',
+    'BypassPermaCache',
+    'OverrideBrowserCacheTime',
+  ]),
+  actionParameter1: z.string(),
+  actionParameter2: z.string().optional(),
+  triggerType: z.enum([
+    'Url',
+    'RequestHeader',
+    'ResponseHeader',
+    'UrlExtension',
+    'CountryCode',
+    'RemoteIP',
+    'StatusCode',
+  ]),
+  triggerPatterns: z.array(z.string().min(1)).min(1),
+  triggerMatchingType: z.enum(['Any', 'All', 'None']).default('Any'),
+  enabled: z.boolean().default(true),
+});
+
 const DeployBlock = z.object({
   publicDir: z.string().min(1),
   ignore: z.array(z.string()).default([]),
-  // Per-extension Content-Type overrides. Keys MUST start with a dot
-  // (`.mjs`, not `mjs`) — matches the user's mental model and dedupes
-  // against the dot already present in `path.lastIndexOf('.')` lookup.
-  // mime-types provides comprehensive defaults; this is for when Bunny
-  // edge expects something non-standard (e.g. legacy `application/x-javascript`).
   mimeTypes: z.record(z.string().regex(/^\./), z.string().min(1)).default({}),
+  // Declarative response headers per glob pattern. See HeaderRule above.
+  headers: z.array(HeaderRule).default([]),
+  // Lower-level raw edge rules. Use when `headers` isn't expressive enough
+  // (e.g. trigger by country code, status code, request header).
+  edgeRules: z.array(EdgeRuleSpec).default([]),
   storageZone: z.string().min(1),
   region: z.enum(STORAGE_REGIONS).optional(),
   concurrency: z.number().int().positive().max(64).default(8),
   pullZones: z.array(PullZoneEntry).default([]),
 });
+
+export type HeaderRuleSpec = z.infer<typeof HeaderRule>;
+export type EdgeRuleSpecInput = z.infer<typeof EdgeRuleSpec>;
 
 export const BunnyJsonSchema = z.object({
   $schema: z.string().optional(),

@@ -43,6 +43,8 @@ describe('runDeploy', () => {
         publicDir: 'dist',
         ignore: [],
         mimeTypes: {},
+        headers: [],
+        edgeRules: [],
         storageZone: 'my-app',
         region: 'ny',
         concurrency: 4,

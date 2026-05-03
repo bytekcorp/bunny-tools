@@ -29,6 +29,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     purge?: string;
     streamLibrary?: string;
     streamKey?: string;
+    ci?: boolean | string;
   };
 
   const interactive = !flags.nonInteractive && isInteractive();
@@ -68,6 +69,30 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     if (result.gitignoreUpdated) progress.info('.bunny-state.json added to .gitignore.');
     if (result.storedScopes.length > 0) {
       progress.info(`Credentials stored: ${result.storedScopes.join(', ')}`);
+    }
+
+    // --ci flag: generate .github/workflows/bunny-deploy.yml. Only GH Actions
+    // for v1 (~80% market share). bunny.json must be loadable for the
+    // generator to know storage-zone + secret names; if init aborted early,
+    // we won't reach here.
+    if (flags.ci) {
+      try {
+        const { loadBunnyJson } = await import('../config/bunny-json.js');
+        const { generateGitHubActionsWorkflow } = await import('../core/ci-workflow.js');
+        const loaded = await loadBunnyJson(targetCwd);
+        const ciResult = await generateGitHubActionsWorkflow(targetCwd, loaded.config);
+        if (ciResult.wrote) {
+          progress.info(`Generated ${ciResult.path}`);
+        } else {
+          progress.info(`${ciResult.path} already exists; left untouched.`);
+        }
+        progress.info(`Add these secrets in your GitHub repo:`);
+        for (const s of ciResult.secretsToAdd) {
+          progress.info(`  - ${s}`);
+        }
+      } catch (err) {
+        progress.warn(`CI workflow generation failed: ${(err as Error).message}`);
+      }
     }
 
     if (result.features.includes('storage')) {

@@ -98,6 +98,13 @@ export async function run(inv: ParsedInvocation): Promise<number> {
           case 'auto-spawned-pz':
             // Not emitted by deploy; included for type completeness.
             break;
+          case 'edge-rules-sync':
+            if (e.added > 0 || e.updated > 0 || e.deleted > 0) {
+              progress.info(
+                `synced edge rules on PZ ${e.pullZoneId}: +${e.added} added, ~${e.updated} updated, -${e.deleted} deleted`,
+              );
+            }
+            break;
         }
       },
     });

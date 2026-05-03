@@ -4,6 +4,46 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.34] — 2026-05-03 (Connect Domain + CI generator + declarative edge rules)
+
+Largest single ship of the session. Three subsystems landed together (originally planned as rc.34/35/36 separately).
+
+### Added — atomic Connect Domain
+- **`bunny domain connect <pzId> <fqdn>`** new command. Bundles addHostname → enable-ssl (waits up to 90s) → optional Type-7 DNS record into one idempotent op. Mirrors the Bunny dashboard's "Connect Domain" button.
+- **Flags:** `--dns-zone <id>` (also create the apex Type-7 record), `--name <subdomain>` (default `@`), `--no-wait`, `--timeout <seconds>`.
+- **MCP:** new `bunny.domain_connect` tool with same shape (`pullZoneId`, `hostname`, optional `dnsZoneId`, optional `recordName`).
+
+### Added — `bunny init --ci` GH Actions generator
+- **`--ci` flag on `bunny init`** generates `.github/workflows/bunny-deploy.yml`. Triggers on `push:main` + `workflow_dispatch:`; installs bunny-tools globally; runs `bunny deploy --delete`. `paths-ignore` covers `**/*.md`, `docs/**`, `plans/**`.
+- **Per-zone secret:** uppercase `BUNNY_STORAGE_PASSWORD_<ZONE>` env var matches the resolver chain.
+- **Skips when file exists** — non-destructive. Prints "secrets to add" checklist after generation.
+- **GitHub Actions only for v1.** GitLab/CircleCI templates can land in v0.2.
+
+### Added — declarative edge rules in `bunny.json`
+- **`deploy.headers: [{ pattern, headers }]`** — Netlify/Cloudflare-style declarative response headers. Compiled to edge rules at deploy time.
+- **`deploy.edgeRules: [...]`** — raw edge rule declarations for full power (CountryCode triggers, BlockRequest, etc.).
+- **Smart `Cache-Control` compilation:** `Cache-Control: max-age=N` becomes TWO edge rules — `OverrideCacheTime` (edge cache) + `OverrideBrowserCacheTime` (browser cache). Other Cache-Control directives (`no-store`, `must-revalidate`) and other headers fall through to `SetResponseHeader`.
+- **Auto-sync on every deploy** when either array is non-empty. Skipped entirely (no API calls) when both are empty.
+- **Idempotent + non-destructive:** managed rules tagged via `Description: "managed-by-bunny-tools: <kind> hash=<sha256-prefix>"`. User-added rules (created in dashboard or via raw API) are never touched.
+- **Diff: add/update/delete** — content-hash based; any spec change produces a different hash → handled cleanly.
+- **Multi-PZ:** sync runs against every PZ in `deploy.pullZones`.
+- New event: `edge-rules-sync` reports `+N added, ~M updated, -K deleted` per PZ.
+
+### Test Coverage
+- 173/173 unit (was 157; +16 across `domain.test.ts` (+2), `ci-workflow.test.ts` (+4), `edge-rules-sync.test.ts` (+10)).
+- 45 e2e (unchanged).
+
+### Surface
+- 56 active commands (was 55).
+- 19 MCP tools (was 18).
+
+### Files Touched
+- New: `src/commands/domain/connect.ts`, `src/core/domain.ts`, `src/core/ci-workflow.ts`, `src/core/edge-rules-sync.ts`, `src/util/format-error.ts`
+- New tests: `test/core/domain.test.ts`, `test/core/ci-workflow.test.ts`, `test/core/edge-rules-sync.test.ts`
+- Modified: `src/config/bunny-json.ts` (HeaderRule + EdgeRuleSpec schemas), `src/core/zones.ts` (EdgeRule.Triggers typed), `src/core/deploy.ts` (sync invocation + new event), `src/commands/init.ts` + `src/commands/deploy.ts` (event handlers), `src/manifest/registry.ts` (3 new entries: `domain` group, `domain connect`, `init --ci`), `src/mcp/tools.ts` (new tool)
+
+---
+
 ## [0.1.0-rc.33] — 2026-05-03 (MIME complete + DX polish bundle)
 
 ### Added

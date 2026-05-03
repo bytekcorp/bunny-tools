@@ -14,6 +14,7 @@ import { runPool, summarizeResults } from '../deploy/upload-queue.js';
 import { loadState, saveState, STATE_FILENAME } from '../deploy/state.js';
 import { getActiveAliasOverlay } from './aliases.js';
 import { maybeMigrateIgnoreDefaults } from './ignore-migration.js';
+import { hasDeclaredRules, syncEdgeRulesForPullZone } from './edge-rules-sync.js';
 
 // Files over this threshold trigger a non-blocking warning at upload time.
 // Captures the "I accidentally committed a 50MB binary" case without gating
@@ -53,7 +54,8 @@ export type DeployEvent =
   | { type: 'mime'; path: string; contentType: string; size: number }
   | { type: 'large-file'; path: string; size: number }
   | { type: 'migrate-ignores'; from: number; to: number }
-  | { type: 'auto-spawned-pz'; recordType: string; pullZoneId: number };
+  | { type: 'auto-spawned-pz'; recordType: string; pullZoneId: number }
+  | { type: 'edge-rules-sync'; pullZoneId: number; added: number; updated: number; deleted: number };
 
 export type DeployResult = {
   zone: string;
@@ -194,6 +196,31 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
 
   // 8. Save fresh state cache.
   await saveState(stateFile, diff.newState);
+
+  // 8b. Sync declarative edge rules (bunny.json deploy.headers + edgeRules)
+  // to all configured PZs. Skipped entirely when both arrays are empty —
+  // no API calls. Idempotent; managed-by-bunny-tools description marker
+  // prevents touching user-added rules.
+  if (hasDeclaredRules(opts.config)) {
+    ev({ type: 'phase', phase: 'edge-rules-sync' });
+    for (const pz of opts.config.deploy.pullZones) {
+      try {
+        const r = await syncEdgeRulesForPullZone(pz.id, opts.config);
+        ev({
+          type: 'edge-rules-sync',
+          pullZoneId: r.pullZoneId,
+          added: r.added,
+          updated: r.updated,
+          deleted: r.deleted,
+        });
+      } catch (err) {
+        failed.push({
+          path: `edge-rules-sync:${pz.id}`,
+          error: (err as Error).message,
+        });
+      }
+    }
+  }
 
   // 9. Purge per pullZone config (or override).
   ev({ type: 'phase', phase: 'purge' });

@@ -32,6 +32,114 @@
               },
               "default": {}
             },
+            "headers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "propertyNames": {
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "pattern",
+                  "headers"
+                ],
+                "additionalProperties": false
+              },
+              "default": []
+            },
+            "edgeRules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "actionType": {
+                    "type": "string",
+                    "enum": [
+                      "ForceSSL",
+                      "Redirect",
+                      "OriginUrl",
+                      "OverrideCacheTime",
+                      "BlockRequest",
+                      "SetResponseHeader",
+                      "SetRequestHeader",
+                      "ForceDownload",
+                      "DisableTokenAuthentication",
+                      "EnableTokenAuthentication",
+                      "OverrideCacheTimePublic",
+                      "IgnoreCacheControl",
+                      "DisableCors",
+                      "EnableCors",
+                      "BypassPermaCache",
+                      "OverrideBrowserCacheTime"
+                    ]
+                  },
+                  "actionParameter1": {
+                    "type": "string"
+                  },
+                  "actionParameter2": {
+                    "type": "string"
+                  },
+                  "triggerType": {
+                    "type": "string",
+                    "enum": [
+                      "Url",
+                      "RequestHeader",
+                      "ResponseHeader",
+                      "UrlExtension",
+                      "CountryCode",
+                      "RemoteIP",
+                      "StatusCode"
+                    ]
+                  },
+                  "triggerPatterns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1
+                  },
+                  "triggerMatchingType": {
+                    "type": "string",
+                    "enum": [
+                      "Any",
+                      "All",
+                      "None"
+                    ],
+                    "default": "Any"
+                  },
+                  "enabled": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "description",
+                  "actionType",
+                  "actionParameter1",
+                  "triggerType",
+                  "triggerPatterns"
+                ],
+                "additionalProperties": false
+              },
+              "default": []
+            },
             "storageZone": {
               "type": "string",
               "minLength": 1
