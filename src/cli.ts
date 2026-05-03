@@ -2,6 +2,8 @@
 // Registry-driven CLI entry. Builds the Commander tree from src/manifest/registry.ts;
 // no command is hand-wired here. Lazy-loads command implementations only when invoked.
 
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { registry } from './manifest/registry.js';
 import { renderCommandHelpJson, renderRegistryHelpJson } from './manifest/render-help.js';
@@ -193,8 +195,24 @@ export function getRegistryHelpJson() {
   return renderRegistryHelpJson(registry);
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}`;
-if (isMain) {
+// `import.meta.url === \`file://${process.argv[1]}\`` was the previous main-detection
+// shorthand, but it fails for symlinked binaries. When users install via
+// `npm install -g`, `process.argv[1]` is the symlink path (e.g.
+// `/opt/homebrew/bin/bunny`) while `import.meta.url` resolves to the real file
+// (e.g. `/opt/homebrew/lib/node_modules/bunny-tools/dist/cli.js`). The strings
+// never matched, so the CLI exited silently with no output. Resolving both to
+// real paths via realpathSync handles the symlink hop.
+function isCalledAsMain(): boolean {
+  const argv1 = process.argv[1];
+  if (typeof argv1 !== 'string' || argv1.length === 0) return false;
+  try {
+    return realpathSync(argv1) === fileURLToPath(import.meta.url);
+  } catch {
+    return false;
+  }
+}
+
+if (isCalledAsMain()) {
   const program = buildProgram();
   program.parseAsync(process.argv).catch((err) => {
     logger.error((err as Error).message);
