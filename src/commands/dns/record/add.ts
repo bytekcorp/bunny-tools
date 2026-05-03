@@ -1,7 +1,16 @@
 import type { ParsedInvocation } from '../../../manifest/types.js';
-import { addRecord, SUPPORTED_TYPES } from '../../../core/dns.js';
+import { addRecord, getZone, SUPPORTED_TYPES } from '../../../core/dns.js';
 import { getPullZone } from '../../../core/zones.js';
 import { createProgress } from '../../../ui/progress.js';
+
+// Compute the FQDN that Bunny would assign to a record. Apex (`@` or empty)
+// resolves to the bare zone domain; trailing-dot inputs are treated as
+// already-qualified; everything else is `<name>.<domain>`.
+export function computeFqdn(name: string, domain: string): string {
+  if (name === '' || name === '@') return domain;
+  if (name.endsWith('.')) return name.slice(0, -1);
+  return `${name}.${domain}`;
+}
 
 export async function run(inv: ParsedInvocation): Promise<number> {
   const progress = createProgress();
@@ -39,6 +48,20 @@ export async function run(inv: ParsedInvocation): Promise<number> {
       const pz = await getPullZone(Number.parseInt(flags.pullZone, 10));
       resolvedValue = resolvedValue ?? pz.Name;
       resolvedLinkName = resolvedLinkName ?? String(pz.Id);
+
+      // Pre-flight: Bunny silently rejects PULLZONE records whose FQDN isn't
+      // already in the pz Hostnames list. Surface the missing link with the
+      // exact next command so users don't waste time debugging an opaque API.
+      const dnsZone = await getZone(Number.parseInt(args.zoneId, 10));
+      const fqdn = computeFqdn(args.name, dnsZone.Domain);
+      const linked = (pz.Hostnames ?? []).some((h) => h.Value === fqdn);
+      if (!linked) {
+        progress.fail(
+          `${fqdn} is not linked to pull zone "${pz.Name}" (#${pz.Id}). ` +
+            `Run: bunny pullzone hostname add ${pz.Id} ${fqdn}`,
+        );
+        return 1;
+      }
     } catch (err) {
       progress.fail(`--pull-zone lookup failed: ${(err as Error).message}`);
       return 1;

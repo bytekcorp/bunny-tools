@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.24  |  **Active commands:** 51/52
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.25  |  **Active commands:** 54/55
 
 <!-- HANDCURATED:START -->
 
@@ -79,6 +79,9 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 - `bunny pullzone edgerule list` [active] — List edge rules on a pull zone.
 - `bunny pullzone edgerule add` [active] — Add an edge rule to a pull zone (raw JSON rule).
 - `bunny pullzone edgerule delete` [active] — Delete an edge rule by Guid.
+- `bunny pullzone hostname list` [active] — List custom hostnames linked to a pull zone.
+- `bunny pullzone hostname add` [active] — Link a custom hostname to a pull zone (required before Type-7 PULLZONE DNS records resolve).
+- `bunny pullzone hostname remove` [active] — Unlink a custom hostname from a pull zone.
 
 ### Phase 4
 

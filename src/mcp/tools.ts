@@ -17,6 +17,9 @@ import {
   getPullZone,
   createPullZone,
   deletePullZone,
+  addPullZoneHostname,
+  removePullZoneHostname,
+  listPullZoneHostnames,
 } from '../core/zones.js';
 import { listZones as listDnsZones, listRecords, addRecord, deleteRecord } from '../core/dns.js';
 import { loadBunnyJson } from '../config/bunny-json.js';
@@ -164,6 +167,46 @@ export const TOOLS: ToolDef[] = [
       if (type === 'storage') await deleteStorageZone(id);
       else await deletePullZone(id);
       return { ok: true };
+    },
+  },
+  {
+    name: 'bunny.pullzone_hostname_list',
+    description: 'List custom hostnames linked to a pull zone.',
+    inputSchema: z.object({ pullZoneId: z.number().int().positive() }),
+    run: async (raw) => {
+      const { pullZoneId } = z.object({ pullZoneId: z.number().int().positive() }).parse(raw);
+      return { hostnames: await listPullZoneHostnames(pullZoneId) };
+    },
+  },
+  {
+    name: 'bunny.pullzone_hostname_add',
+    description:
+      'Link a custom hostname to a pull zone. Required before Type-7 (PULLZONE) DNS records resolve. POSTs to /pullzone/{id}/addHostname.',
+    inputSchema: z.object({
+      pullZoneId: z.number().int().positive(),
+      hostname: z.string().min(1),
+    }),
+    run: async (raw) => {
+      const { pullZoneId, hostname } = z
+        .object({ pullZoneId: z.number().int().positive(), hostname: z.string().min(1) })
+        .parse(raw);
+      const hostnames = await addPullZoneHostname(pullZoneId, hostname);
+      return { ok: true, hostnames };
+    },
+  },
+  {
+    name: 'bunny.pullzone_hostname_remove',
+    description: 'Unlink a custom hostname from a pull zone.',
+    inputSchema: z.object({
+      pullZoneId: z.number().int().positive(),
+      hostname: z.string().min(1),
+    }),
+    run: async (raw) => {
+      const { pullZoneId, hostname } = z
+        .object({ pullZoneId: z.number().int().positive(), hostname: z.string().min(1) })
+        .parse(raw);
+      const hostnames = await removePullZoneHostname(pullZoneId, hostname);
+      return { ok: true, hostnames };
     },
   },
   {

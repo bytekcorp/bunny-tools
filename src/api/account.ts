@@ -94,6 +94,27 @@ export function createAccountClient(opts: AccountClientOptions) {
         scope: { kind: 'account' },
       }),
 
+    // Hostnames are managed via dedicated subresource endpoints — Bunny's
+    // `POST /pullzone/{id}` silently drops the Hostnames array (same gotcha
+    // as edge rules). PULLZONE (Type-7) DNS records also fail silently
+    // unless the FQDN is registered here first.
+    addPullZoneHostname: (pullZoneId: number, hostname: string) =>
+      callBunny<void>({
+        base,
+        path: `/pullzone/${pullZoneId}/addHostname`,
+        method: 'POST',
+        scope: { kind: 'account' },
+        body: { Hostname: hostname },
+      }),
+    removePullZoneHostname: (pullZoneId: number, hostname: string) =>
+      callBunny<void>({
+        base,
+        path: `/pullzone/${pullZoneId}/removeHostname`,
+        method: 'POST',
+        scope: { kind: 'account' },
+        body: { Hostname: hostname },
+      }),
+
     purgeByUrl: (url: string, async = false) =>
       callBunny<void>({
         base,

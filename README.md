@@ -161,12 +161,20 @@ bunny storage sync ./dist --zone=my-app
 | `bunny pullzone edgerule list <id>` | List edge rules on a pull zone |
 | `bunny pullzone edgerule add <id> --rule=<json>` | Add an edge rule (raw JSON rule) |
 | `bunny pullzone edgerule delete <id> <rule-id>` | Delete an edge rule |
+| `bunny pullzone hostname list <id>` | List custom hostnames linked to a pull zone |
+| `bunny pullzone hostname add <id> <hostname>` | Link a custom hostname (e.g. `example.com`) |
+| `bunny pullzone hostname remove <id> <hostname>` | Unlink a custom hostname |
 
 
 **Example**
 
 ```bash
 bunny cdn edgerule list 12345
+
+# Wire DNS to a pull zone (2 steps — Bunny silently rejects PULLZONE records
+# whose FQDN isn't already linked here):
+bunny pullzone hostname add 5780316 example.com
+bunny dns record add 783181 PULLZONE @ --pull-zone=5780316
 ```
 
 ## DNS

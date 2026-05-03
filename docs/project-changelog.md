@@ -4,6 +4,24 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.25] — 2026-05-03 (Pull Zone Hostname Management)
+
+### Added
+- **`bunny pullzone hostname {list,add,remove}`** — wraps Bunny's dedicated `addHostname` / `removeHostname` subresource endpoints (previously only reachable via raw HTTP since `pullzone update` silently drops `Hostnames[]`).
+- **`dns record add --pull-zone <id>` pre-flight check** — fetches PZ + DNS zone, computes target FQDN, fails with copy-pasteable `bunny pullzone hostname add <id> <fqdn>` when the hostname isn't linked yet (instead of letting Bunny silently reject the Type-7 record).
+- **3 new MCP tools:** `bunny.pullzone_hostname_list`, `bunny.pullzone_hostname_add`, `bunny.pullzone_hostname_remove`.
+- **`computeFqdn(name, domain)` helper** — exported, handles apex (`@`/empty), trailing-dot, wildcard (`*`).
+
+### Test Coverage
+- **Unit tests:** 139 total (up from 129 in rc.24); +3 hostname API + +5 FQDN helper coverage.
+- **E2E tests:** 44 (unchanged).
+
+### Surface
+- 54 active commands (was 51) — `pullzone hostname {list,add,remove}` promoted.
+- 17 MCP tools (was 14).
+
+---
+
 ## [0.1.0-rc.24] — 2026-05-03 (DNS Routing Types Extended)
 
 ### Added

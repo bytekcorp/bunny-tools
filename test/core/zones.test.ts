@@ -4,9 +4,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   addEdgeRule,
+  addPullZoneHostname,
   deleteEdgeRule,
   listEdgeRules,
+  listPullZoneHostnames,
   listStorageZones,
+  removePullZoneHostname,
 } from '../../src/core/zones.js';
 import { getMockAgent } from '../setup.js';
 
@@ -104,5 +107,58 @@ describe('core/zones', () => {
       });
     const rules = await listEdgeRules(42);
     expect(rules).toEqual([]);
+  });
+
+  it('addPullZoneHostname POSTs to /addHostname and re-lists hostnames', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/42/addHostname', method: 'POST' })
+      .reply(204);
+    pool
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [{ Value: 'example.com' }],
+      });
+
+    const hosts = await addPullZoneHostname(42, 'example.com');
+    expect(hosts).toEqual(['example.com']);
+  });
+
+  it('removePullZoneHostname POSTs to /removeHostname and re-lists hostnames', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/42/removeHostname', method: 'POST' })
+      .reply(204);
+    pool
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [],
+      });
+
+    const hosts = await removePullZoneHostname(42, 'example.com');
+    expect(hosts).toEqual([]);
+  });
+
+  it('listPullZoneHostnames extracts the Value field from each Hostname entry', async () => {
+    getMockAgent()
+      .get('https://api.bunny.net')
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [{ Value: 'a.com' }, { Value: 'b.com' }],
+      });
+    const hosts = await listPullZoneHostnames(42);
+    expect(hosts).toEqual(['a.com', 'b.com']);
   });
 });

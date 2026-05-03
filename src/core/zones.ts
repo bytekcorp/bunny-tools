@@ -100,3 +100,21 @@ export async function deleteEdgeRule(pullZoneId: number, ruleGuid: string): Prom
   await client().deleteEdgeRule(pullZoneId, ruleGuid);
   return listEdgeRules(pullZoneId);
 }
+
+// Hostnames — same dedicated-subresource pattern as edge rules. Returns the
+// updated hostname list after each mutation so callers can confirm state.
+
+export async function listPullZoneHostnames(pullZoneId: number): Promise<string[]> {
+  const pz = await client().getPullZone(pullZoneId);
+  return (pz.Hostnames ?? []).map((h) => h.Value);
+}
+
+export async function addPullZoneHostname(pullZoneId: number, hostname: string): Promise<string[]> {
+  await client().addPullZoneHostname(pullZoneId, hostname);
+  return listPullZoneHostnames(pullZoneId);
+}
+
+export async function removePullZoneHostname(pullZoneId: number, hostname: string): Promise<string[]> {
+  await client().removePullZoneHostname(pullZoneId, hostname);
+  return listPullZoneHostnames(pullZoneId);
+}

@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.24',
+  version: '0.1.0-rc.25',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -16,6 +16,7 @@ export const registry: Registry = {
     { name: 'storagezone', description: 'Manage storage zones (CRUD).' },
     { name: 'pullzone', description: 'Manage pull zones (CDN) and their edge rules.', aliases: ['cdn'] },
     { name: 'pullzone edgerule', description: 'Manage edge rules on a pull zone.' },
+    { name: 'pullzone hostname', description: 'Manage custom hostnames linked to a pull zone.' },
     { name: 'dns', description: 'Manage DNS zones and records.' },
     { name: 'dns record', description: 'Manage DNS records within a zone.' },
     { name: 'stream', description: 'Manage Stream video libraries and videos.' },
@@ -389,6 +390,37 @@ export const registry: Registry = {
       status: 'active',
       phase: 3,
       load: () => import('../commands/pull-zone/edge-rule/delete.js'),
+    },
+    {
+      name: 'pullzone hostname list',
+      summary: 'List custom hostnames linked to a pull zone.',
+      args: [{ name: 'pullZoneId', description: 'Pull zone id.', required: true }],
+      flags: [{ name: 'json', description: 'Emit JSON.', hasValue: false }],
+      status: 'active',
+      phase: 3,
+      load: () => import('../commands/pull-zone/hostname/list.js'),
+    },
+    {
+      name: 'pullzone hostname add',
+      summary: 'Link a custom hostname to a pull zone (required before Type-7 PULLZONE DNS records resolve).',
+      args: [
+        { name: 'pullZoneId', description: 'Pull zone id.', required: true },
+        { name: 'hostname', description: 'Custom hostname (e.g. example.com).', required: true },
+      ],
+      status: 'active',
+      phase: 3,
+      load: () => import('../commands/pull-zone/hostname/add.js'),
+    },
+    {
+      name: 'pullzone hostname remove',
+      summary: 'Unlink a custom hostname from a pull zone.',
+      args: [
+        { name: 'pullZoneId', description: 'Pull zone id.', required: true },
+        { name: 'hostname', description: 'Custom hostname.', required: true },
+      ],
+      status: 'active',
+      phase: 3,
+      load: () => import('../commands/pull-zone/hostname/remove.js'),
     },
 
     // Phase 4 — DNS

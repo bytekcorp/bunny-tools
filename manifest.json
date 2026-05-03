@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.24",
+  "version": "0.1.0-rc.25",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -1063,6 +1063,81 @@
         {
           "name": "ruleGuid",
           "description": "Edge rule Guid.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pullzone hostname list",
+      "summary": "List custom hostnames linked to a pull zone.",
+      "description": null,
+      "status": "active",
+      "phase": 3,
+      "args": [
+        {
+          "name": "pullZoneId",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "json",
+          "short": null,
+          "description": "Emit JSON.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pullzone hostname add",
+      "summary": "Link a custom hostname to a pull zone (required before Type-7 PULLZONE DNS records resolve).",
+      "description": null,
+      "status": "active",
+      "phase": 3,
+      "args": [
+        {
+          "name": "pullZoneId",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "hostname",
+          "description": "Custom hostname (e.g. example.com).",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pullzone hostname remove",
+      "summary": "Unlink a custom hostname from a pull zone.",
+      "description": null,
+      "status": "active",
+      "phase": 3,
+      "args": [
+        {
+          "name": "pullZoneId",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "hostname",
+          "description": "Custom hostname.",
           "required": true,
           "variadic": false
         }
