@@ -4,6 +4,31 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.33] — 2026-05-03 (MIME complete + DX polish bundle)
+
+### Added
+- **`mime-types` package replaces manual `src/util/content-type.ts` table.** Covers ~1000 extensions from mime-db, including previously-missing `.webmanifest`, `.opus`, `.heic`. Auto-appends `; charset=utf-8` for UTF-8 text types per mime-db's charset table. `application/octet-stream` fallback unchanged.
+- **`bunny.json deploy.mimeTypes: { ".ext": "type" }` overrides** — dot-prefix keys; user values win over mime-types defaults. Schema validated.
+- **`bunny deploy --verbose`** prints `<path> [<mime>] (<size>)` per upload AND lists ALL orphan paths in dry-run output. Default dry-run shows first 10 orphans + count.
+- **Auto-migrate `bunny.json deploy.ignore`** to rc.33+ baseline (15 entries: includes `docs/**`, `plans/**`, `scripts/**`, `tests/**`, `*.md`, `LICENSE*`, etc.). Triggers ONLY when current array is byte-equal to the rc.13–32 legacy 5-entry default. Idempotent; preserves any user customization.
+- **MCP `bunny.dns_record_set` PULLZONE convenience** — accepts optional `pullZoneId: number`. When set + type=PULLZONE, auto-derives `value` (PZ name) and `linkName` (PZ id). Mirrors CLI's `--pull-zone` flag.
+- **Auto-spawned PZ detection** — after `dns record add` returns, if response has `AcceleratedPullZoneId !== 0`, prints `i Bunny auto-created pull zone <id> to handle this <TYPE> record.` Catches REDIRECT side effects.
+- **`bunny deploy` warns on >5 MB files** at upload time. Non-blocking; helps catch accidentally committed binaries.
+- **`bunny init` now prints masked account key** when skipping auth (`Account key already configured (***xxxx)`).
+- **Sharper MCP `bunny.deploy` description**: "Recommended for CI/CD. End-to-end deploy: walks publicDir, diffs vs storage zone, uploads with proper MIME types in parallel, optionally purges CDN. Replaces custom upload scripts."
+
+### Test Coverage
+- 157/157 unit (was 146; +11 across content-type and ignore-migration).
+- 45 e2e (unchanged).
+
+### Files Touched
+- New: `src/util/content-type.ts` (rewritten), `src/core/ignore-migration.ts`
+- New tests: `test/util/content-type.test.ts`, `test/core/ignore-migration.test.ts`
+- Modified: `src/config/bunny-json.ts`, `src/core/deploy.ts`, `src/core/init.ts`, `src/commands/deploy.ts`, `src/commands/dns/record/add.ts`, `src/manifest/registry.ts`, `src/mcp/tools.ts`, `src/api/account.ts` (DnsRecord type extended)
+- Dependencies: `mime-types`, `@types/mime-types`
+
+---
+
 ## [0.1.0-rc.32] — 2026-05-03 (MCP e2e coverage for hostname tools)
 
 ### Added

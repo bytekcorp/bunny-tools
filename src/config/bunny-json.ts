@@ -24,6 +24,12 @@ const PullZoneEntry = z.object({
 const DeployBlock = z.object({
   publicDir: z.string().min(1),
   ignore: z.array(z.string()).default([]),
+  // Per-extension Content-Type overrides. Keys MUST start with a dot
+  // (`.mjs`, not `mjs`) — matches the user's mental model and dedupes
+  // against the dot already present in `path.lastIndexOf('.')` lookup.
+  // mime-types provides comprehensive defaults; this is for when Bunny
+  // edge expects something non-standard (e.g. legacy `application/x-javascript`).
+  mimeTypes: z.record(z.string().regex(/^\./), z.string().min(1)).default({}),
   storageZone: z.string().min(1),
   region: z.enum(STORAGE_REGIONS).optional(),
   concurrency: z.number().int().positive().max(64).default(8),

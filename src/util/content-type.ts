@@ -1,44 +1,38 @@
-// Minimal content-type lookup for the small set of types Bunny storage
-// commonly serves. Avoids pulling in the full `mime` package (~80KB).
-// Add entries as real users hit gaps.
+// Content-Type resolution at upload time. Backed by `mime-types` (which uses
+// mime-db's ~1000-entry table) so we never re-discover gaps like .webmanifest
+// or .wasm. Auto-appends `; charset=utf-8` for `text/*` types since Bunny
+// stores Content-Type verbatim and the edge serves it as-is.
 
-const TYPES: Record<string, string> = {
-  html: 'text/html; charset=utf-8',
-  htm: 'text/html; charset=utf-8',
-  css: 'text/css; charset=utf-8',
-  js: 'application/javascript; charset=utf-8',
-  mjs: 'application/javascript; charset=utf-8',
-  cjs: 'application/javascript; charset=utf-8',
-  json: 'application/json; charset=utf-8',
-  map: 'application/json; charset=utf-8',
-  txt: 'text/plain; charset=utf-8',
-  md: 'text/markdown; charset=utf-8',
-  xml: 'application/xml; charset=utf-8',
-  svg: 'image/svg+xml',
-  ico: 'image/x-icon',
-  png: 'image/png',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  gif: 'image/gif',
-  webp: 'image/webp',
-  avif: 'image/avif',
-  woff: 'font/woff',
-  woff2: 'font/woff2',
-  ttf: 'font/ttf',
-  otf: 'font/otf',
-  eot: 'application/vnd.ms-fontobject',
-  pdf: 'application/pdf',
-  webm: 'video/webm',
-  mp4: 'video/mp4',
-  mp3: 'audio/mpeg',
-  wav: 'audio/wav',
-  zip: 'application/zip',
-  wasm: 'application/wasm',
-};
+import mime from 'mime-types';
 
-export function contentTypeFor(path: string): string {
+const DEFAULT = 'application/octet-stream';
+
+// `bunny.json deploy.mimeTypes` overrides keyed by extension WITH dot prefix
+// (".mjs": "application/javascript"). The dot is part of the user's mental
+// model and matches how extensions are written in code/docs.
+export type MimeOverrides = Record<string, string>;
+
+export function contentTypeFor(path: string, overrides?: MimeOverrides): string {
   const i = path.lastIndexOf('.');
-  if (i < 0) return 'application/octet-stream';
-  const ext = path.slice(i + 1).toLowerCase();
-  return TYPES[ext] ?? 'application/octet-stream';
+  if (i < 0) return DEFAULT;
+  const ext = path.slice(i).toLowerCase(); // includes the dot
+
+  // 1. User overrides win.
+  if (overrides && overrides[ext]) return withCharset(overrides[ext]);
+
+  // 2. mime-types lookup (extension WITHOUT dot — the package's API).
+  const looked = mime.lookup(ext.slice(1));
+  if (looked) return withCharset(looked);
+
+  return DEFAULT;
+}
+
+// Append `; charset=utf-8` to text-y types so Bunny serves them with the
+// charset hint. mime-types' charset() helper is conservative and only flags
+// types that are actually text — match its behavior so binary types don't
+// get a misleading charset.
+function withCharset(type: string): string {
+  if (type.includes('charset=')) return type;
+  if (mime.charset(type) === 'UTF-8') return `${type}; charset=utf-8`;
+  return type;
 }

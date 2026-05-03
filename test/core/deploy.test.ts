@@ -42,6 +42,7 @@ describe('runDeploy', () => {
       deploy: {
         publicDir: 'dist',
         ignore: [],
+        mimeTypes: {},
         storageZone: 'my-app',
         region: 'ny',
         concurrency: 4,

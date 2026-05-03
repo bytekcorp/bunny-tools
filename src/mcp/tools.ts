@@ -42,7 +42,8 @@ const ZoneType = z.enum(['storage', 'pull']);
 export const TOOLS: ToolDef[] = [
   {
     name: 'bunny.deploy',
-    description: 'Run `bunny deploy` against the bunny.json in CWD. Walks publicDir, diffs vs storage zone, uploads changed files in parallel, optionally purges CDN. Returns counts and durations.',
+    description:
+      '**Recommended for CI/CD.** End-to-end deploy: walks publicDir, diffs vs storage zone, uploads changed files with proper MIME types in parallel, optionally purges CDN. Replaces custom upload scripts. Returns counts and durations.',
     inputSchema: z.object({
       dryRun: z.boolean().optional(),
       deleteOrphans: z.boolean().optional(),
@@ -239,7 +240,7 @@ export const TOOLS: ToolDef[] = [
   {
     name: 'bunny.dns_record_set',
     description:
-      'Add a DNS record. Standard types (A/AAAA/CNAME/TXT/MX/SRV/CAA/NS) plus Bunny routing types (REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT). PULLZONE and SCRIPT require linkName.',
+      'Add a DNS record. Standard types (A/AAAA/CNAME/TXT/MX/SRV/CAA/NS) plus Bunny routing types (REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT). For PULLZONE: pass `pullZoneId` (number) and we auto-derive value+linkName — mirrors the CLI `--pull-zone` convenience. SCRIPT still requires linkName.',
     inputSchema: z.object({
       zoneId: z.number().int().positive(),
       type: z.enum([
@@ -247,7 +248,8 @@ export const TOOLS: ToolDef[] = [
         'SRV', 'CAA', 'PTR', 'SCRIPT', 'NS',
       ]),
       name: z.string(),
-      value: z.string(),
+      // Optional for PULLZONE when pullZoneId is set; otherwise required.
+      value: z.string().optional(),
       ttl: z.number().int().positive().optional(),
       priority: z.number().int().nonnegative().optional(),
       weight: z.number().int().nonnegative().optional(),
@@ -255,11 +257,9 @@ export const TOOLS: ToolDef[] = [
       flags: z.number().int().nonnegative().optional(),
       tag: z.string().optional(),
       linkName: z.string().optional(),
+      pullZoneId: z.number().int().positive().optional(),
     }),
     run: async (raw) => {
-      // Validate at the MCP boundary BEFORE addRecord runs its own
-      // discriminated-union check. Same shape as inputSchema; declared inline
-      // so the schema parse and the run function share one source of truth.
       const parsed = z
         .object({
           zoneId: z.number().int().positive(),
@@ -268,7 +268,7 @@ export const TOOLS: ToolDef[] = [
             'SRV', 'CAA', 'PTR', 'SCRIPT', 'NS',
           ]),
           name: z.string(),
-          value: z.string(),
+          value: z.string().optional(),
           ttl: z.number().int().positive().optional(),
           priority: z.number().int().nonnegative().optional(),
           weight: z.number().int().nonnegative().optional(),
@@ -276,10 +276,32 @@ export const TOOLS: ToolDef[] = [
           flags: z.number().int().nonnegative().optional(),
           tag: z.string().optional(),
           linkName: z.string().optional(),
+          pullZoneId: z.number().int().positive().optional(),
         })
         .parse(raw);
-      const { zoneId, ...rest } = parsed;
-      return addRecord(zoneId, rest);
+      const { zoneId, pullZoneId, ...rest } = parsed;
+
+      // PULLZONE convenience: when pullZoneId is given, fetch the PZ and
+      // derive both Value (PZ name) and LinkName (PZ id as string). User
+      // can still pass value/linkName explicitly to override.
+      let resolved: typeof rest = rest;
+      if (parsed.type === 'PULLZONE' && pullZoneId !== undefined) {
+        const pz = await getPullZone(pullZoneId);
+        resolved = {
+          ...rest,
+          value: rest.value ?? pz.Name,
+          linkName: rest.linkName ?? String(pz.Id),
+        };
+      }
+
+      if (!resolved.value) {
+        throw new Error(
+          parsed.type === 'PULLZONE'
+            ? 'PULLZONE record requires either `pullZoneId` (recommended) or both `value` and `linkName`.'
+            : 'value is required',
+        );
+      }
+      return addRecord(zoneId, resolved);
     },
   },
   {

@@ -1,6 +1,6 @@
 // core/deploy — orchestrates the full deploy pipeline. UI-free; emits progress events.
 
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { contentTypeFor } from '../util/content-type.js';
 import type { BunnyJson } from '../config/bunny-json.js';
@@ -13,15 +13,24 @@ import { buildRemoteMap } from '../deploy/remote-list.js';
 import { runPool, summarizeResults } from '../deploy/upload-queue.js';
 import { loadState, saveState, STATE_FILENAME } from '../deploy/state.js';
 import { getActiveAliasOverlay } from './aliases.js';
+import { maybeMigrateIgnoreDefaults } from './ignore-migration.js';
+
+// Files over this threshold trigger a non-blocking warning at upload time.
+// Captures the "I accidentally committed a 50MB binary" case without gating
+// the deploy. KISS — no flag, no config knob until someone asks.
+const LARGE_FILE_THRESHOLD_BYTES = 5 * 1024 * 1024;
 
 export type DeployOptions = {
   config: BunnyJson;
+  configFilePath?: string;
   cwd: string;
   dryRun?: boolean;
   deleteOrphans?: boolean;
   concurrency?: number;
   /** Override purge config from bunny.json: 'tag:<n>' | 'all' | 'none' | 'paths'. */
   purgeOverride?: string;
+  /** When true, emits 'mime' events per upload for detailed MIME observability. */
+  verbose?: boolean;
   /** Progress events. */
   onEvent?: (e: DeployEvent) => void;
 };
@@ -29,11 +38,22 @@ export type DeployOptions = {
 export type DeployEvent =
   | { type: 'phase'; phase: string; message?: string }
   | { type: 'walk'; total: number; warnings: string[] }
-  | { type: 'diff'; new: number; changed: number; unchanged: number; orphan: number }
+  | {
+      type: 'diff';
+      new: number;
+      changed: number;
+      unchanged: number;
+      orphan: number;
+      orphanPaths: string[];
+    }
   | { type: 'upload-progress'; completed: number; total: number; path: string }
   | { type: 'delete-progress'; completed: number; total: number; path: string }
   | { type: 'purge'; targets: string[] }
-  | { type: 'warn'; message: string };
+  | { type: 'warn'; message: string }
+  | { type: 'mime'; path: string; contentType: string; size: number }
+  | { type: 'large-file'; path: string; size: number }
+  | { type: 'migrate-ignores'; from: number; to: number }
+  | { type: 'auto-spawned-pz'; recordType: string; pullZoneId: number };
 
 export type DeployResult = {
   zone: string;
@@ -49,6 +69,17 @@ export type DeployResult = {
 export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
   const t0 = Date.now();
   const ev = opts.onEvent ?? (() => {});
+
+  // 0. One-shot ignore migration. Only rewrites bunny.json when its
+  // `deploy.ignore` is byte-equal to the rc.32 legacy default — meaning
+  // the user never customized. Best-effort: failure (read-only FS, etc.)
+  // is logged but doesn't block the deploy.
+  if (opts.configFilePath && !opts.dryRun) {
+    const migrated = await maybeMigrateIgnoreDefaults(opts.configFilePath, opts.config);
+    if (migrated) {
+      ev({ type: 'migrate-ignores', from: migrated.from, to: migrated.to });
+    }
+  }
 
   // 1. Apply alias overlay (alias's storageZone wins if present).
   const alias = await getActiveAliasOverlay(opts.cwd);
@@ -93,6 +124,7 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
     changed: diff.byClass.changed.length,
     unchanged: diff.byClass.unchanged.length,
     orphan: diff.byClass.orphan.length,
+    orphanPaths: diff.byClass.orphan.map((o) => o.path),
   });
 
   if (opts.dryRun) {
@@ -111,10 +143,20 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
   // 6. Upload pool.
   ev({ type: 'phase', phase: 'upload', message: `concurrency=${concurrency}` });
   const toUpload = [...diff.byClass.new, ...diff.byClass.changed];
+  const mimeOverrides = opts.config.deploy.mimeTypes;
   const uploadJobs = toUpload.map((entry) => async () => {
     if (!entry.absPath) throw new Error(`internal: missing absPath for ${entry.path}`);
+    const ct = contentTypeFor(entry.path, mimeOverrides);
+    // Stat first so the large-file warning fires even if readFile is slow.
+    const st = await stat(entry.absPath);
+    if (st.size > LARGE_FILE_THRESHOLD_BYTES) {
+      ev({ type: 'large-file', path: entry.path, size: st.size });
+    }
+    if (opts.verbose) {
+      ev({ type: 'mime', path: entry.path, contentType: ct, size: st.size });
+    }
     const buf = await readFile(entry.absPath);
-    await storageClient.putFile(zone, region, entry.path, buf, contentTypeFor(entry.path));
+    await storageClient.putFile(zone, region, entry.path, buf, ct);
   });
   const uploadResults = await runPool(uploadJobs, {
     concurrency,

@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.32',
+  version: '0.1.0-rc.33',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -166,6 +166,7 @@ export const registry: Registry = {
         { name: 'purge', description: 'Override per-pull-zone purge: all|none|tag:<name>|paths.', hasValue: true },
         { name: 'only', description: 'Limit to a target (alias-scoped).', hasValue: true },
         { name: 'json', description: 'Emit JSON summary instead of a table.', hasValue: false },
+        { name: 'verbose', description: 'Print Content-Type + size per file and full orphan list.', hasValue: false },
       ],
       examples: [
         { command: 'bunny deploy', description: 'Sync + purge per bunny.json.' },

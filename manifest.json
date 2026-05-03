@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.32",
+  "version": "0.1.0-rc.33",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -429,6 +429,14 @@
           "name": "json",
           "short": null,
           "description": "Emit JSON summary instead of a table.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "verbose",
+          "short": null,
+          "description": "Print Content-Type + size per file and full orphan list.",
           "hasValue": false,
           "valueHint": null,
           "defaultValue": null

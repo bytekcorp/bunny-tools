@@ -71,6 +71,14 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   try {
     const created = await addRecord(Number.parseInt(args.zoneId, 10), raw);
     progress.succeed(`Added ${upperType} record (id=${created.Id}).`);
+    // Bunny auto-spawns a hidden pull zone when the record type needs CDN
+    // acceleration (notably REDIRECT). Surface that side effect so the user
+    // isn't surprised by a phantom PZ in their account.
+    if (created.AcceleratedPullZoneId && created.AcceleratedPullZoneId > 0) {
+      progress.info(
+        `Bunny auto-created pull zone ${created.AcceleratedPullZoneId} to handle this ${upperType} record.`,
+      );
+    }
     return 0;
   } catch (err) {
     progress.fail(formatBunnyError(err));

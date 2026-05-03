@@ -6,10 +6,11 @@ import { existsSync } from 'node:fs';
 import { readFile, writeFile, appendFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { atomicWriteJson } from '../util/fs.js';
-import { resolveCredential, setCredential } from '../config/credential-resolver.js';
+import { resolveCredential, setCredential, maskCredential } from '../config/credential-resolver.js';
 import { createAccountClient } from '../api/account.js';
 import { AuthError } from '../api/errors.js';
 import type { StorageZone, PullZone } from '../api/account.js';
+import { RC33_DEFAULT_IGNORE } from './ignore-migration.js';
 
 export const FEATURES = ['storage', 'dns', 'stream', 'containers', 'scripting'] as const;
 export type Feature = (typeof FEATURES)[number];
@@ -92,7 +93,15 @@ export async function runInit(
     storedScopes.push('account');
     cb.notify?.('Account key stored.');
   } else {
-    cb.notify?.('Account key already configured (env or keychain). Skipping auth step.');
+    // Print masked key so user can verify which credential is in scope without
+    // having to grep keychain or env separately.
+    let masked = '****';
+    try {
+      masked = maskCredential(await resolveCredential({ kind: 'account' }));
+    } catch {
+      // resolver already returned true above; reading again can fail (race).
+    }
+    cb.notify?.(`Account key already configured (${masked}). Skipping auth step.`);
   }
 
   // Validate by listing zones — also gives us the lists for the next step.
@@ -257,7 +266,7 @@ async function configureStorage(
   return {
     deploy: {
       publicDir,
-      ignore: ['bunny.json', '.bunnyrc', '.bunny-state.json', '**/.*', '**/node_modules/**'],
+      ignore: [...RC33_DEFAULT_IGNORE],
       storageZone,
       ...(input.region ? { region: input.region } : {}),
       concurrency: 8,

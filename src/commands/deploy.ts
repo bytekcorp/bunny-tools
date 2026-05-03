@@ -6,6 +6,15 @@ import { runDeploy } from '../core/deploy.js';
 import { createProgress } from '../ui/progress.js';
 import { renderTable } from '../ui/table.js';
 
+const ORPHAN_PREVIEW_COUNT = 10;
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  if (n < 1024 * 1024 * 1024) return `${(n / 1024 / 1024).toFixed(1)} MB`;
+  return `${(n / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
 export async function run(inv: ParsedInvocation): Promise<number> {
   const progress = createProgress();
   const flags = inv.flags as {
@@ -15,11 +24,15 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     purge?: string;
     only?: string;
     json?: boolean;
+    verbose?: boolean;
   };
 
   let config;
+  let configFilePath: string;
   try {
-    config = (await loadBunnyJson()).config;
+    const loaded = await loadBunnyJson();
+    config = loaded.config;
+    configFilePath = loaded.filePath;
   } catch (err) {
     progress.fail((err as Error).message);
     return 1;
@@ -29,11 +42,13 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   try {
     const result = await runDeploy({
       config,
+      configFilePath,
       cwd: process.cwd(),
       ...(flags.dryRun ? { dryRun: true } : {}),
       ...(flags.delete ? { deleteOrphans: true } : {}),
       ...(flags.concurrency ? { concurrency: Number.parseInt(flags.concurrency, 10) } : {}),
       ...(flags.purge ? { purgeOverride: flags.purge } : {}),
+      ...(flags.verbose ? { verbose: true } : {}),
       onEvent: (e) => {
         switch (e.type) {
           case 'phase':
@@ -42,11 +57,21 @@ export async function run(inv: ParsedInvocation): Promise<number> {
           case 'walk':
             progress.info(`walked ${e.total} files`);
             break;
-          case 'diff':
+          case 'diff': {
             progress.info(
               `diff: ${e.new} new · ${e.changed} changed · ${e.unchanged} unchanged · ${e.orphan} orphan`,
             );
+            // Show orphan paths so dry-run consumers know what would be deleted.
+            // Verbose lists all; default lists first 10 + count.
+            if (e.orphan > 0) {
+              const limit = flags.verbose ? e.orphan : ORPHAN_PREVIEW_COUNT;
+              const preview = e.orphanPaths.slice(0, limit);
+              const remainder = e.orphan - preview.length;
+              const tail = remainder > 0 ? `, ... (${remainder} more)` : '';
+              progress.info(`would delete: ${preview.join(', ')}${tail}`);
+            }
             break;
+          }
           case 'upload-progress':
             if (e.completed === e.total) progress.info(`uploaded ${e.total} files`);
             break;
@@ -58,6 +83,20 @@ export async function run(inv: ParsedInvocation): Promise<number> {
             break;
           case 'warn':
             progress.warn(e.message);
+            break;
+          case 'mime':
+            progress.info(`${e.path} [${e.contentType}] (${formatBytes(e.size)})`);
+            break;
+          case 'large-file':
+            progress.warn(`large file: ${e.path} (${formatBytes(e.size)})`);
+            break;
+          case 'migrate-ignores':
+            progress.info(
+              `Upgraded bunny.json default ignores (${e.from} → ${e.to} entries) to rc.33+ baseline.`,
+            );
+            break;
+          case 'auto-spawned-pz':
+            // Not emitted by deploy; included for type completeness.
             break;
         }
       },

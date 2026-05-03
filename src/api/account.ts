@@ -293,6 +293,12 @@ export type DnsRecord = {
   Flags?: number;
   Tag?: string;
   Disabled?: boolean;
+  // Bunny auto-spawns a hidden pull zone for some record types (REDIRECT
+  // notably). Surfaced so the CLI can warn when it happens — the user's
+  // account picks up an extra PZ they didn't ask for.
+  AcceleratedPullZoneId?: number;
+  Accelerated?: boolean;
+  LinkName?: string;
 };
 
 // Map Bunny's region-code response field to the storage-endpoint subdomain.

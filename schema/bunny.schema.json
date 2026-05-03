@@ -21,6 +21,17 @@
               },
               "default": []
             },
+            "mimeTypes": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              },
+              "propertyNames": {
+                "pattern": "^\\."
+              },
+              "default": {}
+            },
             "storageZone": {
               "type": "string",
               "minLength": 1
