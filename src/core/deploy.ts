@@ -169,8 +169,8 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
         type: 'warn',
         message:
           `Bunny edge may serve "${ext}" as application/octet-stream regardless of upload Content-Type. ` +
-          `Fix: add an edge rule, or declare in bunny.json: ` +
-          `"deploy.headers": [{ "pattern": "**/*${ext}", "headers": { "Content-Type": "${contentTypeFor('a' + ext)}" } }]`,
+          `Fix: declare in bunny.json (Bunny URL triggers use simple wildcards, not glob — \`*${ext}\` matches): ` +
+          `"deploy.headers": [{ "pattern": "*${ext}", "headers": { "Content-Type": "${contentTypeFor('a' + ext)}" } }]`,
       });
     }
   }

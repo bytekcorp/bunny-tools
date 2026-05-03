@@ -4,6 +4,20 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.41] — 2026-05-03 (Fix rc.40's MIME warning pattern syntax)
+
+### Fixed
+- **rc.40's `.mjs` warning suggested the wrong glob shape.** The warning emitted `"pattern": "**/*.mjs"` but Bunny's URL triggers don't accept `**` glob syntax — they silently no-op (verified live: rule "added" but didn't actually match anything). Correct syntax is `"pattern": "*.mjs"` (simple wildcard). rc.41 emits the corrected snippet so copy-paste actually works.
+
+### Live-tested on bytek.org
+- `*.mjs` rule → Bunny stored ActionType=5 (SetResponseHeader), `Content-Type: text/javascript; charset=utf-8` actually applied.
+- `**/*.mjs` rule → Bunny accepts the API call but `added=0` (silent rejection / pattern doesn't match anything).
+
+### Test Coverage
+- 175/175 unit (unchanged; warning text isn't unit-tested but live-verified).
+
+---
+
 ## [0.1.0-rc.40] — 2026-05-03 (Three real-world bugs caught after rc.39 ship)
 
 ### Fixed
