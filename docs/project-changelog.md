@@ -4,6 +4,16 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.42] — 2026-05-03 (Help column alignment for long-arg commands)
+
+### Fixed
+- **Subgroup help description column was ragged for long-arg commands.** `bunny dns --help` and `bunny stream --help` showed `bunny dns record add <zoneId> <type> <name> [value] Add a DNS record...` with no padding because the left column exceeded the fixed 40-char min, falling back to a single-space gap. rc.42 computes per-group column width (longest left + 2 chars), so all rows in a group's COMMANDS block share one description column. Same fix applied to root-help sections.
+
+### Test Coverage
+- 175/175 unit (unchanged).
+
+---
+
 ## [0.1.0-rc.41] — 2026-05-03 (Fix rc.40's MIME warning pattern syntax)
 
 ### Fixed

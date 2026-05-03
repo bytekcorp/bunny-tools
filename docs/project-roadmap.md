@@ -1,7 +1,7 @@
 # bunny-tools Project Roadmap
 
 **Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.26 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management + SSL Provisioning Live ✓
-**Current Version:** v0.1.0-rc.41 (shipped 2026-05-03)  
+**Current Version:** v0.1.0-rc.42 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools`
 **Release Cadence:** 13 RCs shipped (rc.14–rc.26) after rc.13
 **Last Updated:** 2026-05-03

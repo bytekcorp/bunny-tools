@@ -41,10 +41,16 @@ const SECTIONS: Array<{ label: string; prefixes: string[] }> = [
   },
 ];
 
-// Total minimum width for the "command" column before description starts.
-// Tuned by inspection: storage download <remote> <local> is the longest
-// at ~37 chars + a 2-char gap.
+// Minimum width for the "command" column before description starts. Per-group
+// alignment widens this to fit the longest left-column row in the group, so
+// commands with long arg signatures (e.g. `pullzone hostname add <pullZoneId>
+// <hostname>`) don't push their description column out of alignment with
+// neighbouring rows. The min keeps single-arg commands from leaving a giant
+// gap.
 const NAME_COL_MIN = 40;
+// Minimum gap between left column and description, used when the longest
+// left exceeds NAME_COL_MIN.
+const NAME_COL_GAP = 2;
 
 export function formatHelp(cmd: Command, _helper: Help): string {
   const isRoot = cmd.parent === null;
@@ -187,21 +193,35 @@ function renderRootCommands(): string[] {
     if (byTop.size === 0) continue;
 
     out.push(section.label);
+
+    // Pre-compute every left-column string in this section so we can pick
+    // ONE column width that aligns all rows.
+    const sectionLefts: string[] = [];
     for (const top of section.prefixes) {
       const cmds = byTop.get(top);
       if (!cmds || cmds.length === 0) continue;
       const bareCmd = cmds.find((c) => c.name === top);
       if (cmds.length === 1 && bareCmd) {
-        // Single bare command (e.g. `bunny init`) — render the row as-is.
-        out.push('  ' + formatCommandRow(bareCmd));
+        sectionLefts.push(commandRowLeft(bareCmd));
+      } else {
+        sectionLefts.push(`${registry.binary} ${top} <subcmd>`);
+      }
+    }
+    const colWidth = groupColWidth(sectionLefts);
+
+    for (const top of section.prefixes) {
+      const cmds = byTop.get(top);
+      if (!cmds || cmds.length === 0) continue;
+      const bareCmd = cmds.find((c) => c.name === top);
+      if (cmds.length === 1 && bareCmd) {
+        out.push('  ' + formatCommandRow(bareCmd, colWidth));
         continue;
       }
-      // Group with subcommands. Render one collapsed pointer row.
       const meta = groupMeta.get(top);
       const desc = meta?.description ?? bareCmd?.summary ?? `${top} commands`;
       const tag = ` (${cmds.length} ${cmds.length === 1 ? 'cmd' : 'cmds'})`;
       out.push(
-        '  ' + formatRow(`${registry.binary} ${top} <subcmd>`, desc + tag),
+        '  ' + formatRow(`${registry.binary} ${top} <subcmd>`, desc + tag, colWidth),
       );
     }
   }
@@ -226,23 +246,45 @@ function belongsToGroup(commandName: string, prefixes: string[]): boolean {
 function renderGroupChildren(groupPath: string): string[] {
   const active = registry.commands.filter((c) => c.status === 'active');
   const matches = active.filter((c) => c.name.startsWith(groupPath + ' '));
-  return matches.map((c) => '  ' + formatCommandRow(c));
+  // Pick the column width that fits the longest left in the group so every
+  // description aligns. Without this, rows whose left exceeds NAME_COL_MIN
+  // fall back to a single-space gap and look ragged.
+  const colWidth = groupColWidth(matches.map((c) => commandRowLeft(c)));
+  return matches.map((c) => '  ' + formatCommandRow(c, colWidth));
 }
 
 // Format a single command row with a left "name + args" column and a right
 // "description" column, padded for column alignment.
-function formatCommandRow(spec: CommandSpec): string {
+function formatCommandRow(spec: CommandSpec, colWidth: number = NAME_COL_MIN): string {
   const argSig = (spec.args ?? [])
     .map((a) => (a.required ? `<${a.name}>` : `[${a.name}]`))
     .join(' ');
   const left = `${registry.binary} ${spec.name}${argSig ? ' ' + argSig : ''}`;
-  return formatRow(left, spec.summary);
+  return formatRow(left, spec.summary, colWidth);
 }
 
-function formatRow(left: string, right: string): string {
+function formatRow(left: string, right: string, colWidth: number = NAME_COL_MIN): string {
   if (right.length === 0) return left;
-  const pad = Math.max(NAME_COL_MIN - left.length, 1);
+  const pad = Math.max(colWidth - left.length, 1);
   return `${left}${' '.repeat(pad)}${right}`;
+}
+
+// For a row group, compute the column width that aligns every description.
+// Falls back to NAME_COL_MIN when no row exceeds it (preserves the existing
+// look for short-arg commands like `bunny dns list`).
+function groupColWidth(lefts: string[]): number {
+  const longest = lefts.reduce((m, l) => Math.max(m, l.length), 0);
+  return longest + NAME_COL_GAP > NAME_COL_MIN ? longest + NAME_COL_GAP : NAME_COL_MIN;
+}
+
+// Build the left-column string for a CommandSpec — same shape as
+// formatCommandRow uses, exposed so callers can compute group col width
+// before rendering.
+function commandRowLeft(spec: CommandSpec): string {
+  const argSig = (spec.args ?? [])
+    .map((a) => (a.required ? `<${a.name}>` : `[${a.name}]`))
+    .join(' ');
+  return `${registry.binary} ${spec.name}${argSig ? ' ' + argSig : ''}`;
 }
 
 // Global flags are declared once on the root program; we mirror them here so
