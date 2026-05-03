@@ -150,9 +150,11 @@ bunny storage sync ./dist --zone=my-app
 
 ## Pull Zones (CDN)
 
+> **Tip:** `bunny cdn ...` works everywhere `bunny pullzone ...` does — Bunny's dashboard calls these "CDN", so the alias is there for muscle memory. Canonical name follows Bunny's API (`pullzone`).
+
 | Command | Description |
 | --- | --- |
-| `bunny pullzone list` | List pull zones |
+| `bunny pullzone list` (or `bunny cdn list`) | List pull zones |
 | `bunny pullzone get <id>` | Get a pull zone |
 | `bunny pullzone create <name>` | Create a pull zone |
 | `bunny pullzone update <id> --body=<json>` | Update a pull zone (raw JSON body) |
@@ -161,12 +163,12 @@ bunny storage sync ./dist --zone=my-app
 | `bunny pullzone edgerule add <id> --rule=<json>` | Add an edge rule (raw JSON rule) |
 | `bunny pullzone edgerule delete <id> <rule-id>` | Delete an edge rule |
 
-> Hyphenated aliases also work: `pull-zone`, `edge-rule`.
+> Other aliases: `pull-zone`, `edge-rule`.
 
 **Example**
 
 ```bash
-bunny pullzone edgerule list 12345
+bunny cdn edgerule list 12345
 ```
 
 ## DNS

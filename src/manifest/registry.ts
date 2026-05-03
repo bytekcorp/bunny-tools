@@ -8,13 +8,13 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.16',
+  version: '0.1.0-rc.17',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
     { name: 'storage', description: 'File operations within a storage zone (upload/download/list/delete/sync).' },
     { name: 'storagezone', description: 'Manage storage zones (CRUD).', aliases: ['storage-zone'] },
-    { name: 'pullzone', description: 'Manage pull zones (CDN) and their edge rules.', aliases: ['pull-zone'] },
+    { name: 'pullzone', description: 'Manage pull zones (CDN) and their edge rules.', aliases: ['cdn', 'pull-zone'] },
     { name: 'pullzone edgerule', description: 'Manage edge rules on a pull zone.', aliases: ['edge-rule'] },
     { name: 'dns', description: 'Manage DNS zones and records.' },
     { name: 'dns record', description: 'Manage DNS records within a zone.' },
