@@ -4,6 +4,29 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.45] — 2026-05-03 (EXAMPLES blocks + bold section headers + auto-width FLAGS)
+
+The biggest help-quality bump in v0.1. Three changes; the third does the heavy lifting.
+
+### Added
+- **EXAMPLES block on leaf help.** When a command has `examples` in the registry, `--help` now renders an `EXAMPLES` section with 1–4 dimmed `$ <command>` lines and a description below each. Closes the "what do I actually type" gap that flag lists alone don't fill — same UX lever `gh` and `npm` use.
+- **Examples populated for 12 high-value leaves**: `dns record add` (4 — A/PULLZONE/TXT/MX), `dns create`, `pullzone create`, `pullzone edgerule add` (real .mjs MIME-fix snippet), `storage upload`, `storage list`, `storage sync`, `storagezone create`, `stream library create`, `stream video upload`, `scripting deploy`, `whoami`. Pre-existing examples retained on `init`, `configure`, `deploy`, `purge`, `domain connect`, `pullzone hostname add`, `install mcp`, `update`, `mcp`, `docs`. Total: 22/60 leaves now teach by example.
+- **Examples flow through to MCP.** `bunny manifest` JSON already includes `examples`; AI agents querying the registry get the same teaching surface.
+
+### Changed
+- **Section headers bolded** (USAGE, FLAGS, EXAMPLES, GLOBAL FLAGS, COMMANDS, GETTING STARTED, SERVICES, UTILITIES) via `picocolors`. Auto-disables under `NO_COLOR` and on non-TTY pipes — `bunny X --help | grep ...` still works. The visual zoning lets the eye lock onto labels and skip body text until it finds the right block.
+- **FLAGS and GLOBAL FLAGS auto-width** instead of the 40-char `NAME_COL_MIN` floor. The min was meant for COMMANDS rows where short-arg leaves should align with long-arg ones; flag blocks have no such asymmetry. `bunny deploy --help` now shows `--dry-run  Plan and report...` (10 chars + gap) instead of `--dry-run` followed by 31 chars of whitespace.
+
+### Unchanged (intentional)
+- Two-line wrangler-style title/description (rc.44) preserved.
+- Per-section column widths in COMMANDS preserved (rc.42 decision).
+- USAGE block still dropped on groups/root, retained on leaves with positional args.
+
+### Test Coverage
+- 175/175 unit (unchanged — formatter logic flows through registry, all examples flow through `bunny manifest` JSON which is covered).
+
+---
+
 ## [0.1.0-rc.44] — 2026-05-03 (Wrangler-style two-line help header)
 
 ### Changed

@@ -20,8 +20,15 @@
 // `program.outputHelp()` and respects `NO_COLOR` (Commander's default).
 
 import type { Command, Help } from 'commander';
+import pc from 'picocolors';
 import { registry } from './registry.js';
 import type { CommandSpec } from './types.js';
+
+// Bold section labels (USAGE / COMMANDS / FLAGS / EXAMPLES / GLOBAL FLAGS and
+// the root sections). picocolors auto-disables for NO_COLOR + non-TTY, so this
+// is grep-safe in pipes and scripts. wrangler/gh/aws all bold their labels —
+// it creates the visual zoning that lets the eye skip to the right block.
+const label = (s: string): string => pc.bold(s);
 
 // Root help is sectioned wrangler/gh/aws-style: GETTING STARTED for the daily
 // workflow commands, SERVICES collapsing each top-level group to a single
@@ -89,7 +96,7 @@ function formatGroupOrRoot(cmd: Command, isRoot: boolean): string {
     const rendered = renderRootCommands();
     lines.push(...rendered);
   } else {
-    lines.push('COMMANDS');
+    lines.push(label('COMMANDS'));
     const groupPath = commandGroupPath(cmd);
     const rendered = renderGroupChildren(groupPath);
     lines.push(...rendered);
@@ -97,7 +104,7 @@ function formatGroupOrRoot(cmd: Command, isRoot: boolean): string {
   lines.push('');
 
   // GLOBAL FLAGS — same block on every help invocation; pulled from root.
-  lines.push('GLOBAL FLAGS');
+  lines.push(label('GLOBAL FLAGS'));
   lines.push(...renderGlobalFlags());
   lines.push('');
 
@@ -128,27 +135,50 @@ function formatLeaf(cmd: Command): string {
     .registeredArguments
     .map((a) => (a.required ? `<${a.name()}>` : `[${a.name()}]`))
     .join(' ');
-  lines.push('USAGE');
+  lines.push(label('USAGE'));
   lines.push(`  ${fullName}${argSig ? ' ' + argSig : ''} [flags]`);
   lines.push('');
 
-  // FLAGS — command-local options (not the inherited globals).
+  // FLAGS — command-local options (not the inherited globals). Auto-width
+  // (no NAME_COL_MIN floor): the longest flag + gap defines the column.
+  // Floor was meant for COMMANDS rows where short-arg leaves should align
+  // with long-arg ones; FLAGS doesn't have that asymmetry.
   const local = cmd.options.filter((o) => !o.hidden);
   if (local.length > 0) {
-    lines.push('FLAGS');
+    lines.push(label('FLAGS'));
+    const flagCol = local.reduce((m, o) => Math.max(m, o.flags.length), 0) + NAME_COL_GAP;
     for (const opt of local) {
       const left = opt.flags;
       const right = opt.description || '';
-      lines.push('  ' + formatRow(left, right));
+      lines.push('  ' + formatRow(left, right, flagCol));
+    }
+    lines.push('');
+  }
+
+  // EXAMPLES — only renders when the registry has examples for this leaf.
+  // Format: `  $ <command>` then a wrapped, indented description below if
+  // present. Mirrors `gh` / `aws` / `npm` example styling.
+  const spec = findSpecByCommand(cmd);
+  if (spec?.examples && spec.examples.length > 0) {
+    lines.push(label('EXAMPLES'));
+    for (const ex of spec.examples) {
+      lines.push(`  ${pc.dim('$')} ${ex.command}`);
+      if (ex.description) lines.push(`      ${pc.dim(ex.description)}`);
     }
     lines.push('');
   }
 
   // GLOBAL FLAGS — same as on root help.
-  lines.push('GLOBAL FLAGS');
+  lines.push(label('GLOBAL FLAGS'));
   lines.push(...renderGlobalFlags());
   lines.push('');
   return lines.join('\n') + '\n';
+}
+
+// Resolve a Commander leaf back to its CommandSpec via space-joined name.
+function findSpecByCommand(cmd: Command): CommandSpec | undefined {
+  const path = commandGroupPath(cmd);
+  return registry.commands.find((c) => c.name === path);
 }
 
 // Walk up the parent chain to assemble the canonical full name (e.g.
@@ -203,7 +233,7 @@ function renderRootCommands(): string[] {
     }
     if (byTop.size === 0) continue;
 
-    out.push(section.label);
+    out.push(label(section.label));
 
     // Pre-compute every left-column string in this section so we can pick
     // ONE column width that aligns all rows.
@@ -310,5 +340,8 @@ function renderGlobalFlags(): string[] {
     ['-h, --help', 'Show help for command.'],
     ['-v, --version', 'Show CLI version.'],
   ];
-  return flags.map(([left, right]) => '  ' + formatRow(left, right));
+  // Auto-width: longest flag + gap, no NAME_COL_MIN floor. The global-flags
+  // block is short and uniform, so extra padding here just creates whitespace.
+  const colWidth = flags.reduce((m, [l]) => Math.max(m, l.length), 0) + NAME_COL_GAP;
+  return flags.map(([left, right]) => '  ' + formatRow(left, right, colWidth));
 }

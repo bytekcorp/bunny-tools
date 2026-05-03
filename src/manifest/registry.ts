@@ -206,6 +206,10 @@ export const registry: Registry = {
         { name: 'zone', description: 'Storage zone name.', hasValue: true },
         { name: 'region', description: 'Override region (e.g. ny, la).', hasValue: true },
       ],
+      examples: [
+        { command: 'bunny storage upload ./build/index.html /index.html', description: 'Single file at root.' },
+        { command: 'bunny storage upload ./logo.png /assets/logo.png --zone=my-app', description: 'Override zone.' },
+      ],
       status: 'active',
       phase: 3,
       load: () => import('../commands/storage/upload.js'),
@@ -234,6 +238,10 @@ export const registry: Registry = {
         { name: 'recursive', description: 'List recursively.', hasValue: false },
         { name: 'json', description: 'Emit JSON.', hasValue: false },
         { name: 'region', description: 'Override region.', hasValue: true },
+      ],
+      examples: [
+        { command: 'bunny storage list', description: 'List the zone root.' },
+        { command: 'bunny storage list /assets --recursive', description: 'Walk a subtree.' },
       ],
       mcp: { tool: 'bunny.storage_list' },
       status: 'active',
@@ -266,6 +274,10 @@ export const registry: Registry = {
         { name: 'concurrency', description: 'Parallel pool size.', hasValue: true, defaultValue: '8' },
         { name: 'region', description: 'Override region.', hasValue: true },
       ],
+      examples: [
+        { command: 'bunny storage sync ./public', description: 'Mirror local public/ to zone root.' },
+        { command: 'bunny storage sync ./build /v2 --concurrency=16', description: 'Sync into a versioned prefix.' },
+      ],
       status: 'active',
       phase: 3,
       load: () => import('../commands/storage/sync.js'),
@@ -296,6 +308,10 @@ export const registry: Registry = {
         { name: 'region', description: 'Primary region (e.g. ny, la, sg).', hasValue: true },
         { name: 'replicate', description: 'Comma-separated replication regions.', hasValue: true },
         { name: 'tier', description: 'Standard | Edge.', hasValue: true },
+      ],
+      examples: [
+        { command: 'bunny storagezone create my-app --region=ny', description: 'Single-region zone.' },
+        { command: 'bunny storagezone create my-app --region=ny --replicate=la,sg', description: 'Replicated to LA + SG.' },
       ],
       mcp: { tool: 'bunny.zone_create' },
       status: 'active',
@@ -342,6 +358,10 @@ export const registry: Registry = {
       summary: 'Create a pull zone.',
       args: [{ name: 'name', description: 'Pull zone name.', required: true }],
       flags: [{ name: 'origin', description: 'Origin URL.', hasValue: true }],
+      examples: [
+        { command: 'bunny pullzone create my-cdn --origin=https://my-app.b-cdn.net', description: 'CDN in front of a storage zone.' },
+        { command: 'bunny pullzone create api-cache --origin=https://api.example.com', description: 'CDN in front of an HTTP origin.' },
+      ],
       status: 'active',
       phase: 3,
       load: () => import('../commands/pull-zone/create.js'),
@@ -378,6 +398,12 @@ export const registry: Registry = {
       summary: 'Add an edge rule to a pull zone (raw JSON rule).',
       args: [{ name: 'pullZoneId', description: 'Pull zone id.', required: true }],
       flags: [{ name: 'rule', description: 'JSON rule body.', hasValue: true }],
+      examples: [
+        {
+          command: `bunny pullzone edgerule add 555 --rule='{"ActionType":3,"TriggerMatchingType":0,"Triggers":[{"Type":1,"PatternMatches":["*.mjs"]}],"ActionParameter1":"text/javascript","Description":"Force .mjs MIME"}'`,
+          description: 'Override Content-Type for .mjs.',
+        },
+      ],
       status: 'active',
       phase: 3,
       load: () => import('../commands/pull-zone/edge-rule/add.js'),
@@ -479,6 +505,9 @@ export const registry: Registry = {
       name: 'dns create',
       summary: 'Create a DNS zone for a domain.',
       args: [{ name: 'domain', description: 'Domain name.', required: true }],
+      examples: [
+        { command: 'bunny dns create example.com', description: 'Provision a DNS zone — Bunny returns the assigned NS records.' },
+      ],
       status: 'active',
       phase: 4,
       load: () => import('../commands/dns/create.js'),
@@ -527,6 +556,12 @@ export const registry: Registry = {
         { name: 'link-name', description: 'Linked resource id as string (PULLZONE/SCRIPT).', hasValue: true },
         { name: 'pull-zone', description: 'Convenience for PULLZONE: numeric pz id; auto-fills value + link-name.', hasValue: true },
       ],
+      examples: [
+        { command: 'bunny dns record add 12345 A api 1.2.3.4', description: 'A record for api.<zone>.' },
+        { command: 'bunny dns record add 12345 PULLZONE @ --pull-zone=5789465', description: 'Apex Type-7 record pointing at a pull zone.' },
+        { command: 'bunny dns record add 12345 TXT _acme-challenge "verification-token" --ttl=60', description: 'ACME DNS-01 TXT.' },
+        { command: 'bunny dns record add 12345 MX @ mail.example.com --priority=10', description: 'MX with priority.' },
+      ],
       mcp: { tool: 'bunny.dns_record_set' },
       status: 'active',
       phase: 4,
@@ -572,6 +607,9 @@ export const registry: Registry = {
       summary: 'Create a Stream video library.',
       args: [{ name: 'name', description: 'Library name.', required: true }],
       flags: [{ name: 'replicate', description: 'Comma-separated replication regions.', hasValue: true }],
+      examples: [
+        { command: 'bunny stream library create marketing-videos', description: 'Single-region library.' },
+      ],
       status: 'active',
       phase: 5,
       load: () => import('../commands/stream/library/create.js'),
@@ -607,6 +645,9 @@ export const registry: Registry = {
       flags: [
         { name: 'title', description: 'Video title.', hasValue: true },
         { name: 'collection', description: 'Collection id.', hasValue: true },
+      ],
+      examples: [
+        { command: 'bunny stream video upload abc-lib-id ./demo.mp4 --title="Product demo"', description: 'Upload with explicit title.' },
       ],
       status: 'active',
       phase: 5,
@@ -674,6 +715,10 @@ export const registry: Registry = {
         { name: 'id', description: 'Existing script id (update mode).', hasValue: true },
         { name: 'type', description: 'Numeric script type.', hasValue: true },
       ],
+      examples: [
+        { command: 'bunny scripting deploy hello --file=./worker.js', description: 'First deploy (creates).' },
+        { command: 'bunny scripting deploy hello --file=./worker.js --id=42', description: 'Update existing script in place.' },
+      ],
       status: 'active',
       phase: 5,
       load: () => import('../commands/scripting/deploy.js'),
@@ -740,6 +785,10 @@ export const registry: Registry = {
       name: 'whoami',
       summary: 'Show the current account context (stored credentials + reachable zone counts).',
       flags: [{ name: 'json', description: 'Emit JSON instead of a table.', hasValue: false }],
+      examples: [
+        { command: 'bunny whoami', description: 'Quick "am I authenticated and which account?" check.' },
+        { command: 'bunny whoami --profile=work', description: 'Inspect a specific profile without switching.' },
+      ],
       status: 'active',
       phase: 2,
       load: () => import('../commands/whoami.js'),

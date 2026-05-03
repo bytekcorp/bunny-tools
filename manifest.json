@@ -537,7 +537,16 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny storage upload ./build/index.html /index.html",
+          "description": "Single file at root."
+        },
+        {
+          "command": "bunny storage upload ./logo.png /assets/logo.png --zone=my-app",
+          "description": "Override zone."
+        }
+      ],
       "mcp": null
     },
     {
@@ -629,7 +638,16 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny storage list",
+          "description": "List the zone root."
+        },
+        {
+          "command": "bunny storage list /assets --recursive",
+          "description": "Walk a subtree."
+        }
+      ],
       "mcp": {
         "tool": "bunny.storage_list",
         "description": null
@@ -732,7 +750,16 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny storage sync ./public",
+          "description": "Mirror local public/ to zone root."
+        },
+        {
+          "command": "bunny storage sync ./build /v2 --concurrency=16",
+          "description": "Sync into a versioned prefix."
+        }
+      ],
       "mcp": null
     },
     {
@@ -819,7 +846,16 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny storagezone create my-app --region=ny",
+          "description": "Single-region zone."
+        },
+        {
+          "command": "bunny storagezone create my-app --region=ny --replicate=la,sg",
+          "description": "Replicated to LA + SG."
+        }
+      ],
       "mcp": {
         "tool": "bunny.zone_create",
         "description": null
@@ -944,7 +980,16 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny pullzone create my-cdn --origin=https://my-app.b-cdn.net",
+          "description": "CDN in front of a storage zone."
+        },
+        {
+          "command": "bunny pullzone create api-cache --origin=https://api.example.com",
+          "description": "CDN in front of an HTTP origin."
+        }
+      ],
       "mcp": null
     },
     {
@@ -1052,7 +1097,12 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny pullzone edgerule add 555 --rule='{\"ActionType\":3,\"TriggerMatchingType\":0,\"Triggers\":[{\"Type\":1,\"PatternMatches\":[\"*.mjs\"]}],\"ActionParameter1\":\"text/javascript\",\"Description\":\"Force .mjs MIME\"}'",
+          "description": "Override Content-Type for .mjs."
+        }
+      ],
       "mcp": null
     },
     {
@@ -1307,7 +1357,12 @@
         }
       ],
       "flags": [],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny dns create example.com",
+          "description": "Provision a DNS zone — Bunny returns the assigned NS records."
+        }
+      ],
       "mcp": null
     },
     {
@@ -1473,7 +1528,24 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny dns record add 12345 A api 1.2.3.4",
+          "description": "A record for api.<zone>."
+        },
+        {
+          "command": "bunny dns record add 12345 PULLZONE @ --pull-zone=5789465",
+          "description": "Apex Type-7 record pointing at a pull zone."
+        },
+        {
+          "command": "bunny dns record add 12345 TXT _acme-challenge \"verification-token\" --ttl=60",
+          "description": "ACME DNS-01 TXT."
+        },
+        {
+          "command": "bunny dns record add 12345 MX @ mail.example.com --priority=10",
+          "description": "MX with priority."
+        }
+      ],
       "mcp": {
         "tool": "bunny.dns_record_set",
         "description": null
@@ -1592,7 +1664,12 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny stream library create marketing-videos",
+          "description": "Single-region library."
+        }
+      ],
       "mcp": null
     },
     {
@@ -1695,7 +1772,12 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny stream video upload abc-lib-id ./demo.mp4 --title=\"Product demo\"",
+          "description": "Upload with explicit title."
+        }
+      ],
       "mcp": null
     },
     {
@@ -1881,7 +1963,16 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny scripting deploy hello --file=./worker.js",
+          "description": "First deploy (creates)."
+        },
+        {
+          "command": "bunny scripting deploy hello --file=./worker.js --id=42",
+          "description": "Update existing script in place."
+        }
+      ],
       "mcp": null
     },
     {
@@ -2007,7 +2098,16 @@
           "defaultValue": null
         }
       ],
-      "examples": [],
+      "examples": [
+        {
+          "command": "bunny whoami",
+          "description": "Quick \"am I authenticated and which account?\" check."
+        },
+        {
+          "command": "bunny whoami --profile=work",
+          "description": "Inspect a specific profile without switching."
+        }
+      ],
       "mcp": null
     },
     {
