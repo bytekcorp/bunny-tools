@@ -23,6 +23,16 @@ function buildProgram(): Command {
     .option('-e, --env <alias>', 'One-shot .bunnyrc alias (no need for `bunny use` first).')
     .option('-p, --profile <name>', 'One-shot credential profile (overrides active). See `bunny configure list`.');
 
+  // Bare `bunny` (no subcommand) prints help on stdout with exit 0 — matches
+  // wrangler / firebase-tools / aws-cli convention so users can pipe the output
+  // (`bunny | grep deploy`) and CI scripts can detect "no command" without a
+  // failure. Commander's default for no-args + has-subcommands is help on
+  // stderr + exit 1, which breaks both.
+  program.action(() => {
+    program.outputHelp();
+    process.exit(0);
+  });
+
   // Apply global flags BEFORE any leaf action runs. chdir first so subsequent
   // config search uses the new cwd. Other flags become env vars consumed by
   // the loaders downstream.
