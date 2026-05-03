@@ -2,7 +2,7 @@
 
 **Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.26 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management + SSL Provisioning Live ✓
 **Current Version:** v0.1.0-rc.38 (shipped 2026-05-03)  
-**Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
+**Install:** `npm i -g bunny-tools`
 **Release Cadence:** 13 RCs shipped (rc.14–rc.26) after rc.13
 **Last Updated:** 2026-05-03
 
@@ -301,7 +301,7 @@ Post-rc.13, 11 more release candidates shipped to npm (latest & alpha dist-tags)
 | rc.23 | 2026-05-03 | **MCP e2e harness shipped:** `test/e2e/mcp.e2e.ts` (13 active + 2 skipped) + `mcp-client.ts` helper. Also fixed spawn to forward process.execArgv for tsx dev mode. | — |
 | rc.24 | 2026-05-03 | **DNS routing types extended:** REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT (13 types total). `dns record add` gets `--link-name` + `--pull-zone=<id>`. MCP enum extended. 7 new unit tests + REDIRECT e2e. | — |
 
-**Install:** `npm i -g bunny-tools` (latest) or `npm i -g bunny-tools@alpha` (same as latest)  
+**Install:** `npm i -g bunny-tools`  
 **Test count:** 129 unit + 44 e2e (173 total)  
 **Active commands:** 51
 
@@ -370,7 +370,7 @@ Phases 2–4, 6–7 completed. Phase 5 deferred to v0.2.
 - ✅ E2E drift-detection harness live (30+ real-API tests, 8 services)
 - ✅ MCP e2e harness live (13 active tools, 2 skipped)
 - ✅ No regressions detected in 173 tests (129 unit + 44 e2e)
-- ✅ npm @latest and @alpha both point to rc.24
+- ✅ npm @latest points to rc.24 (rc.38 drops the @alpha tag)
 - ✅ GH Action v1 published
 - ✅ Docs complete (README, architecture, code standards, codebase summary)
 - ✅ Security audit passed (no secrets in repo, keychain optional)

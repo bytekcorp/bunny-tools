@@ -13,7 +13,7 @@
 ### As a CLI
 
 ```bash
-npm install -g bunny-tools@alpha
+npm install -g bunny-tools
 ```
 
 ### As an MCP server (recommended for AI workflows)
