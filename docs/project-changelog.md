@@ -4,6 +4,20 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.31] — 2026-05-03 (Drop init-time AGENTS.md write)
+
+### Removed
+- **`bunny init` no longer touches user's `AGENTS.md`.** The implicit `## Deploy` hint and the `--no-agents-md` flag are gone. Reasoning: no major CLI (firebase, vercel, wrangler, gh, npm) modifies AI-context files in user projects on init — touching files outside the requested config is invasive. Discovery is already covered by `bunny --help`, `bunny manifest`, and the AGENTS.md inside the npm tarball (consumed by MCP servers as a resource).
+
+### Internal
+- Removed `maybeWriteAgentsHint`, related constants and node:fs imports from `src/commands/init.ts`. ~30 LOC delta.
+- Removed `noAgentsMd` flag handling and registry entry.
+
+### Test Coverage
+- 146/146 (no test count change; no test covered the removed code path).
+
+---
+
 ## [0.1.0-rc.30] — 2026-05-03 (PULLZONE field name fix + reverts rc.29 conflict-check)
 
 ### Reverted

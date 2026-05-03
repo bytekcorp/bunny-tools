@@ -1,7 +1,7 @@
 # bunny-tools Project Roadmap
 
 **Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.26 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management + SSL Provisioning Live ✓
-**Current Version:** v0.1.0-rc.30 (shipped 2026-05-03)  
+**Current Version:** v0.1.0-rc.31 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
 **Release Cadence:** 13 RCs shipped (rc.14–rc.26) after rc.13
 **Last Updated:** 2026-05-03
@@ -30,6 +30,7 @@ bunny-tools v0.1.0-rc.26 ships all **55 commands** live on npm (latest & alpha d
 - **rc.28:** **Centralize PULLZONE pre-flight in core** — MCP `dns_record_set` and CLI `dns record add` without `--pull-zone` now also surface the helpful "hostname not linked / no SSL cert" error instead of Bunny's misleading "The pull zone ID is not valid"; test setup recreates MockAgent per-test (stops intercept leaks); 146 unit tests
 - **rc.29:** **PULLZONE conflict detection** — pre-flight scans existing zone records for A/AAAA/CNAME/REDIRECT/FLATTEN/PULLZONE at the same Name and surfaces a copy-pasteable delete hint instead of letting Bunny return its opaque rejection; 149 unit tests
 - **rc.30:** **PULLZONE field name fix + reverts rc.29** — Type-7 records now POST `PullZoneId` (numeric) instead of `LinkName` (string); was the actual root cause of "The pull zone ID is not valid" on bytek.org (verified live). rc.29's conflict-detection reverted (Bunny accepts PULLZONE+A coexistence). Plus: `pullzone hostname remove` corrected POST→DELETE, and `formatBunnyError` extracted to shared util so command handlers preserve `ErrorKey`/`Field` tags; 146 unit tests
+- **rc.31:** **Drop init-time AGENTS.md write** — `bunny init` no longer touches the user's `AGENTS.md` (no major CLI modifies AI-context files on init). `--no-agents-md` flag removed. Discovery still covered by `bunny --help`, `bunny manifest`, and the AGENTS.md inside the npm tarball (MCP resource); 146 unit tests
 
 **Status:** GA-ready. All phases + MCP harness + DNS REDIRECT e2e live. Current backlog for v0.2: containers app create (Bunny v3 schema fix pending), headers/rewrites sugar, live emulator.
 

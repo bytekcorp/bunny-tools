@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.30',
+  version: '0.1.0-rc.31',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -77,7 +77,6 @@ export const registry: Registry = {
         { name: 'purge', description: 'Purge strategy: all|none|tag:<name>.', hasValue: true },
         { name: 'stream-library', description: 'Stream library id (when `stream` feature selected).', hasValue: true },
         { name: 'stream-key', description: 'Stream library API key.', hasValue: true },
-        { name: 'no-agents-md', description: 'Skip writing the AGENTS.md deploy hint (default: write).', hasValue: false },
       ],
       examples: [
         { command: 'bunny init', description: 'Interactive wizard with feature multi-select.' },

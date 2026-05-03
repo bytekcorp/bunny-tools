@@ -1,7 +1,7 @@
 // `bunny init [dir]` — unified bootstrap (auth + feature picker + project config).
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { mkdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import type { ParsedInvocation } from '../manifest/types.js';
 import type { Feature } from '../core/init.js';
 import { FEATURES, runInit } from '../core/init.js';
@@ -29,7 +29,6 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     purge?: string;
     streamLibrary?: string;
     streamKey?: string;
-    noAgentsMd?: boolean;
   };
 
   const interactive = !flags.nonInteractive && isInteractive();
@@ -71,17 +70,6 @@ export async function run(inv: ParsedInvocation): Promise<number> {
       progress.info(`Credentials stored: ${result.storedScopes.join(', ')}`);
     }
 
-    // AI-anchor hint: drop a `## Deploy` section into AGENTS.md so future
-    // Claude/Cursor/Windsurf sessions auto-detect this project uses
-    // bunny-tools. AGENTS.md is the cross-tool standard (https://agents.md);
-    // tools that don't read it ignore the file harmlessly. Idempotent: skips
-    // if the section already exists. Opt out via --no-agents-md.
-    if (!flags.noAgentsMd) {
-      const wrote = await maybeWriteAgentsHint(targetCwd);
-      if (wrote === 'created') progress.info('Created AGENTS.md with deploy hint.');
-      else if (wrote === 'appended') progress.info('Appended deploy hint to AGENTS.md.');
-    }
-
     if (result.features.includes('storage')) {
       progress.info('Try: bunny deploy --dry-run');
     }
@@ -117,36 +105,3 @@ async function hasAccountKey(): Promise<boolean> {
   }
 }
 
-const AGENTS_HINT_MARKER = '<!-- bunny-tools deploy hint -->';
-const AGENTS_HINT_BLOCK = `${AGENTS_HINT_MARKER}
-## Deploy
-
-This project uses [bunny-tools](https://www.npmjs.com/package/bunny-tools) for Bunny.net storage + CDN.
-
-- Deploy: \`bunny deploy\` (sync + CDN purge)
-- Setup: \`bunny init\` (already run; re-run with \`--force\` to reset)
-- Discovery: \`bunny manifest --pretty\` lists every available command
-`;
-
-// Returns 'created' (wrote a new file), 'appended' (added section to an
-// existing file), or 'skipped' (section already present or file unreadable).
-// Does not throw — failures are surfaced as 'skipped' to keep init resilient.
-async function maybeWriteAgentsHint(cwd: string): Promise<'created' | 'appended' | 'skipped'> {
-  const path = join(cwd, 'AGENTS.md');
-  try {
-    const existing = await readFile(path, 'utf8');
-    if (existing.includes(AGENTS_HINT_MARKER)) return 'skipped';
-    const sep = existing.endsWith('\n') ? '\n' : '\n\n';
-    await writeFile(path, existing + sep + AGENTS_HINT_BLOCK, 'utf8');
-    return 'appended';
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code !== 'ENOENT') return 'skipped';
-    try {
-      await writeFile(path, AGENTS_HINT_BLOCK, 'utf8');
-      return 'created';
-    } catch {
-      return 'skipped';
-    }
-  }
-}
