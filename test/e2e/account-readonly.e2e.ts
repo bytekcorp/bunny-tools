@@ -3,11 +3,16 @@ import { bunnyCli, bunnyCliOk } from './helpers/bunny-cli.js';
 import { E2E_ENABLED } from './helpers/env-guard.js';
 
 describe.skipIf(!E2E_ENABLED)('e2e: account read-only smoke', () => {
-  it('bunny whoami exits 0 and reports stored credentials', async () => {
+  it('bunny whoami exits 0 in either env-only or stored-creds mode', async () => {
     const r = await bunnyCliOk(['whoami']);
-    // whoami renders a table to stdout describing scopes + reachable counts.
-    expect(r.stdout).toMatch(/scope/i);
-    expect(r.stdout).toMatch(/account/i);
+    // whoami enumerates *stored* credentials (keychain + credentials.json).
+    // CI runs with credentials in env vars only — so the expected output
+    // there is "No credentials stored." Local dev typically has stored
+    // creds and gets the table render. Both branches must be tolerated.
+    const out = r.stdout + r.stderr;
+    const isStoredMode = /\bscope\b/i.test(out) && /\baccount\b/i.test(out);
+    const isEnvOnlyMode = /No credentials stored/i.test(out);
+    expect(isStoredMode || isEnvOnlyMode).toBe(true);
   });
 
   it('bunny manifest --names emits at least 40 active commands', async () => {

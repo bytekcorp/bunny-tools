@@ -30,6 +30,12 @@ jobs:
         env:
           BUNNY_E2E: '1'
           BUNNY_ACCOUNT_KEY: ${{ secrets.BUNNY_E2E_ACCOUNT_KEY }}
+        # `pipefail` is mandatory here — without it, a test failure piped
+        # through `tee` silently exits 0 (because tee succeeds) and the
+        # whole drift-detection workflow reports success. Setting it
+        # explicitly via `shell:` is the GitHub-actions-recommended
+        # belt-and-suspenders for tee-based logging.
+        shell: bash -eo pipefail {0}
         run: npm run test:e2e 2>&1 | tee e2e-output.log
 
       - name: Compose failure report
