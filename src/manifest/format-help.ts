@@ -1,7 +1,13 @@
 // Wrangler-style help renderer. Replaces Commander's default help layout:
 //
 //   Default: USAGE → DESCRIPTION → OPTIONS → COMMANDS
-//   Custom:  TITLE — DESCRIPTION → USAGE → COMMANDS (grouped) → GLOBAL FLAGS
+//   Custom:  TITLE → DESCRIPTION → [USAGE on leaves] → COMMANDS/FLAGS → GLOBAL FLAGS
+//
+// rc.44: title and description on separate lines (was em-dash one-liner),
+// matching wrangler's visual hierarchy. USAGE block dropped on groups/root
+// because `<subcommand> [args] [flags]` is pure boilerplate when the
+// COMMANDS section already lists every runnable command. USAGE retained on
+// leaves where it carries the positional-arg signature.
 //
 // Commander invokes `formatHelp(cmd, helper)` for every help invocation —
 // root, group, and leaf. We dispatch on the command's structure: commands
@@ -61,18 +67,16 @@ export function formatHelp(cmd: Command, _helper: Help): string {
 
 function formatGroupOrRoot(cmd: Command, isRoot: boolean): string {
   const lines: string[] = [];
-  // Title line. Root: just `bunny — <description>`. Group: `bunny storage — <description>`.
+  // Title line — just the full command name. Description follows on its own
+  // line below (wrangler-style two-line header). USAGE is omitted at this
+  // level since `<subcommand> [args] [flags]` is boilerplate; the COMMANDS
+  // block already enumerates runnable commands.
   const fullName = isRoot ? registry.binary : commandFullName(cmd);
   const desc = (cmd.description() || '').trim();
-  lines.push(desc ? `${fullName} — ${desc}` : fullName);
-  lines.push('');
-
-  // USAGE block. Root says `<command> [args] [flags]`. Group says `<subcommand> [args] [flags]`.
-  lines.push('USAGE');
-  if (isRoot) {
-    lines.push(`  ${registry.binary} <command> [args] [flags]`);
-  } else {
-    lines.push(`  ${fullName} <subcommand> [args] [flags]`);
+  lines.push(fullName);
+  if (desc) {
+    lines.push('');
+    lines.push(desc);
   }
   lines.push('');
 
@@ -109,7 +113,14 @@ function formatLeaf(cmd: Command): string {
   const lines: string[] = [];
   const fullName = commandFullName(cmd);
   const desc = (cmd.description() || '').trim();
-  lines.push(desc ? `${fullName} — ${desc}` : fullName);
+  // Two-line header (wrangler-style): title on its own line, then a blank
+  // line, then the description paragraph. USAGE retained on leaves because
+  // the positional-arg signature is real signal for new users.
+  lines.push(fullName);
+  if (desc) {
+    lines.push('');
+    lines.push(desc);
+  }
   lines.push('');
 
   // USAGE — show declared positional args inline.

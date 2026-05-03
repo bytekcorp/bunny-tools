@@ -4,6 +4,21 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.44] — 2026-05-03 (Wrangler-style two-line help header)
+
+### Changed
+- **Help title and description split onto separate lines.** Previous format was an em-dash one-liner (`bunny dns record — DNS record CRUD`); rc.44 mirrors wrangler's visual hierarchy with the title on its own line and the description as a paragraph below. Trade-off: +1 line per help page in exchange for a description that visually reads as a paragraph instead of sliding off the title row. Matters more as command names get longer (`bunny dns record add <zoneId> <type> <name>`).
+- **USAGE block dropped on groups and root.** It was always `bunny <X> <subcommand> [args] [flags]` — pure boilerplate when the COMMANDS section already enumerates every runnable command. USAGE retained on leaves where the positional-arg signature carries real information (`bunny dns record add <zoneId> <type> <name> [value] [flags]`).
+- **No emoji.** Wrangler uses 🚢 / 🚀 / etc. on the description line; bunny-tools stays text-only for accessibility and grep-friendliness. Convention matches gh / aws / docker / firebase.
+
+### Unchanged (intentional)
+- Per-section auto column widths (rc.42) preserved. COMMANDS computes its own column based on the longest left in that section; GLOBAL FLAGS uses its own min. Asymmetry on dense pages (e.g. `bunny dns --help`) is by design — forcing whole-screen alignment makes flag rows have 30+ chars of whitespace.
+
+### Test Coverage
+- 175/175 unit (unchanged — formatter is internal, tests cover render-help.ts which is a separate JSON/text manifest renderer).
+
+---
+
 ## [0.1.0-rc.43] — 2026-05-03 (Scrub maintainer's domain from user-facing examples)
 
 ### Changed
