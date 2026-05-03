@@ -28,7 +28,10 @@ export async function deployScript(opts: {
   const code = await readFile(opts.filePath, 'utf8');
   const c = client();
   if (opts.id !== undefined) {
-    return c.updateEdgeScriptCode(opts.id, { Code: code });
+    // Bunny's `POST /compute/script/{id}/code` returns 204 No Content, so we
+    // re-fetch the script to give callers the up-to-date metadata they expect.
+    await c.updateEdgeScriptCode(opts.id, { Code: code });
+    return c.getEdgeScript(opts.id);
   }
   return c.createEdgeScript({
     Name: opts.name,

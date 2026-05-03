@@ -10,11 +10,16 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     progress.fail('Usage: bunny storage-zone:create <name> [--region=<r>] [--replicate=<r,r>] [--tier=Standard|Edge]');
     return 1;
   }
-  const replicationRegions = flags.replicate ? flags.replicate.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+  // Bunny accepts only uppercase region codes (NY/LA/SG/...). Users naturally
+  // type lowercase, so we normalize here rather than fail with a 400.
+  const region = flags.region ? flags.region.toUpperCase() : undefined;
+  const replicationRegions = flags.replicate
+    ? flags.replicate.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean)
+    : undefined;
   const zoneTier = flags.tier === 'Edge' ? 1 : flags.tier === 'Standard' ? 0 : undefined;
   const zone = await createStorageZone({
     name: args.name,
-    ...(flags.region ? { region: flags.region } : {}),
+    ...(region ? { region } : {}),
     ...(replicationRegions ? { replicationRegions } : {}),
     ...(zoneTier !== undefined ? { zoneTier } : {}),
   });

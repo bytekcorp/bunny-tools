@@ -122,7 +122,14 @@ function registerCommand(root: Command, spec: CommandSpec): void {
   cmd.action(async (...rawArgs) => {
     const cmdInstance = rawArgs[rawArgs.length - 1] as Command;
     const opts = cmdInstance.opts();
-    const positional = rawArgs.slice(0, -1).filter((v) => v !== undefined);
+    // Commander v12 invokes the action callback with: positional args (one slot
+    // per declared argument, `undefined` if missing), then the parsed options
+    // object, then the command instance. Slicing by the declared arg count
+    // keeps just the positionals — the prior `slice(0, -1).filter(!= undefined)`
+    // dropped only the command and let the options object leak into `args`,
+    // mis-assigning it to the first positional slot when an optional arg was
+    // omitted (e.g. `bunny storage list` with no path).
+    const positional = rawArgs.slice(0, (spec.args ?? []).length);
 
     if (opts['helpJson'] === true) {
       process.stdout.write(JSON.stringify(renderCommandHelpJson(spec), null, 2) + '\n');

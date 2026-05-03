@@ -49,12 +49,15 @@ describe('core/scripting', () => {
     expect(r.Id).toBe(7);
   });
 
-  it('deployScript updates code when id given', async () => {
+  it('deployScript updates code when id given (re-fetches after 204)', async () => {
     const file = join(scratch, 's.js');
     await writeFile(file, 'updated source');
-    getMockAgent()
-      .get('https://api.bunny.net')
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
       .intercept({ path: '/compute/script/7/code', method: 'POST' })
+      .reply(204, '');
+    pool
+      .intercept({ path: '/compute/script/7', method: 'GET' })
       .reply(200, { Id: 7, Name: 'edge', Code: 'updated source' });
     const r = await deployScript({ name: 'edge', filePath: file, id: 7 });
     expect(r.Code).toBe('updated source');

@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.10  |  **Active commands:** 49/49
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.12  |  **Active commands:** 49/50
 
 <!-- HANDCURATED:START -->
 
@@ -95,11 +95,12 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 
 - `bunny stream library list` [active] — List Stream video libraries.
 - `bunny stream library create` [active] — Create a Stream video library.
+- `bunny stream library delete` [active] — Delete a Stream video library.
 - `bunny stream video list` [active] — List videos in a library.
 - `bunny stream video upload` [active] — Upload a video to a library.
 - `bunny stream video delete` [active] — Delete a video.
 - `bunny containers app list` [active] — List Magic Containers apps.
-- `bunny containers app create` [active] — Create a Magic Containers app.
+- `bunny containers app create` [planned] — Create a Magic Containers app.
 - `bunny containers app delete` [active] — Delete a Magic Containers app.
 - `bunny scripting list` [active] — List edge scripts.
 - `bunny scripting deploy` [active] — Deploy an edge script from a source file (creates new, or updates by id).

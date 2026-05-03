@@ -67,10 +67,16 @@ export function createStorageClient(opts: StorageClientOptions) {
     },
 
     listDir: async (zone: string, region: string, path: string): Promise<StorageEntry[]> => {
-      const dir = path.endsWith('/') ? path : `${path}/`;
+      // Bunny Edge Storage requires a trailing slash to list a directory; without
+      // it, the endpoint treats the path as a file lookup and returns 404. We
+      // bypass `joinPath` (which strips trailing slashes for file ops) and build
+      // the directory URL explicitly. Default `/` resolves to the zone root.
+      const safePath = typeof path === 'string' && path.length > 0 ? path : '/';
+      const cleanDir = safePath.replace(/^\/+/, '').replace(/\/+$/, '');
+      const dirPath = cleanDir.length > 0 ? `/${zone}/${cleanDir}/` : `/${zone}/`;
       const result = await callBunny<StorageEntry[] | null>({
         base: storageBaseUrl(region),
-        path: joinPath(zone, dir),
+        path: dirPath,
         scope: { kind: 'storage', zone },
       });
       return result ?? [];

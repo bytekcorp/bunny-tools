@@ -68,8 +68,10 @@ export async function deletePullZone(id: number): Promise<void> {
   await client().deletePullZone(id);
 }
 
-// Edge rules — read existing, mutate, write back. Bunny exposes EdgeRules
-// as a field on the pull zone; no dedicated subresource.
+// Edge rules — listed via the parent pull zone object, but mutated through
+// dedicated subresource endpoints. Bunny's `POST /pullzone/{id}` silently
+// drops EdgeRules in the body, so list-then-update with the rules array
+// looks successful but never persists — we must hit /edgerules/addOrUpdate.
 
 export type EdgeRule = {
   Guid?: string;
@@ -90,18 +92,11 @@ export async function listEdgeRules(pullZoneId: number): Promise<EdgeRule[]> {
 }
 
 export async function addEdgeRule(pullZoneId: number, rule: EdgeRule): Promise<EdgeRule[]> {
-  const existing = await listEdgeRules(pullZoneId);
-  const next = [...existing, rule];
-  await client().updatePullZone(pullZoneId, { EdgeRules: next });
-  return next;
+  await client().addOrUpdateEdgeRule(pullZoneId, rule as unknown as Record<string, unknown>);
+  return listEdgeRules(pullZoneId);
 }
 
 export async function deleteEdgeRule(pullZoneId: number, ruleGuid: string): Promise<EdgeRule[]> {
-  const existing = await listEdgeRules(pullZoneId);
-  const next = existing.filter((r) => r.Guid !== ruleGuid);
-  if (next.length === existing.length) {
-    throw new Error(`No edge rule with Guid="${ruleGuid}" on pull-zone ${pullZoneId}.`);
-  }
-  await client().updatePullZone(pullZoneId, { EdgeRules: next });
-  return next;
+  await client().deleteEdgeRule(pullZoneId, ruleGuid);
+  return listEdgeRules(pullZoneId);
 }

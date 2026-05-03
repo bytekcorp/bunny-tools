@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.10',
+  version: '0.1.0-rc.12',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -503,6 +503,15 @@ export const registry: Registry = {
       load: () => import('../commands/stream/library/create.js'),
     },
     {
+      name: 'stream library delete',
+      summary: 'Delete a Stream video library.',
+      args: [{ name: 'id', description: 'Library id.', required: true }],
+      flags: [{ name: 'yes', description: 'Skip confirmation.', hasValue: false }],
+      status: 'active',
+      phase: 5,
+      load: () => import('../commands/stream/library/delete.js'),
+    },
+    {
       name: 'stream video list',
       summary: 'List videos in a library.',
       args: [{ name: 'library', description: 'Video library id.', required: true }],
@@ -558,9 +567,12 @@ export const registry: Registry = {
         { name: 'region', description: 'Deploy region.', hasValue: true },
         { name: 'port', description: 'Container port.', hasValue: true },
       ],
-      status: 'active',
+      // Demoted in rc.12 — Bunny Containers v3 schema requires `runtimeType`,
+      // `containerTemplates[]`, and `autoScaling.{min,max}`. Current body shape
+      // produced HTTP 400 in live testing. Re-promote in v0.2 after a schema
+      // rewrite. Existing list/delete commands stay active.
+      status: 'planned',
       phase: 5,
-      load: () => import('../commands/containers/app/create.js'),
     },
     {
       name: 'containers app delete',

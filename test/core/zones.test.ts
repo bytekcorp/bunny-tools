@@ -47,32 +47,11 @@ describe('core/zones', () => {
     expect(zones[0]?.Name).toBe('a');
   });
 
-  it('addEdgeRule appends to existing list and updates the pull zone', async () => {
+  it('addEdgeRule POSTs to /edgerules/addOrUpdate and re-lists', async () => {
     const pool = getMockAgent().get('https://api.bunny.net');
     pool
-      .intercept({ path: '/pullzone/42', method: 'GET' })
-      .reply(200, {
-        Id: 42,
-        Name: 'pz',
-        OriginUrl: 'https://x',
-        Enabled: true,
-        Hostnames: [],
-        EdgeRules: [{ Guid: 'g1', ActionType: 1 }],
-      });
-    pool
-      .intercept({
-        path: '/pullzone/42',
-        method: 'POST',
-      })
-      .reply(200, { Id: 42, Name: 'pz', OriginUrl: 'https://x', Enabled: true, Hostnames: [] });
-
-    const next = await addEdgeRule(42, { ActionType: 2, Description: 'new' });
-    expect(next).toHaveLength(2);
-    expect(next[1]?.Description).toBe('new');
-  });
-
-  it('deleteEdgeRule removes by Guid', async () => {
-    const pool = getMockAgent().get('https://api.bunny.net');
+      .intercept({ path: '/pullzone/42/edgerules/addOrUpdate', method: 'POST' })
+      .reply(200, { Guid: 'g2' });
     pool
       .intercept({ path: '/pullzone/42', method: 'GET' })
       .reply(200, {
@@ -83,24 +62,21 @@ describe('core/zones', () => {
         Hostnames: [],
         EdgeRules: [
           { Guid: 'g1', ActionType: 1 },
-          { Guid: 'g2', ActionType: 2 },
+          { Guid: 'g2', ActionType: 2, Description: 'new' },
         ],
       });
-    pool.intercept({ path: '/pullzone/42', method: 'POST' }).reply(200, {
-      Id: 42,
-      Name: 'pz',
-      OriginUrl: 'https://x',
-      Enabled: true,
-      Hostnames: [],
-    });
-    const next = await deleteEdgeRule(42, 'g1');
-    expect(next).toHaveLength(1);
-    expect(next[0]?.Guid).toBe('g2');
+
+    const next = await addEdgeRule(42, { ActionType: 2, Description: 'new' });
+    expect(next).toHaveLength(2);
+    expect(next[1]?.Description).toBe('new');
   });
 
-  it('deleteEdgeRule throws when Guid is unknown', async () => {
-    getMockAgent()
-      .get('https://api.bunny.net')
+  it('deleteEdgeRule DELETEs the subresource and re-lists', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/42/edgerules/g1', method: 'DELETE' })
+      .reply(204);
+    pool
       .intercept({ path: '/pullzone/42', method: 'GET' })
       .reply(200, {
         Id: 42,
@@ -108,9 +84,11 @@ describe('core/zones', () => {
         OriginUrl: 'https://x',
         Enabled: true,
         Hostnames: [],
-        EdgeRules: [{ Guid: 'g1', ActionType: 1 }],
+        EdgeRules: [{ Guid: 'g2', ActionType: 2 }],
       });
-    await expect(deleteEdgeRule(42, 'missing')).rejects.toThrowError(/No edge rule/);
+    const next = await deleteEdgeRule(42, 'g1');
+    expect(next).toHaveLength(1);
+    expect(next[0]?.Guid).toBe('g2');
   });
 
   it('listEdgeRules returns empty for pull zones with no rules', async () => {

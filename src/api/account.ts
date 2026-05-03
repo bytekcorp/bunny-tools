@@ -76,6 +76,24 @@ export function createAccountClient(opts: AccountClientOptions) {
     deletePullZone: (id: number) =>
       callBunny<void>({ base, path: `/pullzone/${id}`, method: 'DELETE', scope: { kind: 'account' } }),
 
+    // Edge rules use dedicated subresource endpoints — Bunny's `POST /pullzone/{id}`
+    // silently drops EdgeRules in the body, so we must hit /edgerules/addOrUpdate.
+    addOrUpdateEdgeRule: (pullZoneId: number, rule: Record<string, unknown>) =>
+      callBunny<void>({
+        base,
+        path: `/pullzone/${pullZoneId}/edgerules/addOrUpdate`,
+        method: 'POST',
+        scope: { kind: 'account' },
+        body: rule,
+      }),
+    deleteEdgeRule: (pullZoneId: number, ruleGuid: string) =>
+      callBunny<void>({
+        base,
+        path: `/pullzone/${pullZoneId}/edgerules/${ruleGuid}`,
+        method: 'DELETE',
+        scope: { kind: 'account' },
+      }),
+
     purgeByUrl: (url: string, async = false) =>
       callBunny<void>({
         base,

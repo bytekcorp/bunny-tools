@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.10",
+  "version": "0.1.0-rc.12",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -1389,6 +1389,33 @@
       "mcp": null
     },
     {
+      "name": "stream library delete",
+      "summary": "Delete a Stream video library.",
+      "description": null,
+      "status": "active",
+      "phase": 5,
+      "args": [
+        {
+          "name": "id",
+          "description": "Library id.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "yes",
+          "short": null,
+          "description": "Skip confirmation.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [],
+      "mcp": null
+    },
+    {
       "name": "stream video list",
       "summary": "List videos in a library.",
       "description": null,
@@ -1521,7 +1548,7 @@
       "name": "containers app create",
       "summary": "Create a Magic Containers app.",
       "description": null,
-      "status": "active",
+      "status": "planned",
       "phase": 5,
       "args": [
         {
