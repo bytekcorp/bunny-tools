@@ -1,6 +1,6 @@
 {
   "name": "bunny-tools",
-  "version": "0.1.0-rc.12",
+  "version": "0.1.0-rc.13",
   "description": "Bunny.net CLI for storage deploy, CDN purge, and full resource management. AI-friendly via MCP.",
   "license": "MIT",
   "type": "module",
@@ -64,13 +64,12 @@
     "@types/prompts": "^2.4.9",
     "@typescript-eslint/eslint-plugin": "^8.18.2",
     "@typescript-eslint/parser": "^8.18.2",
-    "@vitest/coverage-v8": "^2.1.8",
-    "esbuild": "^0.24.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^8.57.1",
     "nock": "^13.5.6",
     "prettier": "^3.4.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.5"
   }
 }
