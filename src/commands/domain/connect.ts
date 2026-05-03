@@ -11,6 +11,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     name?: string;
     noWait?: boolean;
     timeout?: string;
+    noForceSsl?: boolean;
   };
   if (!args.pullZoneId || !args.hostname) {
     progress.fail('Usage: bunny domain connect <pullZoneId> <hostname>');
@@ -33,6 +34,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
       ...(flags.name !== undefined ? { recordName: flags.name } : {}),
       ...(flags.noWait ? { noWait: true } : {}),
       ...(timeoutMs !== undefined ? { timeoutMs } : {}),
+      ...(flags.noForceSsl ? { noForceSSL: true } : {}),
     });
     const certBit = flags.noWait
       ? '(cert pending — re-run or check `bunny pullzone get`)'

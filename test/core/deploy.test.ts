@@ -66,6 +66,19 @@ describe('runDeploy', () => {
     storage
       .intercept({ path: '/my-app/app.js', method: 'PUT' })
       .reply(201, '');
+    // rc.36: edge-rules-sync now runs unconditionally when pullZones non-empty
+    // (previously gated on hasDeclaredRules). Mock the getPullZone call so
+    // sync sees zero managed rules and no-ops.
+    account
+      .intercept({ path: '/pullzone/555', method: 'GET' })
+      .reply(200, {
+        Id: 555,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [],
+        EdgeRules: [],
+      });
     if (opts.expectPurge !== false) {
       account
         .intercept({ path: '/pullzone/555/purgeCache', method: 'POST' })
@@ -91,9 +104,14 @@ describe('runDeploy', () => {
 
   it('respects purge override "none"', async () => {
     const storage = getMockAgent().get('https://ny.storage.bunnycdn.com');
+    const account = getMockAgent().get('https://api.bunny.net');
     storage.intercept({ path: '/my-app/', method: 'GET' }).reply(200, []);
     storage.intercept({ path: '/my-app/index.html', method: 'PUT' }).reply(201, '');
     storage.intercept({ path: '/my-app/app.js', method: 'PUT' }).reply(201, '');
+    // rc.36: edge-rules-sync runs unconditionally with non-empty pullZones.
+    account.intercept({ path: '/pullzone/555', method: 'GET' }).reply(200, {
+      Id: 555, Name: 'pz', OriginUrl: 'https://x', Enabled: true, Hostnames: [], EdgeRules: [],
+    });
     const result = await runDeploy({
       config: configWithRegion(),
       cwd: workDir,
@@ -119,6 +137,10 @@ describe('runDeploy', () => {
     storage.intercept({ path: '/my-app/index.html', method: 'PUT' }).reply(201, '');
     storage.intercept({ path: '/my-app/app.js', method: 'PUT' }).reply(201, '');
     storage.intercept({ path: '/my-app/gone.txt', method: 'DELETE' }).reply(204, '');
+    // rc.36: edge-rules-sync runs unconditionally with non-empty pullZones.
+    account.intercept({ path: '/pullzone/555', method: 'GET' }).reply(200, {
+      Id: 555, Name: 'pz', OriginUrl: 'https://x', Enabled: true, Hostnames: [], EdgeRules: [],
+    });
     account.intercept({ path: '/pullzone/555/purgeCache', method: 'POST' }).reply(204, '');
 
     const result = await runDeploy({

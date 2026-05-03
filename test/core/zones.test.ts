@@ -188,6 +188,7 @@ describe('core/zones', () => {
     const result = await enablePullZoneSSL(42, 'example.com', {
       timeoutMs: 5_000,
       pollIntervalMs: 10,
+      noForceSSL: true,
     });
     expect(result.hasCertificate).toBe(true);
     expect(result.waitedMs).toBeGreaterThanOrEqual(0);
@@ -210,7 +211,7 @@ describe('core/zones', () => {
     ).rejects.toThrow(/not linked to pull zone/);
   });
 
-  it('enablePullZoneSSL returns immediately when cert already present', async () => {
+  it('enablePullZoneSSL returns immediately when cert + ForceSSL already set', async () => {
     getMockAgent()
       .get('https://api.bunny.net')
       .intercept({ path: '/pullzone/42', method: 'GET' })
@@ -219,7 +220,8 @@ describe('core/zones', () => {
         Name: 'pz',
         OriginUrl: 'https://x',
         Enabled: true,
-        Hostnames: [{ Id: 1, Value: 'example.com', HasCertificate: true }],
+        // Both cert + ForceSSL already true → no API mutation, byte-equal envelope.
+        Hostnames: [{ Id: 1, Value: 'example.com', HasCertificate: true, ForceSSL: true }],
       });
 
     const result = await enablePullZoneSSL(42, 'example.com', {
@@ -227,6 +229,26 @@ describe('core/zones', () => {
       pollIntervalMs: 10,
     });
     expect(result).toEqual({ hasCertificate: true, waitedMs: 0 });
+  });
+
+  it('enablePullZoneSSL flips ForceSSL=true when cert is already there but ForceSSL is off', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    pool
+      .intercept({ path: '/pullzone/42', method: 'GET' })
+      .reply(200, {
+        Id: 42,
+        Name: 'pz',
+        OriginUrl: 'https://x',
+        Enabled: true,
+        Hostnames: [{ Id: 1, Value: 'example.com', HasCertificate: true, ForceSSL: false }],
+      });
+    pool
+      .intercept({ path: '/pullzone/42/setForceSSL', method: 'POST' })
+      .reply(204);
+
+    const result = await enablePullZoneSSL(42, 'example.com', { timeoutMs: 1_000, pollIntervalMs: 10 });
+    expect(result.hasCertificate).toBe(true);
+    expect(result.forceSslSet).toBe(true);
   });
 
   it('enablePullZoneSSL throws on timeout when cert never flips true', async () => {

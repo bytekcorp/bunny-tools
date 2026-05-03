@@ -14,7 +14,7 @@ import { runPool, summarizeResults } from '../deploy/upload-queue.js';
 import { loadState, saveState, STATE_FILENAME } from '../deploy/state.js';
 import { getActiveAliasOverlay } from './aliases.js';
 import { maybeMigrateIgnoreDefaults } from './ignore-migration.js';
-import { hasDeclaredRules, syncEdgeRulesForPullZone } from './edge-rules-sync.js';
+import { syncEdgeRulesForPullZone } from './edge-rules-sync.js';
 
 // Files over this threshold trigger a non-blocking warning at upload time.
 // Captures the "I accidentally committed a 50MB binary" case without gating
@@ -198,10 +198,16 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
   await saveState(stateFile, diff.newState);
 
   // 8b. Sync declarative edge rules (bunny.json deploy.headers + edgeRules)
-  // to all configured PZs. Skipped entirely when both arrays are empty —
-  // no API calls. Idempotent; managed-by-bunny-tools description marker
+  // to all configured PZs. Always runs when there's at least one PZ — when
+  // both arrays are empty AND the PZ has previously-managed rules, this
+  // cleans them up. Idempotent; managed-by-bunny-tools description marker
   // prevents touching user-added rules.
-  if (hasDeclaredRules(opts.config)) {
+  //
+  // Cost: one extra getPullZone() per PZ on every deploy (~50ms). Worth
+  // it to prevent orphaned managed rules when users remove headers from
+  // bunny.json. (rc.36 — was conditional on `hasDeclaredRules` in rc.34/35,
+  // which orphaned rules on un-configure. See plans/reports/...rc35... )
+  if (opts.config.deploy.pullZones.length > 0) {
     ev({ type: 'phase', phase: 'edge-rules-sync' });
     for (const pz of opts.config.deploy.pullZones) {
       try {

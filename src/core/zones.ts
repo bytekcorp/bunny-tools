@@ -141,7 +141,20 @@ export async function removePullZoneHostname(pullZoneId: number, hostname: strin
 export type EnableSslResult = {
   hasCertificate: boolean;
   waitedMs: number;
+  forceSslSet?: boolean;
 };
+
+// Direct ForceSSL toggle without provisioning a cert. Bunny rejects this
+// when HasCertificate=false (would cause infinite redirect to broken HTTPS),
+// so callers must verify cert state first when toggling on. Toggling off
+// is always safe.
+export async function setHostnameForceSSL(
+  pullZoneId: number,
+  hostname: string,
+  force: boolean,
+): Promise<void> {
+  await client().setPullZoneForceSSL(pullZoneId, hostname, force);
+}
 
 const DEFAULT_SSL_TIMEOUT_MS = 90_000;
 const DEFAULT_SSL_POLL_INTERVAL_MS = 5_000;
@@ -149,7 +162,12 @@ const DEFAULT_SSL_POLL_INTERVAL_MS = 5_000;
 export async function enablePullZoneSSL(
   pullZoneId: number,
   hostname: string,
-  opts: { timeoutMs?: number; pollIntervalMs?: number } = {},
+  opts: {
+    timeoutMs?: number;
+    pollIntervalMs?: number;
+    /** When true, skips the auto-flip of ForceSSL after cert provisions. */
+    noForceSSL?: boolean;
+  } = {},
 ): Promise<EnableSslResult> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_SSL_TIMEOUT_MS;
   const pollIntervalMs = opts.pollIntervalMs ?? DEFAULT_SSL_POLL_INTERVAL_MS;
@@ -167,7 +185,14 @@ export async function enablePullZoneSSL(
     );
   }
   if (matchedBefore.HasCertificate === true) {
-    return { hasCertificate: true, waitedMs: 0 };
+    // Cert already there — apply ForceSSL anyway so re-running on an existing
+    // hostname brings it up to default-secure state. Idempotent on the API.
+    let forceSslSet: boolean | undefined;
+    if (!opts.noForceSSL && matchedBefore.ForceSSL !== true) {
+      await c.setPullZoneForceSSL(pullZoneId, hostname, true);
+      forceSslSet = true;
+    }
+    return { hasCertificate: true, waitedMs: 0, ...(forceSslSet ? { forceSslSet } : {}) };
   }
 
   await c.loadFreeCertificate(hostname);
@@ -186,7 +211,20 @@ export async function enablePullZoneSSL(
     const pz = await c.getPullZone(pullZoneId);
     const matched = (pz.Hostnames ?? []).find((h) => h.Value === hostname);
     if (matched?.HasCertificate === true) {
-      return { hasCertificate: true, waitedMs: Date.now() - startedAt };
+      const waitedMs = Date.now() - startedAt;
+      // Auto-flip ForceSSL=true now that a valid cert exists. Default-on
+      // matches 2026 best practice (HTTPS-only); --no-force-ssl on the
+      // CLI / `noForceSSL: true` here opts out for HTTP+HTTPS coexistence.
+      let forceSslSet: boolean | undefined;
+      if (!opts.noForceSSL && matched.ForceSSL !== true) {
+        await c.setPullZoneForceSSL(pullZoneId, hostname, true);
+        forceSslSet = true;
+      }
+      return {
+        hasCertificate: true,
+        waitedMs,
+        ...(forceSslSet ? { forceSslSet } : {}),
+      };
     }
   }
 }

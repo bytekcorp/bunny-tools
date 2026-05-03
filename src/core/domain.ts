@@ -28,6 +28,11 @@ export type ConnectDomainOptions = {
    * Default: empty (apex), matching the most common dashboard use case.
    */
   recordName?: string;
+  /**
+   * Skip auto-flipping ForceSSL=true after cert provisions. Default false
+   * (so HTTP→HTTPS redirect is enabled by default — 2026 best practice).
+   */
+  noForceSSL?: boolean;
 };
 
 export type ConnectDomainResult = {
@@ -61,6 +66,7 @@ export async function connectDomain(
   if (!opts.noWait) {
     const result = await enablePullZoneSSL(pullZoneId, hostname, {
       ...(opts.timeoutMs !== undefined ? { timeoutMs: opts.timeoutMs } : {}),
+      ...(opts.noForceSSL ? { noForceSSL: true } : {}),
     });
     hasCertificate = result.hasCertificate;
     certWaitedMs = result.waitedMs;

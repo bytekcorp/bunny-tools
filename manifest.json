@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.35",
+  "version": "0.1.0-rc.36",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -1156,7 +1156,7 @@
     },
     {
       "name": "pullzone hostname enable-ssl",
-      "summary": "Request a free Let's Encrypt certificate for a hostname and wait until provisioned (required before Type-7 PULLZONE DNS records resolve).",
+      "summary": "Request a free Let's Encrypt certificate for a hostname, wait until provisioned, and enable ForceSSL (HTTP→HTTPS redirect). Use --no-force-ssl to skip the redirect.",
       "description": null,
       "status": "active",
       "phase": 3,
@@ -1174,7 +1174,49 @@
           "variadic": false
         }
       ],
-      "flags": [],
+      "flags": [
+        {
+          "name": "no-force-ssl",
+          "short": null,
+          "description": "Skip auto-enabling ForceSSL (HTTP→HTTPS redirect) after cert provisions.",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
+      "examples": [],
+      "mcp": null
+    },
+    {
+      "name": "pullzone hostname force-ssl",
+      "summary": "Toggle the HTTP→HTTPS redirect (ForceSSL) on a custom hostname. Requires a valid cert.",
+      "description": null,
+      "status": "active",
+      "phase": 3,
+      "args": [
+        {
+          "name": "pullZoneId",
+          "description": "Pull zone id.",
+          "required": true,
+          "variadic": false
+        },
+        {
+          "name": "hostname",
+          "description": "Custom hostname.",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "flags": [
+        {
+          "name": "off",
+          "short": null,
+          "description": "Turn ForceSSL OFF (default ON).",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        }
+      ],
       "examples": [],
       "mcp": null
     },
@@ -1230,6 +1272,14 @@
           "hasValue": true,
           "valueHint": null,
           "defaultValue": "90"
+        },
+        {
+          "name": "no-force-ssl",
+          "short": null,
+          "description": "Skip auto-enabling ForceSSL (HTTP→HTTPS redirect).",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
         }
       ],
       "examples": [

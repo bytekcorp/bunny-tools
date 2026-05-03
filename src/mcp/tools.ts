@@ -21,6 +21,7 @@ import {
   removePullZoneHostname,
   listPullZoneHostnames,
   enablePullZoneSSL,
+  setHostnameForceSSL,
 } from '../core/zones.js';
 import { listZones as listDnsZones, listRecords, addRecord, deleteRecord } from '../core/dns.js';
 import { loadBunnyJson } from '../config/bunny-json.js';
@@ -220,6 +221,7 @@ export const TOOLS: ToolDef[] = [
       hostname: z.string().min(1),
       dnsZoneId: z.number().int().positive().optional(),
       recordName: z.string().optional(),
+      noForceSSL: z.boolean().optional(),
     }),
     run: async (raw) => {
       const args = z
@@ -228,29 +230,57 @@ export const TOOLS: ToolDef[] = [
           hostname: z.string().min(1),
           dnsZoneId: z.number().int().positive().optional(),
           recordName: z.string().optional(),
+          noForceSSL: z.boolean().optional(),
         })
         .parse(raw);
       const { connectDomain } = await import('../core/domain.js');
       return connectDomain(args.pullZoneId, args.hostname, {
         ...(args.dnsZoneId !== undefined ? { dnsZoneId: args.dnsZoneId } : {}),
         ...(args.recordName !== undefined ? { recordName: args.recordName } : {}),
+        ...(args.noForceSSL ? { noForceSSL: true } : {}),
       });
     },
   },
   {
     name: 'bunny.pullzone_hostname_enable_ssl',
     description:
-      'Request a free Let\'s Encrypt certificate for a hostname and wait until provisioned (up to 90s). Required before Type-7 (PULLZONE) DNS records resolve. Returns { ok, hasCertificate, waitedMs }.',
+      'Request a free Let\'s Encrypt certificate for a hostname, wait until provisioned (up to 90s), and enable ForceSSL (HTTP→HTTPS redirect) by default. Pass noForceSSL=true to opt out. Required before Type-7 (PULLZONE) DNS records resolve. Returns { ok, hasCertificate, waitedMs, forceSslSet? }.',
     inputSchema: z.object({
       pullZoneId: z.number().int().positive(),
       hostname: z.string().min(1),
+      noForceSSL: z.boolean().optional(),
     }),
     run: async (raw) => {
-      const { pullZoneId, hostname } = z
-        .object({ pullZoneId: z.number().int().positive(), hostname: z.string().min(1) })
+      const { pullZoneId, hostname, noForceSSL } = z
+        .object({
+          pullZoneId: z.number().int().positive(),
+          hostname: z.string().min(1),
+          noForceSSL: z.boolean().optional(),
+        })
         .parse(raw);
-      const result = await enablePullZoneSSL(pullZoneId, hostname);
+      const result = await enablePullZoneSSL(pullZoneId, hostname, noForceSSL ? { noForceSSL: true } : {});
       return { ok: true, ...result };
+    },
+  },
+  {
+    name: 'bunny.pullzone_hostname_force_ssl',
+    description:
+      'Toggle the HTTP→HTTPS auto-redirect (ForceSSL) on a custom hostname. Set force=false to disable. Requires a valid cert (HasCertificate=true) when enabling.',
+    inputSchema: z.object({
+      pullZoneId: z.number().int().positive(),
+      hostname: z.string().min(1),
+      force: z.boolean(),
+    }),
+    run: async (raw) => {
+      const { pullZoneId, hostname, force } = z
+        .object({
+          pullZoneId: z.number().int().positive(),
+          hostname: z.string().min(1),
+          force: z.boolean(),
+        })
+        .parse(raw);
+      await setHostnameForceSSL(pullZoneId, hostname, force);
+      return { ok: true, hostname, forceSSL: force };
     },
   },
   {

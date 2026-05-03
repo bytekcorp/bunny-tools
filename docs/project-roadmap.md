@@ -1,7 +1,7 @@
 # bunny-tools Project Roadmap
 
 **Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.26 Live | MCP E2E Harness + DNS REDIRECT E2E + PZ Hostname Management + SSL Provisioning Live ✓
-**Current Version:** v0.1.0-rc.35 (shipped 2026-05-03)  
+**Current Version:** v0.1.0-rc.36 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
 **Release Cadence:** 13 RCs shipped (rc.14–rc.26) after rc.13
 **Last Updated:** 2026-05-03
@@ -35,6 +35,7 @@ bunny-tools v0.1.0-rc.26 ships all **55 commands** live on npm (latest & alpha d
 - **rc.33:** **MIME complete + DX polish bundle** — `mime-types` package replaces manual table (covers `.webmanifest`, `.wasm`, `.opus`, etc.); `bunny.json deploy.mimeTypes` overrides; `bunny deploy --verbose` prints MIME per file; auto-migrate `deploy.ignore` to 15-entry rc.33+ baseline; MCP `dns_record_set` PULLZONE convenience via `pullZoneId`; auto-spawned PZ detection; >5MB warning; masked account-key on auth-skip; 157 unit tests
 - **rc.34:** **Connect-Domain + CI generator + declarative edge rules** — atomic `bunny domain connect <pzId> <fqdn>` (addHostname → enable-ssl → optional Type-7 record); `bunny init --ci` generates `.github/workflows/bunny-deploy.yml` with secrets checklist; declarative `bunny.json deploy.headers` (Cloudflare/Netlify-style, smart Cache-Control compilation to OverrideCacheTime + OverrideBrowserCacheTime) + `deploy.edgeRules` (raw); auto-sync on deploy with `managed-by-bunny-tools:` marker; 173 unit tests; 56 commands, 19 MCP tools
 - **rc.35:** **rc.34 live-test fixes + e2e** — SetResponseHeader compile fix (P1=name, P2=value; was combined string); idempotent sync no longer reports false `updated` count (trust description hash for identity); MCP `domain_connect` e2e gated on `BUNNY_E2E_CERT_DOMAIN`+`BUNNY_E2E_DNS_ZONE_ID`; live-verified on bytek.org (domain connect end-to-end in 2.5s; sync 4-stage round-trip clean); 173 unit + 46 e2e tests
+- **rc.36:** **Auto-ForceSSL + orphan rule cleanup** — `enable-ssl` and `domain connect` auto-flip `ForceSSL=true` after cert lands (HTTP→HTTPS redirect, 2026 default), `--no-force-ssl` opt-out; new `pullzone hostname force-ssl` command + MCP tool; edge-rule sync now runs unconditionally with non-empty pullZones (was skipped when both arrays empty → orphaned managed rules on un-configure); 174 unit tests; 57 commands, 20 MCP tools
 
 **Status:** GA-ready. All phases + MCP harness + DNS REDIRECT e2e live. Current backlog for v0.2: containers app create (Bunny v3 schema fix pending), headers/rewrites sugar, live emulator.
 

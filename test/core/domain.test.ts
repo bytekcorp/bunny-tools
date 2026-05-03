@@ -28,26 +28,14 @@ describe('connectDomain', () => {
 
   it('skips addHostname when hostname is already linked, then short-circuits enable-ssl when cert is already present', async () => {
     const pool = getMockAgent().get('https://api.bunny.net');
-    // listPullZoneHostnames → already includes example.com
-    pool
-      .intercept({ path: '/pullzone/42', method: 'GET' })
-      .reply(200, {
-        Id: 42,
-        Name: 'pz',
-        OriginUrl: 'https://x',
-        Enabled: true,
-        Hostnames: [{ Value: 'example.com', HasCertificate: true }],
-      });
-    // enable-ssl pre-flight (separate call) — also returns cert=true so it short-circuits.
-    pool
-      .intercept({ path: '/pullzone/42', method: 'GET' })
-      .reply(200, {
-        Id: 42,
-        Name: 'pz',
-        OriginUrl: 'https://x',
-        Enabled: true,
-        Hostnames: [{ Value: 'example.com', HasCertificate: true }],
-      });
+    // Both calls return cert=true AND ForceSSL=true so no setForceSSL API
+    // call is needed (idempotent path). The test asserts re-runs are cheap.
+    const pzAlreadyDone = {
+      Id: 42, Name: 'pz', OriginUrl: 'https://x', Enabled: true,
+      Hostnames: [{ Value: 'example.com', HasCertificate: true, ForceSSL: true }],
+    };
+    pool.intercept({ path: '/pullzone/42', method: 'GET' }).reply(200, pzAlreadyDone);
+    pool.intercept({ path: '/pullzone/42', method: 'GET' }).reply(200, pzAlreadyDone);
 
     const result = await connectDomain(42, 'example.com');
     expect(result.ok).toBe(true);

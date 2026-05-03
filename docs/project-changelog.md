@@ -4,6 +4,34 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.36] — 2026-05-03 (Auto-ForceSSL + orphan rule cleanup)
+
+### Added
+- **Auto-enable ForceSSL after cert provisions.** `pullzone hostname enable-ssl` and `domain connect` now flip `ForceSSL=true` on the matched hostname after Let's Encrypt cert lands. HTTP→HTTPS redirect is the 2026 default. Idempotent: re-running on a hostname that already has cert+ForceSSL is a no-op.
+- **`--no-force-ssl` opt-out** on `enable-ssl` and `domain connect` for users who want HTTP+HTTPS coexistence (legacy migrations, plain-HTTP testing).
+- **`bunny pullzone hostname force-ssl <pzId> <hostname> [--off]`** new command. Toggle ForceSSL without re-provisioning a cert. Default ON; pass `--off` to disable.
+- **MCP `bunny.pullzone_hostname_force_ssl`** new tool with `(pullZoneId, hostname, force: boolean)`.
+- **MCP `bunny.pullzone_hostname_enable_ssl`** + **`bunny.domain_connect`** gain optional `noForceSSL?: boolean` field.
+
+### Fixed
+- **Edge-rule sync no longer orphans managed rules when user removes `headers`/`edgeRules` from bunny.json.** rc.34/35 gated the sync on `hasDeclaredRules(config)` — empty config skipped sync entirely, leaving previously-managed rules on the PZ. rc.36 always runs sync when `pullZones` is non-empty (~50ms extra `getPullZone` per PZ per deploy). Empty config now correctly deletes orphaned managed rules. Verified live on bytek.org.
+
+### Live-tested on bytek.org
+- enable-ssl → cert provisioned + ForceSSL=true (verified `Hostnames[].ForceSSL`).
+- force-ssl --off → ForceSSL=false; re-run enable-ssl → flipped back to true (idempotent).
+- enable-ssl `--no-force-ssl` → cert provisioned, ForceSSL stays false.
+- Orphan cleanup: ADD 1 rule → remove headers from config → sync deletes the orphan (1 managed → 0).
+
+### Test Coverage
+- 174/174 unit (was 173; +1 ForceSSL flip test).
+- 46 e2e (unchanged).
+
+### Surface
+- 57 active commands (was 56; new `pullzone hostname force-ssl`).
+- 20 MCP tools (was 19; new `bunny.pullzone_hostname_force_ssl`).
+
+---
+
 ## [0.1.0-rc.35] — 2026-05-03 (rc.34 live-test fixes + e2e coverage)
 
 Two real bugs discovered via live smoke against bytek.org. Both rc.34 features (`bunny domain connect` and `deploy.headers` sync) tested end-to-end on a real PZ.

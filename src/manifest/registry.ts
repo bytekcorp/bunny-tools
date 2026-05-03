@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.35',
+  version: '0.1.0-rc.36',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -427,14 +427,31 @@ export const registry: Registry = {
     {
       name: 'pullzone hostname enable-ssl',
       summary:
-        'Request a free Let\'s Encrypt certificate for a hostname and wait until provisioned (required before Type-7 PULLZONE DNS records resolve).',
+        'Request a free Let\'s Encrypt certificate for a hostname, wait until provisioned, and enable ForceSSL (HTTP→HTTPS redirect). Use --no-force-ssl to skip the redirect.',
       args: [
         { name: 'pullZoneId', description: 'Pull zone id.', required: true },
         { name: 'hostname', description: 'Custom hostname already linked to the pull zone.', required: true },
       ],
+      flags: [
+        { name: 'no-force-ssl', description: 'Skip auto-enabling ForceSSL (HTTP→HTTPS redirect) after cert provisions.', hasValue: false },
+      ],
       status: 'active',
       phase: 3,
       load: () => import('../commands/pull-zone/hostname/enable-ssl.js'),
+    },
+    {
+      name: 'pullzone hostname force-ssl',
+      summary: 'Toggle the HTTP→HTTPS redirect (ForceSSL) on a custom hostname. Requires a valid cert.',
+      args: [
+        { name: 'pullZoneId', description: 'Pull zone id.', required: true },
+        { name: 'hostname', description: 'Custom hostname.', required: true },
+      ],
+      flags: [
+        { name: 'off', description: 'Turn ForceSSL OFF (default ON).', hasValue: false },
+      ],
+      status: 'active',
+      phase: 3,
+      load: () => import('../commands/pull-zone/hostname/force-ssl.js'),
     },
 
     {
@@ -450,6 +467,7 @@ export const registry: Registry = {
         { name: 'name', description: 'DNS record name when --dns-zone is given. Empty/`@` for apex (default).', hasValue: true },
         { name: 'no-wait', description: 'Skip cert provisioning poll (advanced; caller verifies separately).', hasValue: false },
         { name: 'timeout', description: 'Cert wait timeout in seconds (default 90).', hasValue: true, defaultValue: '90' },
+        { name: 'no-force-ssl', description: 'Skip auto-enabling ForceSSL (HTTP→HTTPS redirect).', hasValue: false },
       ],
       examples: [
         { command: 'bunny domain connect 5789465 example.com', description: 'Link hostname + provision cert. Add DNS record separately.' },

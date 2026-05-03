@@ -128,6 +128,19 @@ export function createAccountClient(opts: AccountClientOptions) {
         body: { Hostname: hostname },
       }),
 
+    // Toggle the HTTP→HTTPS auto-redirect on a custom hostname. Requires
+    // a valid cert (HasCertificate=true) — flipping ForceSSL true on a
+    // hostname without a cert produces an infinite-redirect loop, so the
+    // CLI gates this behind `enable-ssl` having succeeded.
+    setPullZoneForceSSL: (pullZoneId: number, hostname: string, force: boolean) =>
+      callBunny<void>({
+        base,
+        path: `/pullzone/${pullZoneId}/setForceSSL`,
+        method: 'POST',
+        scope: { kind: 'account' },
+        body: { Hostname: hostname, ForceSSL: force },
+      }),
+
     // Request a Let's Encrypt certificate for a custom hostname. The endpoint
     // is account-scoped (Bunny resolves the PZ from hostname); response is
     // typically 200 immediately, but actual cert provisioning is async and
