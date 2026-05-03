@@ -44,6 +44,32 @@ describe('connectDomain', () => {
     expect(result.dnsRecordId).toBeUndefined();
   });
 
+  it('skips DNS record creation when a matching Type-7 record already exists at the same name (rc.40 idempotency fix)', async () => {
+    const pool = getMockAgent().get('https://api.bunny.net');
+    // Both calls go through the cert-already-true short circuit.
+    const pzReady = {
+      Id: 42, Name: 'pz', OriginUrl: 'https://x', Enabled: true,
+      Hostnames: [{ Value: 'example.com', HasCertificate: true, ForceSSL: true }],
+    };
+    pool.intercept({ path: '/pullzone/42', method: 'GET' }).reply(200, pzReady);
+    pool.intercept({ path: '/pullzone/42', method: 'GET' }).reply(200, pzReady);
+    // connectDomain re-resolves PZ (for Name + Id) right before the DNS step.
+    pool.intercept({ path: '/pullzone/42', method: 'GET' }).reply(200, pzReady);
+    // listRecords: zone returns an existing Type-7 PULLZONE at name='' linkName='42'.
+    pool.intercept({ path: '/dnszone/999', method: 'GET' }).reply(200, {
+      Id: 999, Domain: 'example.com',
+      Records: [
+        { Id: 12345, Type: 7, Name: '', Value: 'pz', LinkName: '42' },
+      ],
+    });
+    // CRITICAL: NO PUT intercept — if connectDomain tries to create, the test
+    // hangs on an unmocked request. That's the regression we're guarding.
+
+    const result = await connectDomain(42, 'example.com', { dnsZoneId: 999 });
+    expect(result.ok).toBe(true);
+    expect(result.dnsRecordId).toBe(12345); // existing record's id, not a new one
+  });
+
   it('passes noWait through and returns hasCertificate=false without polling', async () => {
     const pool = getMockAgent().get('https://api.bunny.net');
     // listPullZoneHostnames — hostname not yet linked.

@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.39  |  **Active commands:** 55/56
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.40  |  **Active commands:** 55/56
 
 <!-- HANDCURATED:START -->
 
@@ -91,7 +91,7 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 - `bunny dns create` [active] — Create a DNS zone for a domain.
 - `bunny dns delete` [active] — Delete a DNS zone.
 - `bunny dns record list` [active] — List DNS records for a zone. _mcp: `bunny.dns_records`_
-- `bunny dns record add` [active] — Add a DNS record (A, AAAA, CNAME, TXT, MX, REDIRECT, FLATTEN, PULLZONE, SRV, CAA, PTR, SCRIPT, NS). _mcp: `bunny.dns_record_set`_
+- `bunny dns record add` [active] — Add a DNS record (A, AAAA, CNAME, TXT, MX, REDIRECT, PULLZONE, SRV, CAA, PTR, SCRIPT, NS). _mcp: `bunny.dns_record_set`_
 - `bunny dns record update` [active] — Update a DNS record (raw JSON body).
 - `bunny dns record delete` [active] — Delete a DNS record. _mcp: `bunny.dns_record_delete`_
 

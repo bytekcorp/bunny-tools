@@ -75,9 +75,10 @@ describe('core/dns record validation', () => {
     expect(r.value).toBe('https://example.com');
   });
 
-  it('accepts FLATTEN with a target hostname', () => {
-    const r = parseRecordInput({ type: 'FLATTEN', name: '@', value: 'origin.example.com' });
-    expect(r.type).toBe('FLATTEN');
+  it('rejects FLATTEN — Bunny live API returns "Unknown record type" despite OpenAPI spec listing it (rc.40)', () => {
+    expect(() =>
+      parseRecordInput({ type: 'FLATTEN', name: '@', value: 'origin.example.com' }),
+    ).toThrowError(ValidationError);
   });
 
   it('accepts PTR with a target', () => {

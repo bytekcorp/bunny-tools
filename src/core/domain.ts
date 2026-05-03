@@ -9,7 +9,7 @@ import {
   enablePullZoneSSL,
   listPullZoneHostnames,
 } from './zones.js';
-import { addRecord } from './dns.js';
+import { addRecord, listRecords, RECORD_TYPE_CODES } from './dns.js';
 import { createAccountClient } from '../api/account.js';
 import { resolveCredential } from '../config/credential-resolver.js';
 
@@ -75,19 +75,33 @@ export async function connectDomain(
   // 3. DNS Type-7 record — only when caller asked for it. Without this,
   // connectDomain just preps the PZ side; user creates the DNS record
   // separately (e.g. via their existing DNS provider).
+  //
+  // Idempotent re-run: scan existing records on the DNS zone and skip the
+  // create when there's already a Type-7 (PULLZONE) at the same Name with
+  // the same LinkName. Without this guard, every `domain connect` call
+  // appends a duplicate record (rc.34-39 bug).
   let dnsRecordId: number | undefined;
   if (opts.dnsZoneId !== undefined) {
-    // Resolve PZ name + id for the PullZoneId field (rc.30 fix).
     const acct = createAccountClient({ resolveCredential: (s) => resolveCredential(s) });
     const pz = await acct.getPullZone(pullZoneId);
     const recordName = opts.recordName ?? '';
-    const created = await addRecord(opts.dnsZoneId, {
-      type: 'PULLZONE',
-      name: recordName,
-      value: pz.Name,
-      linkName: String(pz.Id),
-    });
-    dnsRecordId = created.Id;
+    const linkName = String(pz.Id);
+    const pullzoneCode = RECORD_TYPE_CODES['PULLZONE'];
+    const existing = await listRecords(opts.dnsZoneId);
+    const existingMatch = existing.find(
+      (r) => r.Type === pullzoneCode && r.Name === recordName && r.LinkName === linkName,
+    );
+    if (existingMatch) {
+      dnsRecordId = existingMatch.Id;
+    } else {
+      const created = await addRecord(opts.dnsZoneId, {
+        type: 'PULLZONE',
+        name: recordName,
+        value: pz.Name,
+        linkName,
+      });
+      dnsRecordId = created.Id;
+    }
   }
 
   return {

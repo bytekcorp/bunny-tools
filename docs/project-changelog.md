@@ -4,6 +4,29 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.40] — 2026-05-03 (Three real-world bugs caught after rc.39 ship)
+
+### Fixed
+- **`bunny domain connect` is now actually idempotent.** Previously each call appended a duplicate Type-7 DNS record on the target zone (despite the docstring claiming idempotency). rc.40 pre-checks: `listRecords(dnsZoneId)` → find any Type-7 with matching `(Name, LinkName)` → reuse its id instead of creating. Verified live: two consecutive `domain connect` calls now share `dnsRecordId`.
+- **FLATTEN dropped from supported DNS record types.** Bunny's OpenAPI spec says type=6 is Flatten, but the live API rejects it: `validation_error: Unknown record type` (verified against api.bunny.net). The CLI now surfaces a clear client-side rejection (`Invalid discriminator value`) instead of letting users hit Bunny's confusing rejection. If/when Bunny re-enables Flatten on the live API, restore the entry.
+
+### Added
+- **`bunny deploy` warns when uploading extensions Bunny edge serves wrong.** `.mjs`, `.wasm`, `.webmanifest` upload metadata gets ignored by Bunny's edge MIME table — files end up served as `application/octet-stream`. rc.40 emits ONE warning per extension per deploy with the exact `bunny.json deploy.headers` snippet to fix it. (Bunny-side issue; CLI surfaces it earlier.)
+
+### Test Coverage
+- 175/175 unit (was 174; +1 connectDomain idempotency regression test that fails without the fix).
+- 46 e2e (unchanged).
+
+### Live-tested on bytek.org
+- `domain connect` ×2 → single Type-7 record at apex (id 16998107 reused).
+- FLATTEN add → client-side rejection before any API call.
+
+### Surface (unchanged)
+- 55 active commands.
+- 18 MCP tools.
+
+---
+
 ## [0.1.0-rc.39] — 2026-05-03 (OIDC trusted publishing; release workflow change)
 
 ### Changed

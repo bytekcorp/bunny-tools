@@ -21,6 +21,14 @@ import { syncEdgeRulesForPullZone } from './edge-rules-sync.js';
 // the deploy. KISS — no flag, no config knob until someone asks.
 const LARGE_FILE_THRESHOLD_BYTES = 5 * 1024 * 1024;
 
+// Extensions where Bunny's edge MIME table doesn't match modern browser
+// expectations. We DO send the correct Content-Type at upload (mime-types
+// gives us `text/javascript; charset=utf-8` for `.mjs`), but Bunny's edge
+// has its own MIME table that overrides upload metadata for unknown types
+// — `.mjs` ends up served as `application/octet-stream`, breaking ES
+// modules. Surface a one-shot warning per deploy with the bunny.json fix.
+const KNOWN_BROKEN_EDGE_MIME = new Set(['.mjs', '.wasm', '.webmanifest']);
+
 export type DeployOptions = {
   config: BunnyJson;
   configFilePath?: string;
@@ -146,6 +154,27 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
   ev({ type: 'phase', phase: 'upload', message: `concurrency=${concurrency}` });
   const toUpload = [...diff.byClass.new, ...diff.byClass.changed];
   const mimeOverrides = opts.config.deploy.mimeTypes;
+
+  // Pre-scan for files whose extensions Bunny's edge doesn't natively
+  // recognize. Emit ONE warning per extension with the bunny.json fix —
+  // not per-file (would be noisy on a sites with many .mjs files).
+  const seenBroken = new Set<string>();
+  for (const entry of toUpload) {
+    const lastDot = entry.path.lastIndexOf('.');
+    if (lastDot < 0) continue;
+    const ext = entry.path.slice(lastDot).toLowerCase();
+    if (KNOWN_BROKEN_EDGE_MIME.has(ext) && !seenBroken.has(ext)) {
+      seenBroken.add(ext);
+      ev({
+        type: 'warn',
+        message:
+          `Bunny edge may serve "${ext}" as application/octet-stream regardless of upload Content-Type. ` +
+          `Fix: add an edge rule, or declare in bunny.json: ` +
+          `"deploy.headers": [{ "pattern": "**/*${ext}", "headers": { "Content-Type": "${contentTypeFor('a' + ext)}" } }]`,
+      });
+    }
+  }
+
   const uploadJobs = toUpload.map((entry) => async () => {
     if (!entry.absPath) throw new Error(`internal: missing absPath for ${entry.path}`);
     const ct = contentTypeFor(entry.path, mimeOverrides);

@@ -15,10 +15,16 @@ export function computeFqdn(name: string, domain: string): string {
   return `${name}.${domain}`;
 }
 
-// Bunny DNS record type → numeric code (per Bunny API spec).
-// REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT are Bunny-specific routing types
-// not present in standard DNS. The standard types map to the same codes
-// used by RFC 1035 numbering for clarity.
+// Bunny DNS record type → numeric code (per Bunny API spec, verified live).
+// REDIRECT/PULLZONE/PTR/SCRIPT are Bunny-specific routing types not present
+// in standard DNS. Numeric codes are Bunny-internal — they don't match
+// RFC 1035 numbering.
+//
+// FLATTEN (code 6) is documented in Bunny's OpenAPI spec but the live API
+// rejects it with `validation_error: Unknown record type` (verified rc.40
+// against api.bunny.net). Dropped from supported types until Bunny enables
+// it server-side; users hit the wall faster with a clear "unsupported"
+// message than via a confusing API rejection.
 export const RECORD_TYPE_CODES: Record<string, number> = {
   A: 0,
   AAAA: 1,
@@ -26,7 +32,6 @@ export const RECORD_TYPE_CODES: Record<string, number> = {
   TXT: 3,
   MX: 4,
   REDIRECT: 5,
-  FLATTEN: 6,
   PULLZONE: 7,
   SRV: 8,
   CAA: 9,
@@ -65,12 +70,11 @@ const CAARecord = baseFields.extend({
   tag: z.string().min(1),
 });
 const NSRecord = baseFields.extend({ type: z.literal('NS') });
-// Bunny-specific routing types. REDIRECT/FLATTEN/PTR carry only a Value
+// Bunny-specific routing types. REDIRECT/PTR carry only a Value
 // (URL/hostname/target). PULLZONE/SCRIPT need a `linkName` carrying the
 // linked resource id (pull zone id or script id), which Bunny stores on
 // the record so the dashboard can backfill the live state.
 const RedirectRecord = baseFields.extend({ type: z.literal('REDIRECT') });
-const FlattenRecord = baseFields.extend({ type: z.literal('FLATTEN') });
 const PullzoneRecord = baseFields.extend({
   type: z.literal('PULLZONE'),
   linkName: z.string().min(1),
@@ -91,7 +95,6 @@ export const RecordInputSchema = z.discriminatedUnion('type', [
   CAARecord,
   NSRecord,
   RedirectRecord,
-  FlattenRecord,
   PullzoneRecord,
   PtrRecord,
   ScriptRecord,

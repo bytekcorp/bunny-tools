@@ -284,11 +284,11 @@ export const TOOLS: ToolDef[] = [
   {
     name: 'bunny.dns_record_set',
     description:
-      'Add a DNS record. Standard types (A/AAAA/CNAME/TXT/MX/SRV/CAA/NS) plus Bunny routing types (REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT). For PULLZONE: pass `pullZoneId` (number) and we auto-derive value+linkName — mirrors the CLI `--pull-zone` convenience. SCRIPT still requires linkName.',
+      'Add a DNS record. Standard types (A/AAAA/CNAME/TXT/MX/SRV/CAA/NS) plus Bunny routing types (REDIRECT/PULLZONE/PTR/SCRIPT). For PULLZONE: pass `pullZoneId` (number) and we auto-derive value+linkName — mirrors the CLI `--pull-zone` convenience. SCRIPT still requires linkName.',
     inputSchema: z.object({
       zoneId: z.number().int().positive(),
       type: z.enum([
-        'A', 'AAAA', 'CNAME', 'TXT', 'MX', 'REDIRECT', 'FLATTEN', 'PULLZONE',
+        'A', 'AAAA', 'CNAME', 'TXT', 'MX', 'REDIRECT', 'PULLZONE',
         'SRV', 'CAA', 'PTR', 'SCRIPT', 'NS',
       ]),
       name: z.string(),
@@ -308,7 +308,7 @@ export const TOOLS: ToolDef[] = [
         .object({
           zoneId: z.number().int().positive(),
           type: z.enum([
-            'A', 'AAAA', 'CNAME', 'TXT', 'MX', 'REDIRECT', 'FLATTEN', 'PULLZONE',
+            'A', 'AAAA', 'CNAME', 'TXT', 'MX', 'REDIRECT', 'PULLZONE',
             'SRV', 'CAA', 'PTR', 'SCRIPT', 'NS',
           ]),
           name: z.string(),
