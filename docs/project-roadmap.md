@@ -1,20 +1,22 @@
 # bunny-tools Project Roadmap
 
-**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.10 Live | E2E Drift-Detection Harness Deployed ✓
-**Current Version:** v0.1.0-rc.10 (shipped 2026-05-03)  
-**Install:** `npm i -g bunny-tools@alpha`
-**Next Gate:** v0.1.0 GA (all phases complete, e2e harness live)
+**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.13 Live | E2E Drift-Detection Harness Live ✓
+**Current Version:** v0.1.0-rc.13 (shipped 2026-05-03)  
+**Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
+**Next Gate:** v0.1.0 GA (first scheduled e2e-nightly cron run tomorrow ~03:00 UTC)
 **Last Updated:** 2026-05-03
 
 ---
 
 ## Executive Summary
 
-bunny-tools v0.1.0-rc.10 ships all 49 commands live on npm (@alpha dist-tag). Phases 1–7 complete. Two breaking changes shipped (rc.7: space-delimited syntax; rc.9: auth → configure with multi-account profiles). Phase 5 commands shipped rc.10 (stream, containers, scripting). 
+bunny-tools v0.1.0-rc.13 ships all 49 commands live on npm (latest & alpha dist-tags). Phases 1–7 complete. Two breaking changes shipped (rc.7: space-delimited syntax; rc.9: auth → configure with multi-account profiles). Phase 5 commands shipped rc.10 (stream, containers, scripting). 
 
-**New in rc.10:** E2E drift-detection harness deployed to nightly CI. 30 tests hit real Bunny API, detect schema changes, GitHub issues on failure. All unit tests pass (122), e2e tests cover all major services (storage, pull zones, DNS, stream, scripting, deploy pipeline).
+**New in rc.12:** Six bug fixes (storage subdir 404, bare-arg crash, edge rule endpoint, scripting deploy --id re-fetch, stream library delete command, storagezone --region normalization). Containers app create demoted to `planned` (Bunny v3 schema mismatch → v0.2).
 
-**Next gate:** v0.1.0 GA release (all phases + e2e harness live). Current backlog for v0.2: H2 init prefill, H5 configure pull-zone step, M1 origin positional.
+**New in rc.13:** Vitest security bump (2.x → 4.x; GHSA-67mh-4wv8-2f99 esbuild CORS fix). E2E drift-detection harness live (30 real-API tests, 8 services, nightly CI at .github/workflows/e2e-nightly.yml, first run ~03:00 UTC tomorrow). All unit tests pass (122), e2e tests cover storage, pull zones, DNS, stream, scripting, deploy.
+
+**Next gate:** v0.1.0 GA release (all phases + e2e harness live). GA gate: first scheduled e2e-nightly cron run. Current backlog for v0.2: containers app create, headers/rewrites/redirects sugar, live e2e emulator.
 
 ---
 
@@ -157,25 +159,28 @@ bunny-tools v0.1.0-rc.10 ships all 49 commands live on npm (@alpha dist-tag). Ph
 
 ### Phase 5: Alpha 4 — Stream / Containers / Scripting
 
-**Duration:** 1 week (week 5, may demote to v0.2)  
-**Ships as:** v0.1.0-alpha.4 OR deferred  
-**Priority:** P2 (demotable)  
-**Status:** 📦 DEFERRED to v0.2
+**Duration:** 1 week (week 5)  
+**Ships as:** v0.1.0-rc.10 (un-deferred)  
+**Priority:** P2 (was demotable, now shipped)  
+**Status:** ✅ COMPLETE (shipped rc.10; rc.12 fix: containers app create demoted to `planned`)
 
-**Scope (deferred to v0.2):**
-- `bunny stream:library:list/create/delete` (3 commands)
-- `bunny stream:video:list/upload/delete` (3 commands)
-- `bunny containers:list/create/deploy/delete` (4 commands)
-- `bunny scripting:list/deploy/delete` (3 commands)
+**Scope (shipped rc.10):**
+- `bunny stream library list|create|get|delete` (4 commands — get/delete added rc.10)
+- `bunny stream video list|upload|delete` (3 commands)
+- `bunny scripting list|deploy|delete` (3 commands)
+- `bunny containers app list|create|delete` (3 commands; `create` demoted rc.12 → v0.2 due to Bunny v3 schema mismatch)
 
-**Rationale:** Deploy loop (P2) + storage (P3) + DNS (P4) cover 80% of user workflows. Stream/containers are nice-to-have. By moving P5 → v0.2, v0.1 ships faster with stable core.
+**Changes in rc.12:**
+- Containers app create moved to `planned` (Bunny v3 API schema incompatibility; defer to v0.2)
+- Stream library delete command added (was missing in rc.10)
+- All other Phase 5 commands remain active and functional
+
+**Rationale:** Deploy loop (P2) + storage (P3) + DNS (P4) cover 80% of user workflows; adding Stream + Scripting (P5) covers remaining use cases without blocking GA. Containers create deferred due to Bunny v3 compatibility issue detected in rc.12.
 
 **v0.2 Roadmap (Tentative):**
-- Stream library + video CRUD
-- Magic Containers CRUD
-- Edge scripting CRUD
+- Containers app create (schema fix pending Bunny v3 update)
 - Headers/rewrites/redirects sugar in bunny.json
-- Optional live e2e harness
+- Live e2e emulator (optional, for development)
 - Possible HTTP MCP transport (for CLI integration via web)
 
 ---
@@ -255,9 +260,9 @@ bunny-tools v0.1.0-rc.10 ships all 49 commands live on npm (@alpha dist-tag). Ph
 
 ---
 
-## RC Progression (rc.2 through rc.10)
+## RC Progression (rc.2 through rc.13)
 
-Post-Phase-7, 9 release candidates shipped to npm (@alpha dist-tag) via OIDC trusted publishing.
+Post-Phase-7, 12 release candidates shipped to npm (latest & alpha dist-tags) via OIDC trusted publishing.
 
 | RC | Date | Key Changes | Breaking? |
 |----|----|---|---|
@@ -269,8 +274,11 @@ Post-Phase-7, 9 release candidates shipped to npm (@alpha dist-tag) via OIDC tru
 | rc.8 | 2026-05-02 | Wrangler wins follow-up. Global `-p/--profile` multi-account prep. | — |
 | rc.9 | 2026-05-03 | **Multi-account profiles.** `configure` restored (profile-aware). `auth` removed. Auto-migration rc.8→rc.9. | **Yes** (auth → configure) |
 | rc.10 | 2026-05-03 | UX polish. Zone auto-defaults (H1). Group descriptions (H3). Hyphen aliases (H4). Error detail (M4). `--names` flag. **Phase 5 shipped** (stream, containers, scripting). | — |
+| rc.11 | 2026-05-03 | Internal-only. Transient version during rc.12 fix work; never tagged or published. | — |
+| rc.12 | 2026-05-03 | **Six bug fixes:** storage subdir 404 (joinPath trailing slash), bare-arg crash (cli.ts positional slice), edge rule subresource endpoint, scripting deploy --id re-fetch post-204, stream library delete command, storagezone --region uppercases. Containers app create demoted to `planned` (Bunny v3 schema mismatch → v0.2). | — |
+| rc.13 | 2026-05-03 | **Vitest security bump (2.x → 4.x)** GHSA-67mh-4wv8-2f99 esbuild dev-server CORS fix. **E2E drift-detection harness live** (8 services, 30 tests, real Bunny, nightly CI). Repository flipped PUBLIC. | — |
 
-**Install:** `npm i -g bunny-tools@alpha` (installs rc.10)
+**Install:** `npm i -g bunny-tools` (latest) or `npm i -g bunny-tools@alpha` (same as latest)
 
 ---
 
@@ -316,12 +324,12 @@ Phases 2–4, 6–7 completed. Phase 5 deferred to v0.2.
 | Phase | Deliverable | Metric |
 |-------|-------------|--------|
 | 1 ✅ | Foundations | Cold-start <50ms, ≥80% coverage, CI green |
-| 2 | Deploy loop | `bunny deploy` <5 min setup, warm run <3s |
-| 3 | Storage CRUD | All 18 commands callable, paginated correctly |
-| 4 | DNS CRUD | All 8 commands callable, idempotent |
-| 5 (opt) | Stream/Containers | All 13 commands callable |
-| 6 | MCP + Docs | MCP server boots, docs complete |
-| 7 | GA Release | npm installable, action published, green CI |
+| 2 ✅ | Deploy loop | `bunny deploy` <5 min setup, warm run <3s |
+| 3 ✅ | Storage CRUD | All 18 commands callable, paginated correctly |
+| 4 ✅ | DNS CRUD | All 8 commands callable, idempotent |
+| 5 ✅ | Stream/Scripting | All 10 active commands callable (containers create → v0.2) |
+| 6 ✅ | MCP + Docs | MCP server boots, docs complete |
+| 7 ✅ | GA Release | npm installable, action published, green CI |
 
 ### Release Criteria
 
@@ -332,10 +340,12 @@ Phases 2–4, 6–7 completed. Phase 5 deferred to v0.2.
 - ✅ No unresolved TODOs in code
 - ✅ Version bumped
 
-**v0.1.0 GA:**
-- ✅ All phases 1–4 complete (5 optional, 6 required)
-- ✅ npm @0.1.0 published
-- ✅ GH Action v1 published
+**v0.1.0 GA (gate: first e2e-nightly cron run):**
+- ✅ All phases 1–7 complete
+- ⏳ E2E drift-detection harness first run (~03:00 UTC tomorrow)
+- ⏳ No regressions detected in 30 e2e tests
+- 📋 Pre-GA: npm @0.1.0 publishing (OIDC ready)
+- 📋 Pre-GA: GH Action v1 published
 - ✅ Docs complete (README, architecture, code standards)
 - ✅ Security audit passed (no secrets in repo, keychain optional)
 - ✅ Performance targets met (cold-start <50ms, warm deploy <3s)

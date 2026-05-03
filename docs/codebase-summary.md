@@ -1,12 +1,12 @@
 # bunny-tools Codebase Summary
 
-**Version:** v0.1.0-rc.10  
+**Version:** v0.1.0-rc.13  
 **Last Updated:** 2026-05-03  
 **Total Files:** ~65 source + 37 test + 3 config files  
 **Lines of Code (src/):** ~4,200 LOC
 **Commands:** 49 active (all phases 1–7 shipped)
-**Tests:** 122 unit + 30 e2e (152 total across 37 test files; e2e gated on BUNNY_E2E=1)
-**Test Coverage:** ≥80% core layers enforced (unit tests via Nock; e2e via real Bunny on nightly CI)  
+**Tests:** 122 unit + 30 e2e (152 total across 37 test files; e2e gated on BUNNY_E2E=1; nightly CI via .github/workflows/e2e-nightly.yml)
+**Test Coverage:** ≥80% core layers enforced (unit tests via Nock; e2e via real Bunny account on nightly drift-detection harness)  
 
 ---
 

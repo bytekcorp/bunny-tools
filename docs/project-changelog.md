@@ -4,6 +4,52 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.13] — 2026-05-03 (Vitest Security Bump & E2E Harness Live)
+
+### Added
+- **E2E drift-detection harness (live):** 30 vitest tests hitting real Bunny API on nightly CI schedule (`npm run test:e2e` locally with `BUNNY_E2E=1`). Located in `test/e2e/` with 8 service files + helpers + mp4 fixture. Nightly workflow at `.github/workflows/e2e-nightly.yml` runs ~03:00 UTC, creates GitHub issues on failure labeled `e2e,drift`. Detects schema changes, endpoint breakage, status code shifts. All resources prefixed `bt-e2e-*` for cleanup.
+- **Vitest 4.x:** Upgraded from 2.x to 4.x for security patch GHSA-67mh-4wv8-2f99 (esbuild dev-server CORS). Also upgraded `@vitest/coverage-v8` to 4.1.5. Removed unused direct esbuild devDep. npm audit clean.
+
+### Changed
+- Repository flipped PUBLIC (2026-05-03).
+- CI: Added `.github/workflows/e2e-nightly.yml` (scheduled daily ~03:00 UTC, issue-on-fail).
+- npm dist-tags: Both `latest` and `alpha` now point to rc.13 (previously `latest` stuck on rc.2).
+
+### Test Coverage
+- **Unit tests:** 122 tests passing (vitest 4.x)
+- **E2E tests:** 30 tests (real Bunny, nightly)
+- **Services covered:** account (readonly), storage-zones, storage-files, pull-zones, edge-rules, DNS, stream, scripting, deploy pipeline
+- **Total:** 152 tests across 37 files
+
+---
+
+## [0.1.0-rc.12] — 2026-05-03 (Six Bug Fixes & Stream Library Delete Added)
+
+### Added
+- **`bunny stream library delete <id>`** — missing in rc.10, now available (get/delete completed rc.10 goal)
+
+### Fixed
+- **Storage subdir 404:** Fixed joinPath trailing slash causing "not found" on storage subdir operations
+- **Bare-arg crash:** Fixed cli.ts positional argument slice leaking options object, causing "command not found" when no subcommand given
+- **Edge rule endpoint:** Corrected subresource endpoint from `pullzone/:id/update` (wrong) to `pullzone/:id/edgerules/addOrUpdate` (correct)
+- **Scripting deploy --id re-fetch:** Added post-204 re-fetch to ensure response body populated after scripting deploy with `--id` (was returning empty body)
+- **Storage zone region normalization:** `storagezone --region <lowercase>` now correctly uppercases region code before API call (e.g., `us` → `US`)
+
+### Changed
+- **Containers app create demoted to `planned`:** Detected Bunny v3 API schema incompatibility during rc.12 fix work; deferred to v0.2 pending Bunny schema update. Other containers commands (list, delete) remain unavailable (already planned).
+- Registry: 49 active (10 Phase 5), 2 planned (containers create + others), remainder deferred
+
+### Tests
+- All 122 unit tests passing with 6 bug fixes validated
+
+---
+
+## [0.1.0-rc.11] — 2026-05-03 (Internal-Only Transient)
+
+**Status:** Internal-only. Transient version bumped during rc.12 fix work; never tagged or published to npm.
+
+---
+
 ## [0.1.0-rc.10] — 2026-05-03 (UX Polish & Phase 5 Shipped)
 
 ### Added

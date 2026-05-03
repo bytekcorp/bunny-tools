@@ -1,10 +1,10 @@
 # bunny-tools: Product Overview & Development Requirements
 
-**Status:** v0.1.0-rc.10 (Live on npm; alpha channel. GA pending live integration tests.)  
-**Version:** 0.1.0-rc.10  
+**Status:** v0.1.0-rc.13 (Live on npm; latest & alpha channels. GA pending first scheduled cron run of e2e-nightly tomorrow ~03:00 UTC.)  
+**Version:** 0.1.0-rc.13  
 **Created:** 2026-05-02  
-**Current Release:** 2026-05-03  
-**Next Gate:** Live integration testing on real Bunny account  
+**Current Release:** 2026-05-03 (rc.13 includes vitest security bump; rc.12 shipped six bug fixes; rc.11 internal-only)  
+**Next Gate:** First scheduled cron run of e2e-nightly tomorrow ~03:00 UTC  
 **Package:** `bunny-tools` (npm)  
 **Binary:** `bunny`  
 **License:** MIT  
@@ -109,14 +109,14 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 | 5 | shipped rc.10 | Stream/Containers/Scripting | ✅ All 11 commands active |
 | 6 | rc.1 | MCP server + docs | ✅ 15 tools, 3 resources |
 | 7 | rc.10 | GH Action + npm publish (OIDC) | ✅ Tagged v0.1.0-rc.10 |
-| **Live now** | npm/alpha | 49 commands + 117 tests | ✅ rc.2–rc.10 shipped |
-| **GA gate** | — | Live integration testing | ⏳ Next phase |
+| **Live now** | npm/latest+alpha | 49 commands + 122 unit + 30 e2e tests | ✅ rc.2–rc.13 shipped |
+| **GA gate** | e2e-nightly | Live drift-detection harness | ⏳ First cron run tomorrow 03:00 UTC |
 
 ---
 
-## Release Cadence (rc.2 through rc.10)
+## Release Cadence (rc.2 through rc.13)
 
-All releases published to npm under `@alpha` dist-tag (via OIDC trusted publishing; no NPM_TOKEN).
+All releases published to npm under `latest` and `alpha` dist-tags (via OIDC trusted publishing; no NPM_TOKEN).
 
 - **v0.1.0-rc.2** (2026-05-02): Manual OTP. Unified init/configure (firebase-style feature picker).
 - **v0.1.0-rc.3** (2026-05-02): init simplification followed. configure removed (moved to auth).
@@ -126,8 +126,11 @@ All releases published to npm under `@alpha` dist-tag (via OIDC trusted publishi
 - **v0.1.0-rc.8** (2026-05-02): 6 wrangler wins follow-up. Global -p/--profile added; init [dir] finalized.
 - **v0.1.0-rc.9** (2026-05-03): Multi-account profiles. configure restored (profile-aware). auth removed (rc.7→rc.9 BREAKING). Auto-migration from rc.8 flat credentials.json shape.
 - **v0.1.0-rc.10** (2026-05-03): UX polish. Zone auto-defaults, group descriptions, hyphen aliases, error detail, --names flag. Phase 5 commands shipped (stream, containers, scripting).
+- **v0.1.0-rc.11** (2026-05-03, internal-only): Transient version during rc.12 bug fix work; never tagged or published.
+- **v0.1.0-rc.12** (2026-05-03): Six bug fixes shipped: storage subdir 404 (joinPath trailing slash), bare-arg crash (cli.ts positional slice), edge rule subresource endpoint fix, scripting deploy --id re-fetch post-204, stream library delete command added, storagezone --region uppercases lowercase. containers app create demoted to `planned` (Bunny v3 schema mismatch — defer to v0.2).
+- **v0.1.0-rc.13** (2026-05-03): Vitest security bump (2.x → 4.x; GHSA-67mh-4wv8-2f99 esbuild dev-server CORS fix via vitest/vite). Audit clean. E2E drift-detection harness live (8 service e2e files + helpers + mp4 fixture; vitest.config.e2e.ts; npm run test:e2e; .github/workflows/e2e-nightly.yml with issue-on-fail).
 
-All shipped same project (no split); 117 tests passing; 49 active commands.
+All shipped same project (no split); 122 unit tests + 30 e2e tests passing; 49 active commands. Repository flipped PUBLIC 2026-05-03.
 
 ---
 

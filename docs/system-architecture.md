@@ -1,8 +1,8 @@
 # bunny-tools System Architecture
 
-**Version:** v0.1.0-rc.10  
+**Version:** v0.1.0-rc.13  
 **Last Updated:** 2026-05-03
-**Status:** 49 active commands, 117 tests, 15 MCP tools, live on npm @alpha
+**Status:** 49 active commands, 122 unit tests + 30 e2e tests, 15 MCP tools, live on npm (latest & alpha), e2e drift-detection harness live
 
 ---
 
@@ -127,9 +127,10 @@ The registry is a declarative list of `CommandSpec` objects. Every surface deriv
 - **`schema/bunny.schema.json`** — zod schemas → JSON Schema
 - **MCP tool definitions** — command → MCP tool mapping (P6)
 
-**Current state (rc.10):**
+**Current state (rc.13):**
 - **Active:** 49 commands (all phases 1–7 shipped; Phase 5 un-deferred rc.10)
 - **Deferred to v0.2:** only advanced features (headers/rewrites sugar, live emulator, plugins)
+- **Phase 5 status:** Stream library, stream video, scripting all fully active; containers app create demoted to `planned` (Bunny v3 schema mismatch; defer to v0.2)
 
 Each entry carries:
 - `name`, `summary`, `description`
@@ -415,34 +416,35 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 
 ---
 
-## Current State (Phases 1–4, 6–7 Shipped)
+## Current State (Phases 1–7 All Shipped; rc.13)
 
 **Active:**
 - CLI entry (src/cli.ts)
-- Registry (src/manifest/registry.ts) — 49 active commands, 13 deferred (P5 → v0.2)
+- Registry (src/manifest/registry.ts) — 49 active commands (all phases 1–7)
 - Config loaders (bunny-json, bunnyrc, credential-resolver)
 - HTTP client (undici, retry, auth injection, P1; account/storage endpoints P3+)
-- Core logic (deploy, purge, storage-ops, zones, dns, auth, configure, init, aliases)
+- Core logic (deploy, purge, storage-ops, zones, dns, auth, configure, init, aliases, stream, scripting)
 - Deploy subsystem (walk, diff, upload-queue, remote-list, state)
 - MCP server (server.ts, tools.ts with ~14 tools + 3 resources)
 - UI helpers (progress, prompt, table)
 - Error handling, logging, paths, filesystem, content-type
 - All 49 active command implementations (all working, ≥80% test coverage)
+- Vitest 4.x (upgraded rc.13 for security patch GHSA-67mh-4wv8-2f99)
 
 **Deferred to v0.2:**
-- `src/core/stream.ts` (Stream/video CRUD)
-- `src/core/containers.ts` (Magic Containers)
-- `src/core/scripting.ts` (Edge scripting)
 - Headers/rewrites/redirects sugar in bunny.json
+- Containers app create (Bunny v3 schema mismatch detected; defer to v0.2)
+- Live e2e emulator (Nock mocking sufficient for v0.1)
+- Plugin system
 
 ---
 
-## Testing Strategy (All Phases)
+## Testing Strategy (All Phases; rc.13: Vitest 4.x)
 
-**Unit tests (122 tests, 80%+ coverage, all phases, Nock-mocked):**
+**Unit tests (122 tests, 80%+ coverage, all phases, Nock-mocked, vitest 4.x):**
 - `test/api/*` — HTTP client, auth, retry, error handling
 - `test/config/*` — Config loaders, credential chain, validation
-- `test/core/*` — Deploy, purge, zones, DNS, auth, configure, init
+- `test/core/*` — Deploy, purge, zones, DNS, auth, configure, init, stream, scripting
 - `test/deploy/*` — Walk, diff, upload queue, state, remote list
 - `test/manifest/*` — Registry, help rendering
 - `test/mcp/*` — MCP tools, resources
@@ -452,12 +454,12 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 - Credential chain resolution (flag → env → keychain → file → prompt)
 - Error propagation (HTTP errors → typed exceptions)
 
-**E2E Drift-Detection Harness (30 tests, real Bunny, nightly CI):**
-- Located at `test/e2e/*.e2e.ts` with helpers in `test/e2e/helpers/`
-- Gated on environment variable `BUNNY_E2E=1` (safe to skip locally)
-- Runs nightly via `.github/workflows/e2e-nightly.yml` against real Bunny account
+**E2E Drift-Detection Harness (30 tests, real Bunny, nightly CI, vitest 4.x):**
+- Located at `test/e2e/*.e2e.ts` with helpers + test fixture (test/e2e/fixtures/sample.mp4)
+- Gated on environment variable `BUNNY_E2E=1` (safe to skip locally; local: `npm run test:e2e` only if enabled)
+- Runs nightly via `.github/workflows/e2e-nightly.yml` against real Bunny account (~03:00 UTC, first run post-rc.13)
 - **Purpose:** Detect when Bunny API contracts change (schema drift, endpoint breakage, status codes)
-- **Coverage:** Storage zones/files, pull zones, edge rules, DNS, streams, scripting, full deploy pipeline
+- **Coverage:** 8 e2e services (account, storage zones/files, pull zones, edge rules, DNS, streams, scripting, deploy)
 - **Resource cleanup:** All test resources prefixed `bt-e2e-*` for easy identification; cleanup via `afterAll` + 24h stale sweep
 - **Failure mode:** Opens GitHub issue labeled `e2e,drift` on failure
 - See `docs/e2e-testing.md` for provisioning + adding new services

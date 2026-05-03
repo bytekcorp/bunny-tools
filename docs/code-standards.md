@@ -1,8 +1,8 @@
 # bunny-tools Code Standards & Engineering Rules
 
-**Version:** v0.1.0-rc.10  
+**Version:** v0.1.0-rc.13  
 **Last Updated:** 2026-05-03
-**Status:** 49 active commands, space-delimited naming, multi-account profiles, zone auto-defaults
+**Status:** 49 active commands, space-delimited naming, multi-account profiles, zone auto-defaults, vitest 4.x, e2e harness live
 
 ---
 
