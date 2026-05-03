@@ -35,15 +35,19 @@ describe('compileHeaderRule', () => {
     expect(rules.every((r) => r.Description?.startsWith('managed-by-bunny-tools:'))).toBe(true);
   });
 
-  it('compiles non-Cache-Control headers to SetResponseHeader (ActionType 5)', () => {
+  it('compiles non-Cache-Control headers to SetResponseHeader with name/value split between P1/P2', () => {
     const rules = compileHeaderRule({
       pattern: '/*.html',
       headers: { 'X-Frame-Options': 'DENY', 'X-Content-Type-Options': 'nosniff' },
     });
     expect(rules).toHaveLength(2);
     expect(rules.every((r) => r.ActionType === 5)).toBe(true);
-    expect(rules.find((r) => r.ActionParameter1?.startsWith('X-Frame-Options:'))).toBeDefined();
-    expect(rules.find((r) => r.ActionParameter1?.startsWith('X-Content-Type-Options:'))).toBeDefined();
+    const xfo = rules.find((r) => r.ActionParameter1 === 'X-Frame-Options');
+    expect(xfo).toBeDefined();
+    expect(xfo!.ActionParameter2).toBe('DENY');
+    const xcto = rules.find((r) => r.ActionParameter1 === 'X-Content-Type-Options');
+    expect(xcto).toBeDefined();
+    expect(xcto!.ActionParameter2).toBe('nosniff');
   });
 
   it('falls back to SetResponseHeader for Cache-Control without max-age', () => {
@@ -53,7 +57,8 @@ describe('compileHeaderRule', () => {
     });
     expect(rules).toHaveLength(1);
     expect(rules[0]!.ActionType).toBe(5); // SetResponseHeader
-    expect(rules[0]!.ActionParameter1).toBe('Cache-Control: no-store');
+    expect(rules[0]!.ActionParameter1).toBe('Cache-Control');
+    expect(rules[0]!.ActionParameter2).toBe('no-store');
   });
 
   it('extracts s-maxage as well as max-age', () => {

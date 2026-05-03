@@ -4,6 +4,29 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.35] — 2026-05-03 (rc.34 live-test fixes + e2e coverage)
+
+Two real bugs discovered via live smoke against bytek.org. Both rc.34 features (`bunny domain connect` and `deploy.headers` sync) tested end-to-end on a real PZ.
+
+### Fixed
+- **`SetResponseHeader` edge rule shape** — `compileHeaderRule` was emitting `ActionParameter1: "Name: Value"` (combined string). Bunny rejects with "Please enter a valid header name." Correct shape: `ActionParameter1: name`, `ActionParameter2: value` (split). Verified live on bytek PZ.
+- **No-op sync runs reported false `updated` count** — `isShapeEqual` deep-compared local + remote rules, but Bunny normalizes the response shape (Triggers reshaped, fields reordered) so identical-spec rules looked different. Removed `isShapeEqual` entirely; trust the description hash (sha256 of spec) as the identity check. Same hash means same spec by construction. Result: idempotent re-runs report `added: 0, updated: 0, deleted: 0`. `updated` counter remains in result envelope for back-compat / future force-resync mode.
+
+### Added
+- **MCP e2e for `bunny.domain_connect`** — gated on `BUNNY_E2E_CERT_DOMAIN` + `BUNNY_E2E_DNS_ZONE_ID`. Runs the full atomic flow against a real PZ + DNS zone; cleans up DNS record and hostname after.
+- **`listTools` ≥18 assertion + spot-check for `bunny.domain_connect`** — catches version-drift if the MCP tool isn't registered.
+- **Hard-cap bumped 20 → 22** to leave buffer for v0.2 tools.
+
+### Live-tested on bytek.org (smoke)
+- `bunny domain connect 5789465 bt-smoke-rc34.bytek.org --dns-zone=784669` → end-to-end in 2.5 seconds (cert provisioned via DNS-01 in 0s wait, DNS Type-7 record id=16998557).
+- Edge-rules-sync 4-stage round-trip: ADD (3 added) → NO-OP (0/0/0) → UPDATE max-age (2 add + 2 delete) → CLEANUP (3 deleted). Cleanup verified zero managed rules remain.
+
+### Test Coverage
+- 173/173 unit (unchanged).
+- 46 e2e (was 45; +1 domain_connect e2e).
+
+---
+
 ## [0.1.0-rc.34] — 2026-05-03 (Connect Domain + CI generator + declarative edge rules)
 
 Largest single ship of the session. Three subsystems landed together (originally planned as rc.34/35/36 separately).

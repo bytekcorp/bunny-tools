@@ -29,8 +29,8 @@ describe('MCP tools', () => {
     }
   });
 
-  it('hard-cap: ≤ 20 tools (~14 high-level + 4 hostname + init + escape hatch + buffer)', () => {
-    expect(TOOLS.length).toBeLessThanOrEqual(20);
+  it('hard-cap: ≤ 22 tools (~14 high-level + 4 hostname + domain_connect + init + escape hatch + buffer)', () => {
+    expect(TOOLS.length).toBeLessThanOrEqual(22);
   });
 
   it('every tool has a non-empty description', () => {

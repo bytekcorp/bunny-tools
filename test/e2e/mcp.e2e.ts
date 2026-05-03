@@ -87,9 +87,9 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   // Handshake — proves the MCP server registers all expected tools.
   // -----------------------------------------------------------------------
 
-  it('listTools returns ≥17 active tools (rc.31)', async () => {
+  it('listTools returns ≥18 active tools (rc.34)', async () => {
     const result = await mcp.client.listTools();
-    expect(result.tools.length).toBeGreaterThanOrEqual(17);
+    expect(result.tools.length).toBeGreaterThanOrEqual(18);
     const names = result.tools.map((t) => t.name);
     // Spot-check a handful — full list locked down in unit tests.
     expect(names).toContain('bunny.manifest');
@@ -102,6 +102,8 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     expect(names).toContain('bunny.pullzone_hostname_add');
     expect(names).toContain('bunny.pullzone_hostname_remove');
     expect(names).toContain('bunny.pullzone_hostname_enable_ssl');
+    // rc.34: atomic Connect Domain.
+    expect(names).toContain('bunny.domain_connect');
   });
 
   // -----------------------------------------------------------------------
@@ -408,6 +410,59 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   // unit tests in test/core/init.test.ts). Re-add if the wrapper layer
   // ever gets new logic worth covering.
   // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // domain_connect — atomic Connect Domain. Gated on BUNNY_E2E_CERT_DOMAIN
+  // (same reason as enable_ssl: real domain needed for DNS-01). Cleans up
+  // the hostname + DNS record after the test.
+  // -----------------------------------------------------------------------
+  it.skipIf(!certDomain)(
+    'bunny.domain_connect provisions hostname + cert + DNS record atomically',
+    async () => {
+      const fqdn = `${suitePrefix()}-domain.${certDomain}`;
+      const dnsZoneIdEnv = process.env['BUNNY_E2E_DNS_ZONE_ID'];
+      // Need both a cert domain and its dns zone id to test the full path.
+      // If only certDomain is set, skip — addHostname alone is covered by
+      // the round-trip test above.
+      if (!dnsZoneIdEnv) return;
+      const dnsZoneId = Number.parseInt(dnsZoneIdEnv, 10);
+      const result = unwrapJson<{
+        ok: boolean;
+        hasCertificate: boolean;
+        dnsRecordId?: number;
+      }>(
+        (await mcp.client.callTool({
+          name: 'bunny.domain_connect',
+          arguments: {
+            pullZoneId,
+            hostname: fqdn,
+            dnsZoneId,
+            recordName: fqdn.split('.')[0],
+          },
+        })) as { content?: Array<{ type: string; text?: string }> },
+      );
+      expect(result.ok).toBe(true);
+      expect(result.hasCertificate).toBe(true);
+      expect(result.dnsRecordId).toBeGreaterThan(0);
+
+      // Cleanup: delete DNS record then remove hostname so re-runs are clean.
+      try {
+        if (result.dnsRecordId) {
+          await mcp.client.callTool({
+            name: 'bunny.dns_record_delete',
+            arguments: { zoneId: dnsZoneId, recordId: result.dnsRecordId },
+          });
+        }
+        await mcp.client.callTool({
+          name: 'bunny.pullzone_hostname_remove',
+          arguments: { pullZoneId, hostname: fqdn },
+        });
+      } catch {
+        // best-effort cleanup
+      }
+    },
+    120_000,
+  );
+
   it.skip('bunny.deploy (covered indirectly by deploy.e2e.ts via CLI)', () => {});
   it.skip('bunny.init (interactive shape; non-interactive covered by unit)', () => {});
 });

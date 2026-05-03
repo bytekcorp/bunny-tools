@@ -82,22 +82,28 @@ export async function syncEdgeRulesForPullZone(
   const managedByDesc = new Map(managed.map((r) => [r.Description!, r]));
 
   let added = 0;
-  let updated = 0;
+  // `updated` is never incremented — we trust the description hash for
+  // identity. Kept in the result envelope for back-compat / future use
+  // if we add a "force update" mode that re-applies same-hash rules.
+  const updated = 0;
   let deleted = 0;
 
-  // Add or update.
+  // Add when description (= content hash) doesn't match any existing
+  // managed rule. Same description → identical spec by construction (the
+  // hash is computed from the same fields we'd compare). No need for a
+  // shape diff: Bunny normalizes the response (adds Guid, reshapes
+  // Triggers) so a deep-equal check would always claim "different" and
+  // trigger spurious updates.
+  //
+  // Side effect: if a user manually edits a managed rule in the dashboard,
+  // its description still matches our hash → we leave it alone. That's
+  // intentional — manual edits via dashboard aren't our responsibility.
+  // To force re-sync, the user changes the spec (which changes the hash).
   for (const [desc, rule] of desiredByDesc) {
-    const current = managedByDesc.get(desc);
-    if (!current) {
+    if (!managedByDesc.has(desc)) {
       await addEdgeRule(pullZoneId, rule);
       added++;
-    } else if (!isShapeEqual(current, rule)) {
-      // Same description (content hash matched), different shape → update.
-      // Reuse the existing Guid so Bunny patches in place.
-      await addEdgeRule(pullZoneId, { ...rule, Guid: current.Guid });
-      updated++;
     }
-    // Else: identical, no-op.
   }
 
   // Delete: managed rules no longer in desired set.
@@ -167,11 +173,15 @@ export function compileHeaderRule(rule: HeaderRuleSpec): EdgeRule[] {
         ),
       );
     } else {
+      // Bunny's SetResponseHeader takes the header NAME in ActionParameter1
+      // and the VALUE in ActionParameter2 — not a combined "Name: Value"
+      // string (which Bunny rejects with "Please enter a valid header name.").
       rules.push(
         markRule(
           {
             ActionType: ACTION_TYPES.SetResponseHeader,
-            ActionParameter1: `${key}: ${value}`,
+            ActionParameter1: key,
+            ActionParameter2: value,
             Triggers: [urlTrigger(rule.pattern)],
             TriggerMatchingType: MATCHING_TYPES.Any,
             Enabled: true,
@@ -240,21 +250,6 @@ function markRule(rule: EdgeRule, kind: string): EdgeRule {
     .digest('hex')
     .slice(0, 8);
   return { ...rule, Description: `${MARKER_PREFIX} ${kind} hash=${hash}` };
-}
-
-// Compare two managed rules ignoring fields Bunny may inject server-side
-// (Guid, server-side normalizations of trigger objects). Same hash in
-// description means semantic equality — but we still double-check to
-// detect any drift between hash and actual params.
-function isShapeEqual(a: EdgeRule, b: EdgeRule): boolean {
-  return (
-    a.ActionType === b.ActionType &&
-    a.ActionParameter1 === b.ActionParameter1 &&
-    a.ActionParameter2 === b.ActionParameter2 &&
-    a.TriggerMatchingType === b.TriggerMatchingType &&
-    a.Enabled === b.Enabled &&
-    JSON.stringify(a.Triggers ?? []) === JSON.stringify(b.Triggers ?? [])
-  );
 }
 
 // Public helper — used by `runDeploy` to decide whether to skip sync entirely.
