@@ -4,6 +4,19 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.32] — 2026-05-03 (MCP e2e coverage for hostname tools)
+
+### Added
+- **`test/e2e/mcp.e2e.ts` extended:** new `pullzone_hostname_{list,add,remove}` round-trip test against a throwaway PZ (uses `bt-e2e-*.example.com` placeholder hostnames) — exercises the rc.25 flow and rc.30 POST→DELETE remove fix end-to-end.
+- **`pullzone_hostname_enable_ssl` e2e** gated on new env var `BUNNY_E2E_CERT_DOMAIN` (set to a domain you own with Bunny NS authoritative — DNS-01 challenge needs that). Uses `bt-e2e-*.<domain>` and waits up to 90s for Let's Encrypt; cleans up hostname even on failure. Skipped silently in CI nightly unless var configured.
+- **`listTools` count assertion bumped** from `≥14` (rc.22) to `≥17` (rc.31). Spot-check now includes the 4 hostname tools.
+- **Throwaway PZ added to MCP e2e beforeAll** alongside the existing storage zone and DNS zone — registered with cleanup-registry, deleted in afterAll.
+
+### Test Coverage
+- 146/146 unit + 45 e2e (was 44; +1 hostname round-trip; enable_ssl gated and not counted in default runs).
+
+---
+
 ## [0.1.0-rc.31] — 2026-05-03 (Drop init-time AGENTS.md write)
 
 ### Removed

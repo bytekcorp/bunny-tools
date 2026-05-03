@@ -27,6 +27,8 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   let storageZoneName = '';
   let storagePassword = '';
   let dnsZoneId = 0;
+  let pullZoneId = 0;
+  let pullZoneName = '';
   const dnsDomain = `${suitePrefix()}-mcp.invalid`;
   // Reuses chien.do's first pull zone for the purge test; only purge
   // accepts a fictional URL without setup. Other write ops use throwaway
@@ -52,6 +54,19 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     dnsZoneId = extractIdNumeric(dnsCreated);
     register('dns', dnsZoneId, dnsDomain);
 
+    // 2b. Throwaway PZ for hostname round-trip + enable-ssl tests. Origin
+    // is bunny.net (an arbitrary reachable host); we never serve traffic
+    // through it, just exercise the hostname-list/add/remove/enable-ssl path.
+    pullZoneName = uniqueId('mcp-pz');
+    const pzCreated = await bunnyCliOk([
+      'pullzone',
+      'create',
+      pullZoneName,
+      '--origin=https://bunny.net',
+    ]);
+    pullZoneId = extractIdNumeric(pzCreated);
+    register('pullzone', pullZoneId, pullZoneName);
+
     // 3. Bunny propagates storage-zone passwords into the data plane on a
     // ~5-second delay. Without this wait, the first MCP storage_upload
     // returns 401 even though the password is correct.
@@ -72,9 +87,9 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   // Handshake — proves the MCP server registers all expected tools.
   // -----------------------------------------------------------------------
 
-  it('listTools returns ≥14 active tools (rc.22)', async () => {
+  it('listTools returns ≥17 active tools (rc.31)', async () => {
     const result = await mcp.client.listTools();
-    expect(result.tools.length).toBeGreaterThanOrEqual(14);
+    expect(result.tools.length).toBeGreaterThanOrEqual(17);
     const names = result.tools.map((t) => t.name);
     // Spot-check a handful — full list locked down in unit tests.
     expect(names).toContain('bunny.manifest');
@@ -82,6 +97,11 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     expect(names).toContain('bunny.zone_get');
     expect(names).toContain('bunny.deploy');
     expect(names).toContain('bunny.purge');
+    // rc.25-26: pull-zone hostname management.
+    expect(names).toContain('bunny.pullzone_hostname_list');
+    expect(names).toContain('bunny.pullzone_hostname_add');
+    expect(names).toContain('bunny.pullzone_hostname_remove');
+    expect(names).toContain('bunny.pullzone_hostname_enable_ssl');
   });
 
   // -----------------------------------------------------------------------
@@ -284,6 +304,84 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     expect(res.ok).toBe(1);
     expect(res.failed).toEqual([]);
   });
+
+  // -----------------------------------------------------------------------
+  // Pull-zone hostname round-trip — exercises the rc.25 list/add/remove
+  // tools end-to-end. Hostname is a placeholder under .example.com; Bunny
+  // accepts string-only hostname registrations (no live DNS validation
+  // for addHostname). enable_ssl is tested separately with a real domain.
+  // -----------------------------------------------------------------------
+
+  it('bunny.pullzone_hostname_{list,add,remove} round-trip', async () => {
+    const host = `${suitePrefix()}-mcp-host.example.com`;
+
+    const initial = unwrapJson<{ hostnames: string[] }>(
+      (await mcp.client.callTool({
+        name: 'bunny.pullzone_hostname_list',
+        arguments: { pullZoneId },
+      })) as { content?: Array<{ type: string; text?: string }> },
+    );
+    expect(Array.isArray(initial.hostnames)).toBe(true);
+    expect(initial.hostnames).not.toContain(host);
+
+    const added = unwrapJson<{ ok: boolean; hostnames: string[] }>(
+      (await mcp.client.callTool({
+        name: 'bunny.pullzone_hostname_add',
+        arguments: { pullZoneId, hostname: host },
+      })) as { content?: Array<{ type: string; text?: string }> },
+    );
+    expect(added.ok).toBe(true);
+    expect(added.hostnames).toContain(host);
+
+    const removed = unwrapJson<{ ok: boolean; hostnames: string[] }>(
+      (await mcp.client.callTool({
+        name: 'bunny.pullzone_hostname_remove',
+        arguments: { pullZoneId, hostname: host },
+      })) as { content?: Array<{ type: string; text?: string }> },
+    );
+    expect(removed.ok).toBe(true);
+    expect(removed.hostnames).not.toContain(host);
+  });
+
+  // -----------------------------------------------------------------------
+  // enable_ssl — gated on BUNNY_E2E_CERT_DOMAIN because Let's Encrypt cert
+  // provisioning needs a real domain with Bunny NS authoritative (DNS-01).
+  // Set BUNNY_E2E_CERT_DOMAIN=chien.do (or any domain you control on Bunny
+  // DNS) to opt in. Skipped otherwise — including in CI nightly unless the
+  // var is configured. ~30-90s wall-clock for cert provisioning.
+  // -----------------------------------------------------------------------
+
+  const certDomain = process.env['BUNNY_E2E_CERT_DOMAIN'];
+  it.skipIf(!certDomain)(
+    'bunny.pullzone_hostname_enable_ssl provisions cert via DNS-01',
+    async () => {
+      const host = `${suitePrefix()}-cert.${certDomain}`;
+      // Add the hostname first (rc.30 flow: addHostname → enable-ssl).
+      await mcp.client.callTool({
+        name: 'bunny.pullzone_hostname_add',
+        arguments: { pullZoneId, hostname: host },
+      });
+      try {
+        const ssl = unwrapJson<{ ok: boolean; hasCertificate: boolean; waitedMs: number }>(
+          (await mcp.client.callTool({
+            name: 'bunny.pullzone_hostname_enable_ssl',
+            arguments: { pullZoneId, hostname: host },
+          })) as { content?: Array<{ type: string; text?: string }> },
+        );
+        expect(ssl.ok).toBe(true);
+        expect(ssl.hasCertificate).toBe(true);
+        expect(ssl.waitedMs).toBeGreaterThanOrEqual(0);
+      } finally {
+        // Cleanup hostname even when cert provisioning fails — leaving
+        // an unprovisioned hostname pollutes the PZ for re-runs.
+        await mcp.client.callTool({
+          name: 'bunny.pullzone_hostname_remove',
+          arguments: { pullZoneId, hostname: host },
+        });
+      }
+    },
+    120_000,
+  );
 
   // -----------------------------------------------------------------------
   // Negative input — proves the zod schema validates and the MCP error
