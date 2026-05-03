@@ -439,7 +439,7 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 
 ## Testing Strategy (All Phases)
 
-**Unit tests (80%+ coverage):**
+**Unit tests (122 tests, 80%+ coverage, all phases, Nock-mocked):**
 - `test/api/*` — HTTP client, auth, retry, error handling
 - `test/config/*` — Config loaders, credential chain, validation
 - `test/core/*` — Deploy, purge, zones, DNS, auth, configure, init
@@ -452,21 +452,15 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 - Credential chain resolution (flag → env → keychain → file → prompt)
 - Error propagation (HTTP errors → typed exceptions)
 
-**E2E:** None (Nock indefinite; no live harness pre-GA)
-
----
-
-## Testing Strategy
-
-**Test pyramid:**
-- **Unit (80% coverage):** api/http, config/*, manifest/* layers (no network, Nock mocked)
-- **Integration:** Commands + core (future, P2+) calling api/http with Nock
-- **E2E:** None in P1 (live e2e deferred post-GA)
-
-**Nock enforcement:**
-- `test/setup.ts` disables all real HTTP
-- Nock allowlist: only responses explicitly mocked in tests pass
-- CI verified: no network.enableNetConnect() calls
+**E2E Drift-Detection Harness (30 tests, real Bunny, nightly CI):**
+- Located at `test/e2e/*.e2e.ts` with helpers in `test/e2e/helpers/`
+- Gated on environment variable `BUNNY_E2E=1` (safe to skip locally)
+- Runs nightly via `.github/workflows/e2e-nightly.yml` against real Bunny account
+- **Purpose:** Detect when Bunny API contracts change (schema drift, endpoint breakage, status codes)
+- **Coverage:** Storage zones/files, pull zones, edge rules, DNS, streams, scripting, full deploy pipeline
+- **Resource cleanup:** All test resources prefixed `bt-e2e-*` for easy identification; cleanup via `afterAll` + 24h stale sweep
+- **Failure mode:** Opens GitHub issue labeled `e2e,drift` on failure
+- See `docs/e2e-testing.md` for provisioning + adding new services
 
 ---
 

@@ -1,9 +1,9 @@
 # bunny-tools Project Roadmap
 
-**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.10 Live | GA Pending Live Integration Tests  
+**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.10 Live | E2E Drift-Detection Harness Deployed ✓
 **Current Version:** v0.1.0-rc.10 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools@alpha`
-**Next Gate:** Live integration testing on real Bunny account  
+**Next Gate:** v0.1.0 GA (all phases complete, e2e harness live)
 **Last Updated:** 2026-05-03
 
 ---
@@ -12,7 +12,9 @@
 
 bunny-tools v0.1.0-rc.10 ships all 49 commands live on npm (@alpha dist-tag). Phases 1–7 complete. Two breaking changes shipped (rc.7: space-delimited syntax; rc.9: auth → configure with multi-account profiles). Phase 5 commands shipped rc.10 (stream, containers, scripting). 
 
-**Next gate:** Live integration testing on real Bunny account before v0.1.0 GA. Current backlog: H2 init prefill, H5 configure pull-zone step, M1 origin positional, M3 stream library get/delete (deferred from rc.10 plan, now shipped rc.10).
+**New in rc.10:** E2E drift-detection harness deployed to nightly CI. 30 tests hit real Bunny API, detect schema changes, GitHub issues on failure. All unit tests pass (122), e2e tests cover all major services (storage, pull zones, DNS, stream, scripting, deploy pipeline).
+
+**Next gate:** v0.1.0 GA release (all phases + e2e harness live). Current backlog for v0.2: H2 init prefill, H5 configure pull-zone step, M1 origin positional.
 
 ---
 

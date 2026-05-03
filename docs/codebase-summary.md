@@ -2,11 +2,11 @@
 
 **Version:** v0.1.0-rc.10  
 **Last Updated:** 2026-05-03  
-**Total Files:** ~65 source + 20 test + 3 config files  
+**Total Files:** ~65 source + 37 test + 3 config files  
 **Lines of Code (src/):** ~4,200 LOC
 **Commands:** 49 active (all phases 1–7 shipped)
-**Tests:** 117 passing across 20 test files
-**Test Coverage:** ≥80% core layers enforced  
+**Tests:** 122 unit + 30 e2e (152 total across 37 test files; e2e gated on BUNNY_E2E=1)
+**Test Coverage:** ≥80% core layers enforced (unit tests via Nock; e2e via real Bunny on nightly CI)  
 
 ---
 
@@ -26,7 +26,8 @@
 | Config loaders | `src/config/` | ✓ Active (P1+) |
 | Manifest (registry) | `src/manifest/` | ✓ Active (P1) |
 | Utilities | `src/util/` | ✓ Active (P1+ with P2 content-type) |
-| Tests | `test/` | ✓ Active (16 files, 91+ tests) |
+| Tests (unit) | `test/` (20 files) | ✓ Active (122 unit tests, ≥80% coverage, mocked via Nock) |
+| Tests (e2e) | `test/e2e/` (8 files + helpers) | ✓ Active (30 e2e tests, real Bunny, gated on BUNNY_E2E=1, nightly CI) |
 
 ### Root Configuration
 
@@ -367,7 +368,9 @@ Reads zod schemas from `src/config/bunny-json.ts`, generates `schema/bunny.schem
 
 ---
 
-### Tests (16 files, 91+ tests)
+### Tests (37 files total: 20 unit + 8 e2e + 9 helpers)
+
+**Unit Tests (20 files, 122 tests):**
 
 | File | Phase | Coverage |
 |------|-------|----------|
@@ -391,6 +394,20 @@ Reads zod schemas from `src/config/bunny-json.ts`, generates `schema/bunny.schem
 **Setup:** `test/setup.ts` — Vitest + Nock (disableNetConnect, afterEach cleanup)  
 **Coverage target:** ≥80% on api, config, core, deploy layers  
 **CI gate:** Coverage failure blocks merge
+
+**E2E Tests (8 files, 30 tests, gated on BUNNY_E2E=1):**
+
+- `test/e2e/account-readonly.e2e.ts` — `whoami`, manifest enumeration, zone listing
+- `test/e2e/storage-zones.e2e.ts` — Zone CRUD + region normalization
+- `test/e2e/storage-files.e2e.ts` — Upload/download/sync/delete + subdirectory listing
+- `test/e2e/pull-zones.e2e.ts` — Pull zone CRUD with origin
+- `test/e2e/edge-rules.e2e.ts` — Edge rule add/list/delete
+- `test/e2e/dns.e2e.ts` — DNS zone + record CRUD
+- `test/e2e/stream.e2e.ts` — Stream library CRUD + video ops
+- `test/e2e/scripting.e2e.ts` — Edge script create/update/delete
+- `test/e2e/deploy.e2e.ts` — Full deploy pipeline with state caching
+
+**E2E Harness:** Nightly CI at `.github/workflows/e2e-nightly.yml` runs against real Bunny account. Detects API drift (schema changes, endpoint breakage). All resources prefixed `bt-e2e-*` for cleanup. See `docs/e2e-testing.md` for provisioning + adding new tests.
 
 ---
 
@@ -432,13 +449,14 @@ Used by editors (VS Code, JetBrains) for autocomplete/validation.
 | Metric | Value | Target |
 |--------|-------|--------|
 | Cold-start `bunny --help` | ~22ms | <50ms ✓ |
-| Test coverage (core systems) | ≥80% | ≥80% ✓ |
+| Unit test coverage (core systems) | ≥80% | ≥80% ✓ |
 | Active commands | 49 | 49 ✓ |
-| Total registered commands | 49 | 49 ✓ (P5 deferred) |
+| Total registered commands | 49 | 49 ✓ (P5 shipped rc.10) |
 | Source files | 39 | modular ✓ |
-| Test files | 16 | comprehensive ✓ |
-| Tests run | 91+ | passing ✓ |
-| CI passes | ✓ (ubuntu + macos, Node 20+22) | ✓ |
+| Test files (unit + e2e + helpers) | 37 | comprehensive ✓ |
+| Tests run (unit) | 122 | passing ✓ |
+| Tests run (e2e, gated, nightly CI) | 30 | drift detection ✓ |
+| CI passes | ✓ (ubuntu + macos, Node 20+22) + nightly e2e | ✓ |
 | MCP tools | ~14 | all active commands ✓ |
 
 ---

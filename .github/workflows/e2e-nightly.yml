@@ -1,0 +1,60 @@
+name: e2e-nightly
+
+# Drift detection — runs the e2e suite at test/e2e/**/*.e2e.ts against
+# the real Bunny.net API every night and on manual dispatch. The unit
+# suite (`npm test`) uses mocks; this catches when Bunny changes a
+# field name, status code, or endpoint shape under us. See
+# docs/e2e-testing.md for how to interpret a failure.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 03:00 UTC daily
+  workflow_dispatch:      # manual trigger button
+
+permissions:
+  contents: read
+  issues: write           # for create-issue-from-file
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run e2e suite
+        env:
+          BUNNY_E2E: '1'
+          BUNNY_ACCOUNT_KEY: ${{ secrets.BUNNY_E2E_ACCOUNT_KEY }}
+        run: npm run test:e2e 2>&1 | tee e2e-output.log
+
+      - name: Compose failure report
+        if: failure()
+        run: |
+          # Belt-and-braces: GitHub auto-redacts registered secrets, but if a
+          # future code change happens to log a 32+ char hex/uuid token, this
+          # sed strips it before the issue body is posted publicly.
+          {
+            echo "## Failure summary"
+            echo ""
+            echo "Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo ""
+            echo "## Last 200 lines of output"
+            echo '```'
+            tail -200 e2e-output.log | sed -E 's/[A-Fa-f0-9]{32,}|[A-Za-z0-9_-]{40,}/[REDACTED]/g'
+            echo '```'
+          } > e2e-failure.md
+
+      - name: Open drift issue on failure
+        if: failure()
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "e2e drift detected — run ${{ github.run_id }}"
+          content-filepath: ./e2e-failure.md
+          labels: |
+            e2e
+            drift

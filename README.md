@@ -312,6 +312,8 @@ npm test
 npm run dev -- manifest --pretty
 ```
 
+For end-to-end testing against a real Bunny account (drift detection), see [`docs/e2e-testing.md`](docs/e2e-testing.md).
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
