@@ -301,8 +301,15 @@ export const TOOLS: ToolDef[] = [
         .parse(raw);
       // Reject `mcp` to prevent recursive boot.
       if (args[0] === 'mcp') throw new Error('Refusing to invoke `bunny mcp` via bunny.run.');
+      // Re-spawn the SAME entry point that's running this MCP server. In
+      // production builds that's `node dist/cli.js`; in dev (tsx) it's
+      // `node --import tsx src/cli.ts`. process.execArgv carries the loader
+      // flags so the child can execute a .ts entry too — without forwarding
+      // execArgv, the child would crash when argv[1] is a TypeScript file.
+      const argv1 = process.argv[1] ?? 'bunny';
+      const childArgs = [...process.execArgv, argv1, ...args];
       return new Promise((resolve, reject) => {
-        const child = spawn(process.execPath, [process.argv[1] ?? 'bunny', ...args], {
+        const child = spawn(process.execPath, childArgs, {
           cwd: cwd ?? process.cwd(),
           env: process.env,
         });
