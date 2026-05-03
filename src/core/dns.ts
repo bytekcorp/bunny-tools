@@ -208,9 +208,9 @@ async function preflightPullzoneRecord(
     );
   }
   // No conflict-with-other-records check: Bunny accepts PULLZONE alongside
-  // A/AAAA at the same Name (verified live on bytek.org against rc.30).
-  // CNAME may still be exclusive per DNS RFC, but Bunny's gate isn't visible
-  // to us so we don't pre-empt — let Bunny return its own error if any.
+  // A/AAAA at the same Name (verified live in rc.30). CNAME may still be
+  // exclusive per DNS RFC, but Bunny's gate isn't visible to us so we
+  // don't pre-empt — let Bunny return its own error if any.
 }
 
 export async function updateRecord(zoneId: number, recordId: number, body: Record<string, unknown>): Promise<DnsRecord> {

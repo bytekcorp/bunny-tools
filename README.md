@@ -73,7 +73,7 @@ With the MCP server installed (see [Install](#install)), Claude Code and Claude 
 | **"Deploy this site to Bunny"** | Reads existing `bunny.json`, runs `bunny deploy` (with dry-run preview first) |
 | **"Purge the CDN cache for tag release-2026-04"** | Calls `bunny.purge` with `tag:release-2026-04` |
 | **"Show me what's on my Bunny account"** | Calls `bunny.whoami` + lists reachable zone counts |
-| **"Add an A record for www → 1.2.3.4 on my Bunny DNS zone for chien.do"** | Resolves the zone id, calls `bunny.dns_record_add` |
+| **"Add an A record for www → 1.2.3.4 on my Bunny DNS zone for example.com"** | Resolves the zone id, calls `bunny.dns_record_add` |
 
 For best results in a new project, drop a 2-line hint into the project's `CLAUDE.md`:
 

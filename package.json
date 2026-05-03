@@ -1,6 +1,6 @@
 {
   "name": "bunny-tools",
-  "version": "0.1.0-rc.42",
+  "version": "0.1.0-rc.43",
   "description": "Bunny.net CLI for storage deploy, CDN purge, and full resource management. AI-friendly via MCP.",
   "license": "MIT",
   "type": "module",

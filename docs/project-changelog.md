@@ -4,6 +4,20 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.43] — 2026-05-03 (Scrub maintainer's domain from user-facing examples)
+
+### Changed
+- **README.md AI-agent quickstart example** swapped `chien.do` → `example.com`. The maintainer's personal domain shouldn't appear in user-facing docs (it had been used as a real-life test target during rc.13–rc.30 development).
+- **src/core/dns.ts** comment in the PULLZONE pre-flight cleaned up: `verified live on bytek.org against rc.30` → `verified live in rc.30`. Same rationale.
+
+### Note on docs/ and journals/
+- Historical changelog/journal entries that reference `bytek.org` are intentionally left intact — they're records of what specifically happened on each RC and the domain context is meaningful for future debugging.
+
+### Help-format design decision (no code change)
+- Subgroup help shows COMMANDS at one column width (per-group max) and GLOBAL FLAGS at another (NAME_COL_MIN=40). This asymmetry is intentional and matches wrangler / gh / docker / firebase. Forcing whole-screen alignment would push GLOBAL FLAGS rows into 30+ chars of whitespace before the description.
+
+---
+
 ## [0.1.0-rc.42] — 2026-05-03 (Help column alignment for long-arg commands)
 
 ### Fixed
