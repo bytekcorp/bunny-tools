@@ -1,8 +1,8 @@
 # bunny-tools Code Standards & Engineering Rules
 
-**Version:** v0.1.0-rc.13  
+**Version:** v0.1.0-rc.24  
 **Last Updated:** 2026-05-03
-**Status:** 49 active commands, space-delimited naming, multi-account profiles, zone auto-defaults, vitest 4.x, e2e harness live
+**Status:** 51 active commands, space-delimited naming (rc.7+), canonical flat forms only (rc.18+), multi-account profiles, zone auto-defaults, vitest 4.x, e2e harness + MCP harness live
 
 ---
 
@@ -29,7 +29,7 @@
 
 **Rationale:** 
 - Source files: kebab-case for filesystem readability
-- Command names: space-delimited in registry (canonical); directories use kebab-case; both forms (flat + hyphenated) work at CLI via aliases (rc.10+)
+- Command names: space-delimited in registry (canonical, rc.7+); directories use kebab-case; **canonical flat form only at CLI (rc.18+)**; hyphen aliases dropped pre-GA except `cdn` (alias for `pullzone` group)
 - Self-documenting names help LLM tools understand purpose without reading content
 
 ### File Size
@@ -143,28 +143,24 @@ Registry groups declare metadata used by CLI:
 
 CLI walker creates intermediate group commands with these descriptions; `bunny --help` shows real prose, not stubs.
 
-### Hyphen Aliases (rc.10+)
+### Aliases (rc.17+; Hyphen Aliases Dropped rc.18)
 
-Any group can declare aliases in `.aliases[]`:
+**rc.10–rc.17:** Any group could declare aliases in `.aliases[]` (hyphen forms like `pull-zone`, `storage-zone`, `edge-rule`).
 
-```ts
-// In cli.ts walker:
-if (meta?.aliases) {
-  const seen = new Set([groupName]);
-  for (const alias of meta.aliases) {
-    if (!seen.has(alias)) {
-      group.alias(alias);
-      seen.add(alias);
-    }
-  }
-}
-
-// User can now run:
-bunny pull-zone list           // alias
-bunny pullzone list            // canonical
-bunny storage-zone create ...  // alias
-bunny storagezone create ...   // canonical
+**rc.18 (BREAKING):** Hyphen aliases dropped pre-GA. Only canonical flat forms work:
+```bash
+bunny pullzone list           # canonical (works)
+bunny pull-zone list          # hyphen alias (dropped rc.18 — DOES NOT WORK)
+bunny storagezone create ...  # canonical (works)
+bunny storage-zone create ... # hyphen alias (dropped rc.18 — DOES NOT WORK)
 ```
+
+**Exception:** `cdn` alias retained for `pullzone` group (dashboard parity):
+```bash
+bunny cdn list               # alias for `bunny pullzone list`
+```
+
+**Rationale:** Simpler CLI surface for GA. No duplication in help trees. Users adjust muscle memory to canonical form once.
 
 ---
 

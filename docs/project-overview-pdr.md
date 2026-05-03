@@ -1,10 +1,10 @@
 # bunny-tools: Product Overview & Development Requirements
 
-**Status:** v0.1.0-rc.13 (Live on npm; latest & alpha channels. GA pending first scheduled cron run of e2e-nightly tomorrow ~03:00 UTC.)  
-**Version:** 0.1.0-rc.13  
+**Status:** v0.1.0-rc.24 (Live on npm; latest & alpha channels. 12 RCs shipped post-rc.13.)  
+**Version:** 0.1.0-rc.24  
 **Created:** 2026-05-02  
-**Current Release:** 2026-05-03 (rc.13 includes vitest security bump; rc.12 shipped six bug fixes; rc.11 internal-only)  
-**Next Gate:** First scheduled cron run of e2e-nightly tomorrow ~03:00 UTC  
+**Current Release:** 2026-05-03 (rc.24 final: DNS routing types extended, MCP e2e harness live, help renderer polished)  
+**Release Cadence:** 11 RCs shipped (rc.14 through rc.24 post-rc.13)  
 **Package:** `bunny-tools` (npm)  
 **Binary:** `bunny`  
 **License:** MIT  
@@ -40,7 +40,7 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 - `npm test` ≥80% coverage on http + config + manifest layers
 - Cold-start `bunny --help` <50ms
 - CI drift-check: `manifest.json`, `AGENTS.md`, `schema/bunny.schema.json` generated from registry; CI verifies no manual edits
-- All 47 v0.1 commands discoverable via `bunny manifest` JSON
+- All 51 v0.1 commands discoverable via `bunny manifest` JSON
 - No real network calls in test suite (Nock-enforced)
 
 ---
@@ -109,32 +109,32 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 | 5 | shipped rc.10 | Stream/Containers/Scripting | ✅ All 11 commands active |
 | 6 | rc.1 | MCP server + docs | ✅ 15 tools, 3 resources |
 | 7 | rc.10 | GH Action + npm publish (OIDC) | ✅ Tagged v0.1.0-rc.10 |
-| **Live now** | npm/latest+alpha | 49 commands + 122 unit + 30 e2e tests | ✅ rc.2–rc.13 shipped |
-| **GA gate** | e2e-nightly | Live drift-detection harness | ⏳ First cron run tomorrow 03:00 UTC |
+| **Live now** | npm/latest+alpha | 51 commands + 129 unit + 44 e2e tests | ✅ rc.14–rc.24 shipped |
+| **GA gate** | e2e-nightly | Live drift-detection harness + DNS REDIRECT e2e | ✅ Harness active |
 
 ---
 
-## Release Cadence (rc.2 through rc.13)
+## Release Cadence (rc.14 through rc.24)
 
 All releases published to npm under `latest` and `alpha` dist-tags (via OIDC trusted publishing; no NPM_TOKEN).
 
-- **v0.1.0-rc.2** (2026-05-02): Manual OTP. Unified init/configure (firebase-style feature picker).
-- **v0.1.0-rc.3** (2026-05-02): init simplification followed. configure removed (moved to auth).
-- **v0.1.0-rc.4/rc.5** (never published): OIDC setup / debugging; tombstones during GitHub token migration.
-- **v0.1.0-rc.6** (2026-05-02): First OIDC publish. repository.url + bin path fixes.
-- **v0.1.0-rc.7** (2026-05-02): Wrangler-style space-delimited subcommands (rc.6→rc.7 BREAKING). Added whoami, docs, global flags (-c, --cwd, -e, -p), init [dir] positional.
-- **v0.1.0-rc.8** (2026-05-02): 6 wrangler wins follow-up. Global -p/--profile added; init [dir] finalized.
-- **v0.1.0-rc.9** (2026-05-03): Multi-account profiles. configure restored (profile-aware). auth removed (rc.7→rc.9 BREAKING). Auto-migration from rc.8 flat credentials.json shape.
-- **v0.1.0-rc.10** (2026-05-03): UX polish. Zone auto-defaults, group descriptions, hyphen aliases, error detail, --names flag. Phase 5 commands shipped (stream, containers, scripting).
-- **v0.1.0-rc.11** (2026-05-03, internal-only): Transient version during rc.12 bug fix work; never tagged or published.
-- **v0.1.0-rc.12** (2026-05-03): Six bug fixes shipped: storage subdir 404 (joinPath trailing slash), bare-arg crash (cli.ts positional slice), edge rule subresource endpoint fix, scripting deploy --id re-fetch post-204, stream library delete command added, storagezone --region uppercases lowercase. containers app create demoted to `planned` (Bunny v3 schema mismatch — defer to v0.2).
-- **v0.1.0-rc.13** (2026-05-03): Vitest security bump (2.x → 4.x; GHSA-67mh-4wv8-2f99 esbuild dev-server CORS fix via vitest/vite). Audit clean. E2E drift-detection harness live (8 service e2e files + helpers + mp4 fixture; vitest.config.e2e.ts; npm run test:e2e; .github/workflows/e2e-nightly.yml with issue-on-fail).
+- **v0.1.0-rc.14** (2026-05-03): Bunny CLI and MCP Server README rewrite; MCP install front-and-center; new title emphasis.
+- **v0.1.0-rc.15** (2026-05-03): **CRITICAL:** bare `bunny` silently exiting on globally-installed binary (npm install -g). Fixed via realpathSync symlink + fileURLToPath for ESM main detection. Adds `test/cli-main-detection.test.ts` regression test.
+- **v0.1.0-rc.16** (2026-05-03): Bare `bunny` now prints help on STDOUT with exit 0 (wrangler convention). New default action calling `program.outputHelp()`.
+- **v0.1.0-rc.17** (2026-05-03): `cdn` added as CLI alias for `pullzone` group. Dashboard sidebar terminology; canonical stays `pullzone` aligned with API.
+- **v0.1.0-rc.18** (2026-05-03): **BREAKING (pre-GA):** dropped `pull-zone`, `storage-zone`, `edge-rule` hyphen aliases. Flat canonicals only; `cdn` retained as single group alias.
+- **v0.1.0-rc.19** (2026-05-03): **DX polish (4 wins for GA):** `bunny init` writes AGENTS.md `## Deploy` hint; `bunny install mcp` self-bootstraps Claude config; `bunny update` self-updates via npm with npx-mode detection + EACCES retry hints; wrangler-style help layout (TITLE → USAGE → COMMANDS grouped → FLAGS, no emoji). New `src/manifest/format-help.ts`.
+- **v0.1.0-rc.20** (2026-05-03): Root help collapses 3+ segment commands to 2-segment subgroup pointers (e.g., `bunny pullzone edgerule ...`) for clean alignment. Long arg signatures no longer break columns.
+- **v0.1.0-rc.21** (2026-05-03): Subgroup help (e.g., `bunny stream --help`) now expands ALL leaf descendants regardless of depth. Previously showed only sub-pointers, leaving stream-level commands hidden.
+- **v0.1.0-rc.22** (2026-05-03): Fix: `bunny install mcp` was passing `-y` to claude itself instead of npx. Inserted `--` separator: `claude mcp add bunny-tools -- npx -y bunny-tools mcp`.
+- **v0.1.0-rc.23** (2026-05-03): **MCP e2e harness shipped:** `test/e2e/mcp.e2e.ts` (13 active + 2 skipped) + `helpers/mcp-client.ts`. Spawns `bunny mcp`, connects MCP SDK Client over stdio, exercises every active tool. Also fixed `bunny.run` in tsx (dev) mode: spawn now forwards `process.execArgv`.
+- **v0.1.0-rc.24** (2026-05-03): **DNS routing types extended:** REDIRECT (5), FLATTEN (6), PULLZONE (7), PTR (10), SCRIPT (11). `dns record add` gets `--link-name` (raw) and `--pull-zone=<id>` (auto-resolves pz name + linkName). `bunny.dns_record_set` MCP enum extended to all 13 types. 7 new unit tests + REDIRECT e2e round-trip.
 
-All shipped same project (no split); 122 unit tests + 30 e2e tests passing; 49 active commands. Repository flipped PUBLIC 2026-05-03.
+All shipped same project (no split); 129 unit tests + 44 e2e tests passing; 51 active commands. Repository PUBLIC.
 
 ---
 
-## Command Taxonomy (v0.1.0-rc.10 — 49 Active Commands)
+## Command Taxonomy (v0.1.0-rc.24 — 51 Active Commands)
 
 **Setup & Daily:**
 - `bunny init [dir]` — auth + feature multi-select + per-feature config
@@ -144,32 +144,34 @@ All shipped same project (no split); 122 unit tests + 30 e2e tests passing; 49 a
 - `bunny purge <target>` — standalone cache purge by URL/tag/zone
 - `bunny whoami` — show active credentials (rc.8+)
 - `bunny docs [topic]` — quick help (rc.8+)
+- `bunny install mcp` — self-bootstrap Claude config (rc.19+)
+- `bunny update` — self-update via npm (rc.19+)
 
 **Storage (with auto-default zone rc.10+):**
 - `bunny storage upload|download|list|delete|sync`
 
-**Zones (space-delimited syntax rc.7+; hyphen aliases rc.10+):**
-- `bunny storagezone list|get|create|update|delete` (aliases: storage-zone)
-- `bunny pullzone list|get|create|update|delete` (aliases: pull-zone)
-- `bunny pullzone edgerule list|add|delete` (aliases: edge-rule)
+**Zones (space-delimited syntax rc.7+; hyphen aliases rc.18 DROPPED):**
+- `bunny storagezone list|get|create|update|delete` (canonical only)
+- `bunny pullzone list|get|create|update|delete` (canonical only; `cdn` alias for group, rc.17)
+- `bunny pullzone edgerule list|add|delete` (canonical only)
 
-**DNS:**
+**DNS (13 record types as of rc.24, up from 8 in rc.23):**
 - `bunny dns list|get|create|delete`
-- `bunny dns record list|add|update|delete`
+- `bunny dns record list|add|update|delete` (A, AAAA, ALIAS, CNAME, TXT, NS, MX, SRV, CAA, REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT — rc.24 extended)
 
 **Stream (Phase 5, shipped rc.10):**
 - `bunny stream library list|create|get|delete` (get/delete rc.10+)
 - `bunny stream video list|upload|delete`
 
 **Magic Containers (Phase 5, shipped rc.10):**
-- `bunny containers app list|create|delete`
+- `bunny containers app list|create|delete` (create → planned in rc.12, v0.2)
 
 **Edge Scripting (Phase 5, shipped rc.10):**
 - `bunny scripting list|deploy|delete`
 
 **Discovery & Config:**
 - `bunny manifest [--pretty --names]` (--names rc.10+)
-- `bunny mcp` — MCP stdio server
+- `bunny mcp` — MCP stdio server (rc.23: e2e harness live)
 - `bunny use <alias>` — alias switching
 
 

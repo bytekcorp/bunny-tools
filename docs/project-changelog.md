@@ -4,6 +4,107 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.24] — 2026-05-03 (DNS Routing Types Extended)
+
+### Added
+- **DNS routing types extended to 13:** REDIRECT (5), FLATTEN (6), PULLZONE (7), PTR (10), SCRIPT (11). Complete enum coverage.
+- **`dns record add` enhancements:** `--link-name` (raw string) and `--pull-zone=<id>` (auto-resolves pull zone name + linkName).
+- **MCP enum extended:** `bunny.dns_record_set` now supports all 13 types via MCP tools.
+- **7 new unit tests:** DNS routing type coverage; 1 REDIRECT e2e round-trip.
+
+### Test Coverage
+- **Unit tests:** 129 total (up from 122 in rc.23)
+- **E2E tests:** 44 total (with DNS REDIRECT round-trip)
+
+---
+
+## [0.1.0-rc.23] — 2026-05-03 (MCP E2E Harness Shipped)
+
+### Added
+- **MCP e2e harness (live):** `test/e2e/mcp.e2e.ts` spawns `bunny mcp`, connects via MCP SDK Client, exercises all 15 active tools + 2 skipped (init/deploy — MCP-native versions not needed). Helper: `test/e2e/helpers/mcp-client.ts`.
+- 13 active MCP tool tests + 2 skipped = 15 total coverage.
+
+### Fixed
+- **Spawn process.execArgv forwarding:** `bunny.run` in tsx (dev) mode now correctly forwards argv so `.ts` entries execute.
+
+### Test Coverage
+- **E2E tests:** 44 total (13 tools + 30 service tests + 1 REDIRECT round-trip)
+
+---
+
+## [0.1.0-rc.22] — 2026-05-03 (Install MCP Fix)
+
+### Fixed
+- **`bunny install mcp` regression:** Was passing `-y` to claude itself instead of npx. Corrected via `--` separator: `claude mcp add bunny-tools -- npx -y bunny-tools mcp`.
+
+---
+
+## [0.1.0-rc.21] — 2026-05-03 (Subgroup Help Expansion)
+
+### Changed
+- **Subgroup help expansion:** `bunny stream --help` and similar now expands ALL leaf descendants regardless of depth (was showing only sub-pointers, leaving leaf commands hidden).
+
+---
+
+## [0.1.0-rc.20] — 2026-05-03 (Root Help Alignment)
+
+### Changed
+- **Root help collapse:** Commands with 3+ segments (e.g., `bunny pullzone edgerule add`) now show as 2-segment pointers (`pullzone edgerule ...`) for cleaner alignment in help output. Long arg signatures no longer break column layout.
+
+---
+
+## [0.1.0-rc.19] — 2026-05-03 (DX Polish — 4 GA Wins)
+
+### Added
+- **`bunny install mcp`:** Self-bootstraps Claude MCP configuration (new command, rc.19+).
+- **`bunny update`:** Self-updates binary via npm with npx-mode detection + EACCES retry hints (new command, rc.19+).
+- **`bunny init` AGENTS.md hint:** Writes `## Deploy` section hint during project init (helps users discover MCP docs).
+- **Help layout polish:** Wrangler-style rendering (TITLE → USAGE → COMMANDS grouped by phase → GLOBAL FLAGS). No emoji. New `src/manifest/format-help.ts` renderer.
+
+### Changed
+- Help rendering switched from custom to wrangler-style layout for consistency with ecosystem.
+
+---
+
+## [0.1.0-rc.18] — 2026-05-03 (Hyphen Aliases Dropped — BREAKING)
+
+### Removed
+- **Hyphen aliases (BREAKING pre-GA):** `pull-zone`, `storage-zone`, `edge-rule` no longer work. Only canonical flat forms: `pullzone`, `storagezone`, `edgerule`. Exception: `cdn` alias for `pullzone` retained (dashboard parity).
+
+### Changed
+- Registry: aliases cleaned up to single `cdn` exception for `pullzone` group.
+
+---
+
+## [0.1.0-rc.17] — 2026-05-03 (Cdn Alias Added)
+
+### Added
+- **`cdn` alias for `pullzone` group:** `bunny cdn list` → `bunny pullzone list`. Matches Bunny dashboard sidebar terminology.
+
+---
+
+## [0.1.0-rc.16] — 2026-05-03 (Bare Bunny Help Convention)
+
+### Changed
+- **Bare `bunny` output:** Prints help to stdout (not stderr) with exit code 0 (wrangler convention, rc.16+). Matches `wrangler --help` behavior.
+
+---
+
+## [0.1.0-rc.15] — 2026-05-03 (ESM Main Detection Fix — CRITICAL)
+
+### Fixed
+- **CRITICAL: Bare `bunny` on -g installs:** Binary was silently exiting on globally-installed npm package (ESM symlink resolution issue). Fixed via `realpathSync` + `fileURLToPath(import.meta.url)` for proper main detection.
+- Added `test/cli-main-detection.test.ts` regression test to prevent recurrence.
+
+---
+
+## [0.1.0-rc.14] — 2026-05-03 (README Rewrite)
+
+### Changed
+- **Bunny CLI README rewrite:** MCP install front-and-center. Clearer positioning of CLI vs MCP server. New title emphasis.
+
+---
+
 ## [0.1.0-rc.13] — 2026-05-03 (Vitest Security Bump & E2E Harness Live)
 
 ### Added

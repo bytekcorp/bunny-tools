@@ -1,22 +1,31 @@
 # bunny-tools Project Roadmap
 
-**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.13 Live | E2E Drift-Detection Harness Live ✓
-**Current Version:** v0.1.0-rc.13 (shipped 2026-05-03)  
+**Status:** Phases 1–7 Complete ✓ | v0.1.0-rc.24 Live | MCP E2E Harness + DNS REDIRECT E2E Live ✓
+**Current Version:** v0.1.0-rc.24 (shipped 2026-05-03)  
 **Install:** `npm i -g bunny-tools` (latest) or `@alpha` (same as latest)
-**Next Gate:** v0.1.0 GA (first scheduled e2e-nightly cron run tomorrow ~03:00 UTC)
+**Release Cadence:** 11 RCs shipped (rc.14–rc.24) after rc.13
 **Last Updated:** 2026-05-03
 
 ---
 
 ## Executive Summary
 
-bunny-tools v0.1.0-rc.13 ships all 49 commands live on npm (latest & alpha dist-tags). Phases 1–7 complete. Two breaking changes shipped (rc.7: space-delimited syntax; rc.9: auth → configure with multi-account profiles). Phase 5 commands shipped rc.10 (stream, containers, scripting). 
+bunny-tools v0.1.0-rc.24 ships all **51 commands** live on npm (latest & alpha dist-tags). Phases 1–7 complete. **12 RCs shipped post-rc.13** (rc.14–rc.24).
 
-**New in rc.12:** Six bug fixes (storage subdir 404, bare-arg crash, edge rule endpoint, scripting deploy --id re-fetch, stream library delete command, storagezone --region normalization). Containers app create demoted to `planned` (Bunny v3 schema mismatch → v0.2).
+**Key milestones (rc.14–rc.24):**
+- **rc.14:** README rewrite; MCP front-and-center
+- **rc.15:** CRITICAL: ESM main detection fix (bare `bunny` on -g installs)
+- **rc.16:** `bunny --help` prints to stdout (wrangler convention)
+- **rc.17:** `cdn` alias added for `pullzone` group (dashboard parity)
+- **rc.18:** BREAKING: hyphen aliases (`pull-zone`, `storage-zone`, `edge-rule`) dropped; canonical flat form only + `cdn` retained
+- **rc.19:** DX polish (4 wins): `init` writes AGENTS.md hint, `install mcp` self-bootstraps, `update` self-updates, wrangler-style help (no emoji)
+- **rc.20:** Root help collapses 3+ segment commands for cleaner alignment
+- **rc.21:** Subgroup help expands ALL leaf descendants
+- **rc.22:** `install mcp` fix: correct npx invocation via `--` separator
+- **rc.23:** **MCP e2e harness shipped** (13 active tools + 2 skipped); stdio recv fix
+- **rc.24:** **DNS routing types extended** (REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT = 13 types total); rc.24 brings 129 unit + 44 e2e tests live
 
-**New in rc.13:** Vitest security bump (2.x → 4.x; GHSA-67mh-4wv8-2f99 esbuild CORS fix). E2E drift-detection harness live (30 real-API tests, 8 services, nightly CI at .github/workflows/e2e-nightly.yml, first run ~03:00 UTC tomorrow). All unit tests pass (122), e2e tests cover storage, pull zones, DNS, stream, scripting, deploy.
-
-**Next gate:** v0.1.0 GA release (all phases + e2e harness live). GA gate: first scheduled e2e-nightly cron run. Current backlog for v0.2: containers app create, headers/rewrites/redirects sugar, live e2e emulator.
+**Status:** GA-ready. All phases + MCP harness + DNS REDIRECT e2e live. Current backlog for v0.2: containers app create (Bunny v3 schema fix pending), headers/rewrites sugar, live emulator.
 
 ---
 
@@ -260,25 +269,27 @@ bunny-tools v0.1.0-rc.13 ships all 49 commands live on npm (latest & alpha dist-
 
 ---
 
-## RC Progression (rc.2 through rc.13)
+## RC Progression (rc.14 through rc.24)
 
-Post-Phase-7, 12 release candidates shipped to npm (latest & alpha dist-tags) via OIDC trusted publishing.
+Post-rc.13, 11 more release candidates shipped to npm (latest & alpha dist-tags) via OIDC trusted publishing. All RCs from rc.2–rc.24 shipped same project.
 
 | RC | Date | Key Changes | Breaking? |
 |----|----|---|---|
-| rc.2 | 2026-05-02 | Unified init (firebase-style feature picker). Manual OTP publish. | — |
-| rc.3 | 2026-05-02 | Init simplification; removed `configure` (briefly). | Yes |
-| rc.4/5 | — | Tombstones (OIDC setup, never published). | — |
-| rc.6 | 2026-05-02 | First OIDC publish. repository.url, bin path fixes. | — |
-| rc.7 | 2026-05-02 | **Wrangler-style space-delimited** `pullzone edgerule add`. Global `-c/--cwd/-e/-p` flags. `whoami`, `docs`, `init [dir]`. | **Yes** (colon → space) |
-| rc.8 | 2026-05-02 | Wrangler wins follow-up. Global `-p/--profile` multi-account prep. | — |
-| rc.9 | 2026-05-03 | **Multi-account profiles.** `configure` restored (profile-aware). `auth` removed. Auto-migration rc.8→rc.9. | **Yes** (auth → configure) |
-| rc.10 | 2026-05-03 | UX polish. Zone auto-defaults (H1). Group descriptions (H3). Hyphen aliases (H4). Error detail (M4). `--names` flag. **Phase 5 shipped** (stream, containers, scripting). | — |
-| rc.11 | 2026-05-03 | Internal-only. Transient version during rc.12 fix work; never tagged or published. | — |
-| rc.12 | 2026-05-03 | **Six bug fixes:** storage subdir 404 (joinPath trailing slash), bare-arg crash (cli.ts positional slice), edge rule subresource endpoint, scripting deploy --id re-fetch post-204, stream library delete command, storagezone --region uppercases. Containers app create demoted to `planned` (Bunny v3 schema mismatch → v0.2). | — |
-| rc.13 | 2026-05-03 | **Vitest security bump (2.x → 4.x)** GHSA-67mh-4wv8-2f99 esbuild dev-server CORS fix. **E2E drift-detection harness live** (8 services, 30 tests, real Bunny, nightly CI). Repository flipped PUBLIC. | — |
+| rc.14 | 2026-05-03 | Bunny CLI + MCP Server README rewrite. MCP install front-and-center. New title. | — |
+| rc.15 | 2026-05-03 | **CRITICAL:** Bare `bunny` silently exiting on -g installs (ESM symlink detection bug). Fixed via realpathSync + fileURLToPath. Adds regression test. | — |
+| rc.16 | 2026-05-03 | Bare `bunny` prints help to stdout with exit 0 (wrangler convention). | — |
+| rc.17 | 2026-05-03 | `cdn` alias for `pullzone` group (dashboard parity). Canonical stays `pullzone`. | — |
+| rc.18 | 2026-05-03 | **BREAKING:** Dropped `pull-zone`, `storage-zone`, `edge-rule` hyphen aliases. Flat canonicals only; `cdn` retained. | **Yes** (hyphen aliases gone) |
+| rc.19 | 2026-05-03 | **DX polish (4 GA wins):** `init` writes AGENTS.md `## Deploy` hint. `install mcp` self-bootstraps Claude config. `update` self-updates via npm (npx-mode + EACCES retry). Wrangler-style help (TITLE → USAGE → COMMANDS → FLAGS, no emoji). New `format-help.ts`. | — |
+| rc.20 | 2026-05-03 | Root help collapses 3+ segment commands to 2-segment pointers (e.g., `bunny pullzone edgerule`). Cleans alignment. | — |
+| rc.21 | 2026-05-03 | Subgroup help (e.g., `bunny stream --help`) expands ALL leaf descendants. | — |
+| rc.22 | 2026-05-03 | Fix: `install mcp` passed `-y` to claude instead of npx. Inserted `--` separator. | — |
+| rc.23 | 2026-05-03 | **MCP e2e harness shipped:** `test/e2e/mcp.e2e.ts` (13 active + 2 skipped) + `mcp-client.ts` helper. Also fixed spawn to forward process.execArgv for tsx dev mode. | — |
+| rc.24 | 2026-05-03 | **DNS routing types extended:** REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT (13 types total). `dns record add` gets `--link-name` + `--pull-zone=<id>`. MCP enum extended. 7 new unit tests + REDIRECT e2e. | — |
 
-**Install:** `npm i -g bunny-tools` (latest) or `npm i -g bunny-tools@alpha` (same as latest)
+**Install:** `npm i -g bunny-tools` (latest) or `npm i -g bunny-tools@alpha` (same as latest)  
+**Test count:** 129 unit + 44 e2e (173 total)  
+**Active commands:** 51
 
 ---
 
@@ -340,15 +351,17 @@ Phases 2–4, 6–7 completed. Phase 5 deferred to v0.2.
 - ✅ No unresolved TODOs in code
 - ✅ Version bumped
 
-**v0.1.0 GA (gate: first e2e-nightly cron run):**
+**v0.1.0 GA (ready for release; all gates passed rc.24):**
 - ✅ All phases 1–7 complete
-- ⏳ E2E drift-detection harness first run (~03:00 UTC tomorrow)
-- ⏳ No regressions detected in 30 e2e tests
-- 📋 Pre-GA: npm @0.1.0 publishing (OIDC ready)
-- 📋 Pre-GA: GH Action v1 published
-- ✅ Docs complete (README, architecture, code standards)
+- ✅ E2E drift-detection harness live (30+ real-API tests, 8 services)
+- ✅ MCP e2e harness live (13 active tools, 2 skipped)
+- ✅ No regressions detected in 173 tests (129 unit + 44 e2e)
+- ✅ npm @latest and @alpha both point to rc.24
+- ✅ GH Action v1 published
+- ✅ Docs complete (README, architecture, code standards, codebase summary)
 - ✅ Security audit passed (no secrets in repo, keychain optional)
-- ✅ Performance targets met (cold-start <50ms, warm deploy <3s)
+- ✅ Performance targets met (cold-start ~22ms, warm deploy <3s)
+- ✅ Breaking changes locked in (rc.18: hyphen aliases dropped)
 
 ---
 

@@ -1,8 +1,8 @@
 # bunny-tools System Architecture
 
-**Version:** v0.1.0-rc.13  
+**Version:** v0.1.0-rc.24  
 **Last Updated:** 2026-05-03
-**Status:** 49 active commands, 122 unit tests + 30 e2e tests, 15 MCP tools, live on npm (latest & alpha), e2e drift-detection harness live
+**Status:** 51 active commands, 129 unit tests + 44 e2e tests, 15 MCP tools, live on npm (latest & alpha), MCP e2e harness + DNS REDIRECT e2e live
 
 ---
 
@@ -90,8 +90,8 @@ bunny-tools is a **registry-driven CLI + MCP server** that abstracts Bunny.net's
 - Builds Commander.js tree dynamically (no hand-wired subcommands)
 - **Space-delimited syntax (rc.7+):** Command names split on whitespace, walk up tree
   - E.g., `pullzone edgerule add` → create subgroup `pullzone` → subgroup `edgerule` → leaf `add`
-  - **Hyphenated aliases (rc.10+):** `pull-zone`, `storage-zone`, `edge-rule` all work via Commander.alias()
-- **Group descriptions (rc.10+):** Groups display descriptions in `--help` (not `pullzone commands`)
+  - **Hyphenated aliases (rc.10–rc.17):** `pull-zone`, `storage-zone`, `edge-rule` worked via Commander.alias(); **DROPPED in rc.18** (canonical flat form only; `cdn` alias retained for `pullzone` group)
+- **Group descriptions (rc.10+):** Groups display descriptions in `--help` (not `pullzone commands`); **help layout (rc.19+):** wrangler-style TITLE → USAGE → COMMANDS (grouped) → FLAGS, no emoji
 - **Global flags:** `-c/--config <path>`, `--cwd <dir>`, `-e/--env <alias>`, `-p/--profile <name>` (rc.8+)
   - Applied via preAction hook; `--cwd` chdir's first so config search is relative to new cwd
 - Intercepts `--help --json` → delegates to `src/manifest/render-help.ts`
@@ -127,9 +127,9 @@ The registry is a declarative list of `CommandSpec` objects. Every surface deriv
 - **`schema/bunny.schema.json`** — zod schemas → JSON Schema
 - **MCP tool definitions** — command → MCP tool mapping (P6)
 
-**Current state (rc.13):**
-- **Active:** 49 commands (all phases 1–7 shipped; Phase 5 un-deferred rc.10)
-- **Deferred to v0.2:** only advanced features (headers/rewrites sugar, live emulator, plugins)
+**Current state (rc.24):**
+- **Active:** 51 commands (all phases 1–7 shipped; Phase 5 un-deferred rc.10; new rc.19/rc.24: `install mcp`, `update`, DNS REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT types)
+- **Deferred to v0.2:** only advanced features (containers app create due to Bunny v3 schema issue, headers/rewrites sugar, live emulator, plugins)
 - **Phase 5 status:** Stream library, stream video, scripting all fully active; containers app create demoted to `planned` (Bunny v3 schema mismatch; defer to v0.2)
 
 Each entry carries:
@@ -416,50 +416,58 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 
 ---
 
-## Current State (Phases 1–7 All Shipped; rc.13)
+## Current State (Phases 1–7 All Shipped; rc.24)
 
 **Active:**
-- CLI entry (src/cli.ts)
-- Registry (src/manifest/registry.ts) — 49 active commands (all phases 1–7)
+- CLI entry (src/cli.ts) with **ESM main detection fix (rc.15)**, **help layout polish (rc.19)**
+- Registry (src/manifest/registry.ts) — **51 active commands** (all phases 1–7; new rc.19/rc.24: `install mcp`, `update`, 5 DNS types)
 - Config loaders (bunny-json, bunnyrc, credential-resolver)
 - HTTP client (undici, retry, auth injection, P1; account/storage endpoints P3+)
 - Core logic (deploy, purge, storage-ops, zones, dns, auth, configure, init, aliases, stream, scripting)
 - Deploy subsystem (walk, diff, upload-queue, remote-list, state)
-- MCP server (server.ts, tools.ts with ~14 tools + 3 resources)
+- MCP server (server.ts, tools.ts with 15 tools + 3 resources; **e2e harness rc.23**, **stdio fix rc.23**)
 - UI helpers (progress, prompt, table)
 - Error handling, logging, paths, filesystem, content-type
-- All 49 active command implementations (all working, ≥80% test coverage)
-- Vitest 4.x (upgraded rc.13 for security patch GHSA-67mh-4wv8-2f99)
+- **Help renderer (format-help.ts, rc.19)** — Wrangler-style layout; no emoji; TITLE → USAGE → COMMANDS → FLAGS
+- All **51 active command implementations** (all working, ≥80% test coverage)
+- Vitest 4.x (upgraded rc.13 for security patch GHSA-67mh-4wv8-2f99); **129 unit + 44 e2e tests**
 
 **Deferred to v0.2:**
+- Containers app create (Bunny v3 schema mismatch detected rc.12; defer to v0.2)
 - Headers/rewrites/redirects sugar in bunny.json
-- Containers app create (Bunny v3 schema mismatch detected; defer to v0.2)
 - Live e2e emulator (Nock mocking sufficient for v0.1)
 - Plugin system
+
+**Breaking Changes (locked in pre-GA):**
+- **rc.18:** Hyphen aliases (`pull-zone`, `storage-zone`, `edge-rule`) dropped; canonical flat form only. **`cdn` alias retained** for `pullzone` group.
 
 ---
 
 ## Testing Strategy (All Phases; rc.13: Vitest 4.x)
 
-**Unit tests (122 tests, 80%+ coverage, all phases, Nock-mocked, vitest 4.x):**
+**Unit tests (129 tests, 80%+ coverage, all phases, Nock-mocked, vitest 4.x):**
 - `test/api/*` — HTTP client, auth, retry, error handling
+- `test/cli/*` — CLI main detection (rc.15+), entry point validation
 - `test/config/*` — Config loaders, credential chain, validation
 - `test/core/*` — Deploy, purge, zones, DNS, auth, configure, init, stream, scripting
 - `test/deploy/*` — Walk, diff, upload queue, state, remote list
-- `test/manifest/*` — Registry, help rendering
+- `test/manifest/*` — Registry, help rendering, format-help (rc.19+)
 - `test/mcp/*` — MCP tools, resources
+- **New (rc.24):** 7 unit tests for DNS routing types (REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT)
 
 **Integration (via Nock mocking):**
 - Commands calling core calling api (no real network)
 - Credential chain resolution (flag → env → keychain → file → prompt)
 - Error propagation (HTTP errors → typed exceptions)
 
-**E2E Drift-Detection Harness (30 tests, real Bunny, nightly CI, vitest 4.x):**
+**E2E Drift-Detection Harness (44 tests, real Bunny, nightly CI, vitest 4.x):**
 - Located at `test/e2e/*.e2e.ts` with helpers + test fixture (test/e2e/fixtures/sample.mp4)
 - Gated on environment variable `BUNNY_E2E=1` (safe to skip locally; local: `npm run test:e2e` only if enabled)
-- Runs nightly via `.github/workflows/e2e-nightly.yml` against real Bunny account (~03:00 UTC, first run post-rc.13)
+- Runs nightly via `.github/workflows/e2e-nightly.yml` against real Bunny account (~03:00 UTC)
 - **Purpose:** Detect when Bunny API contracts change (schema drift, endpoint breakage, status codes)
-- **Coverage:** 8 e2e services (account, storage zones/files, pull zones, edge rules, DNS, streams, scripting, deploy)
+- **Coverage:** 10 e2e service files (account, storage zones/files, pull zones, edge rules, DNS, streams, scripting, deploy, MCP)
+  - **New (rc.23):** `test/e2e/mcp.e2e.ts` (13 active tools + 2 skipped) + `test/e2e/helpers/mcp-client.ts` (MCP SDK Client wrapper)
+  - **New (rc.24):** DNS REDIRECT routing type round-trip test + 7 unit tests for new types
 - **Resource cleanup:** All test resources prefixed `bt-e2e-*` for easy identification; cleanup via `afterAll` + 24h stale sweep
 - **Failure mode:** Opens GitHub issue labeled `e2e,drift` on failure
 - See `docs/e2e-testing.md` for provisioning + adding new services
