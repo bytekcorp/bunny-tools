@@ -4,6 +4,31 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.46] — 2026-05-03 (First full e2e run + coverage gaps closed)
+
+This is the "Phase 5 unblocked" RC — the e2e nightly task had been pending since the harness was built (Phase 1-4 in earlier sessions). First real fire surfaced 3 latent issues, all fixed here. Net: full e2e suite is green, including the new tests added below.
+
+### Added
+- **Help smoke test** (`test/manifest/help-smoke.test.ts`) — builds Commander tree in-process, walks every command, asserts non-empty `helpInformation()` + presence of expected section labels (USAGE/COMMANDS/FLAGS/EXAMPLES/GLOBAL FLAGS) per command level. Catches formatter regressions without per-command spawn cost.
+- **Examples-validity test** (`test/manifest/examples-parse.test.ts`) — scans every registered `examples` entry, extracts `--<flag>` references, asserts each is either a known global flag or declared on the spec. Catches typos in the rc.45 examples (and any future ones) before they ship as "advice that crashes."
+- **`bunny init --non-interactive --ci` e2e** (added to `deploy.e2e.ts`) — runs init in a fresh tmpdir against the existing test storage zone, asserts both `bunny.json` and `.github/workflows/bunny-deploy.yml` written with the load-bearing tokens (`npm install -g bunny-tools`, `run: bunny deploy`, `BUNNY_ACCOUNT_KEY`, `BUNNY_STORAGE_PASSWORD_*`). Bug #10 (rc.10) shipped a workflow with typo'd flag names — this guards.
+- **`bunny domain connect` CLI idempotency e2e** (`test/e2e/domain.e2e.ts`) — uses `--no-wait` to skip cert poll (cert provisions async + may fail; CLI exits 0 either way). Calls connect twice with same FQDN, asserts no error and exactly one entry in the hostname list. Bug #4 (rc.39 → rc.40) was that re-running created a duplicate DNS record.
+- **MCP hostname-add idempotency** (extended `mcp.e2e.ts` round-trip) — re-adds the same hostname between the original add and remove, asserts no error and no duplicate in the hostnames list.
+
+### Fixed (3 latent test issues surfaced by first-ever real e2e run)
+- **`mcp.e2e.ts` hostname round-trip used `.example.com`** which Bunny rejects with `hostname_invalid`. Test had been broken since rc.25 but never run against real (nightly Phase 5 deferred). Fix: gate the round-trip on `BUNNY_E2E_CERT_DOMAIN` since the MCP tool always provisions cert synchronously (no link-only mode). CLI-side idempotency without cert is covered by `domain.e2e.ts` via `--no-wait`.
+- **Test placeholder hostnames** moved from `.example.com` → `.invalid` (RFC 6761) where the API path doesn't require cert provisioning. Bunny accepts `.invalid` for hostname linking; rejects `.example.com`.
+- **Init test asserted wrong workflow shape** — assumed a composite `bytekcorp/bunny-tools-deploy-action` reference; actual generator emits `npm install -g bunny-tools` + `bunny deploy`. Updated assertions.
+
+### Test Coverage
+- Unit: 184/184 (was 175/175; +9 from new help-smoke + examples-parse files).
+- E2E: 47 passed / 5 skipped (cert-domain-gated) across 11 files. ~100s wall-clock. First full green run since the harness was built.
+
+### Unchanged
+- E2E nightly schedule (03:00 UTC) and drift-issue auto-creation. No code change in `.github/workflows/e2e-nightly.yml`.
+
+---
+
 ## [0.1.0-rc.45] — 2026-05-03 (EXAMPLES blocks + bold section headers + auto-width FLAGS)
 
 The biggest help-quality bump in v0.1. Three changes; the third does the heavy lifting.

@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -81,5 +81,53 @@ describe.skipIf(!E2E_ENABLED)('e2e: full deploy pipeline', () => {
     const r = await bunnyCliOk(['deploy'], { env: env(), cwd: publicDir });
     const merged = r.stderr + r.stdout;
     expect(merged).toMatch(/1 changed/);
+  });
+
+  // rc.45: `bunny init --non-interactive --ci` end-to-end. Reuses the
+  // already-provisioned storage zone; runs init in a fresh tmpdir, then
+  // asserts both bunny.json and the GH Actions workflow were written.
+  // Bug #10 (rc.10) was that --ci wrote a workflow referencing flag names
+  // that never existed; this guards against re-introducing similar
+  // copy-paste rot.
+  it('init --non-interactive --ci writes bunny.json + .github/workflows/bunny-deploy.yml', async () => {
+    const initDir = await mkdtemp(join(tmpdir(), 'bt-e2e-init-'));
+    try {
+      const r = await bunnyCliOk(
+        [
+          'init',
+          '--non-interactive',
+          '--features=storage',
+          `--storage-zone=${zoneName}`,
+          `--storage-password=${storagePassword}`,
+          '--pull-zone=99999',
+          '--public-dir=public',
+          '--ci',
+          '--force',
+        ],
+        { cwd: initDir },
+      );
+      expect(r.exitCode).toBe(0);
+
+      const cfgRaw = await readFile(join(initDir, 'bunny.json'), 'utf8');
+      const cfg = JSON.parse(cfgRaw) as { deploy?: { storageZone?: string } };
+      expect(cfg.deploy?.storageZone).toBe(zoneName);
+
+      // GH Actions workflow — current generator emits an npm-install +
+      // `bunny deploy` flow (not a composite action — that path was
+      // considered but the npm route ships first). Assert the load-bearing
+      // tokens that would silently rot if the generator template changed.
+      const workflow = await readFile(
+        join(initDir, '.github/workflows/bunny-deploy.yml'),
+        'utf8',
+      );
+      expect(workflow).toMatch(/npm install -g bunny-tools/);
+      expect(workflow).toMatch(/run:\s*bunny deploy/);
+      expect(workflow).toMatch(/BUNNY_ACCOUNT_KEY/);
+      // Per-zone storage password env var — uppercase + underscores, with
+      // the zone name embedded. Bug #10 (rc.10) was a flag-name typo here.
+      expect(workflow).toMatch(/BUNNY_STORAGE_PASSWORD_/);
+    } finally {
+      await rm(initDir, { recursive: true, force: true });
+    }
   });
 });

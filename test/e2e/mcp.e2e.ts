@@ -311,13 +311,16 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
 
   // -----------------------------------------------------------------------
   // Pull-zone hostname round-trip — exercises the rc.25 list/add/remove
-  // tools end-to-end. Hostname is a placeholder under .example.com; Bunny
-  // accepts string-only hostname registrations (no live DNS validation
-  // for addHostname). enable_ssl is tested separately with a real domain.
+  // tools end-to-end. Gated on BUNNY_E2E_CERT_DOMAIN: the MCP
+  // pullzone_hostname_add tool ALWAYS provisions cert synchronously (no
+  // link-only mode), and Bunny rejects cert provisioning for .example.com
+  // / .invalid placeholder domains. CLI-side idempotency (without cert)
+  // is covered by domain.e2e.ts using `--no-wait`.
   // -----------------------------------------------------------------------
 
-  it('bunny.pullzone_hostname_{list,add,remove} round-trip', async () => {
-    const host = `${suitePrefix()}-mcp-host.example.com`;
+  it.skipIf(!process.env['BUNNY_E2E_CERT_DOMAIN'])('bunny.pullzone_hostname_{list,add,remove} round-trip', async () => {
+    const certDomainEnv = process.env['BUNNY_E2E_CERT_DOMAIN']!;
+    const host = `${suitePrefix()}-mcp-host.${certDomainEnv}`;
 
     const initial = unwrapJson<{ hostnames: string[] }>(
       (await mcp.client.callTool({
@@ -336,6 +339,19 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     );
     expect(added.ok).toBe(true);
     expect(added.hostnames).toContain(host);
+
+    // rc.45: idempotency check. Re-adding the same hostname must not 4xx
+    // (Bunny would reject "already linked") and must not produce a duplicate
+    // in the hostnames list. Same fix lineage as Bug #4 (rc.40 domain
+    // connect duplicate DNS record).
+    const reAdded = unwrapJson<{ ok: boolean; hostnames: string[] }>(
+      (await mcp.client.callTool({
+        name: 'bunny.pullzone_hostname_add',
+        arguments: { pullZoneId, hostname: host },
+      })) as { content?: Array<{ type: string; text?: string }> },
+    );
+    expect(reAdded.ok).toBe(true);
+    expect(reAdded.hostnames.filter((h) => h === host).length).toBe(1);
 
     const removed = unwrapJson<{ ok: boolean; hostnames: string[] }>(
       (await mcp.client.callTool({
