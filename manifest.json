@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.36",
+  "version": "0.1.0-rc.37",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -1108,7 +1108,7 @@
     },
     {
       "name": "pullzone hostname add",
-      "summary": "Link a custom hostname to a pull zone (required before Type-7 PULLZONE DNS records resolve).",
+      "summary": "Idempotent: link hostname + provision Let's Encrypt cert + enable ForceSSL (HTTP→HTTPS). Pass --no-force-ssl to provision cert without the HTTP→HTTPS redirect.",
       "description": null,
       "status": "active",
       "phase": 3,
@@ -1126,8 +1126,34 @@
           "variadic": false
         }
       ],
-      "flags": [],
-      "examples": [],
+      "flags": [
+        {
+          "name": "no-force-ssl",
+          "short": null,
+          "description": "Provision cert but disable HTTP→HTTPS redirect (state assertion: re-run flips OFF).",
+          "hasValue": false,
+          "valueHint": null,
+          "defaultValue": null
+        },
+        {
+          "name": "timeout",
+          "short": null,
+          "description": "Cert wait timeout in seconds (default 90).",
+          "hasValue": true,
+          "valueHint": null,
+          "defaultValue": "90"
+        }
+      ],
+      "examples": [
+        {
+          "command": "bunny pullzone hostname add 555 example.com",
+          "description": "Link + cert + ForceSSL on (default-secure)."
+        },
+        {
+          "command": "bunny pullzone hostname add 555 legacy.example.com --no-force-ssl",
+          "description": "Link + cert, but allow plain HTTP for legacy clients."
+        }
+      ],
       "mcp": null
     },
     {
@@ -1151,72 +1177,6 @@
         }
       ],
       "flags": [],
-      "examples": [],
-      "mcp": null
-    },
-    {
-      "name": "pullzone hostname enable-ssl",
-      "summary": "Request a free Let's Encrypt certificate for a hostname, wait until provisioned, and enable ForceSSL (HTTP→HTTPS redirect). Use --no-force-ssl to skip the redirect.",
-      "description": null,
-      "status": "active",
-      "phase": 3,
-      "args": [
-        {
-          "name": "pullZoneId",
-          "description": "Pull zone id.",
-          "required": true,
-          "variadic": false
-        },
-        {
-          "name": "hostname",
-          "description": "Custom hostname already linked to the pull zone.",
-          "required": true,
-          "variadic": false
-        }
-      ],
-      "flags": [
-        {
-          "name": "no-force-ssl",
-          "short": null,
-          "description": "Skip auto-enabling ForceSSL (HTTP→HTTPS redirect) after cert provisions.",
-          "hasValue": false,
-          "valueHint": null,
-          "defaultValue": null
-        }
-      ],
-      "examples": [],
-      "mcp": null
-    },
-    {
-      "name": "pullzone hostname force-ssl",
-      "summary": "Toggle the HTTP→HTTPS redirect (ForceSSL) on a custom hostname. Requires a valid cert.",
-      "description": null,
-      "status": "active",
-      "phase": 3,
-      "args": [
-        {
-          "name": "pullZoneId",
-          "description": "Pull zone id.",
-          "required": true,
-          "variadic": false
-        },
-        {
-          "name": "hostname",
-          "description": "Custom hostname.",
-          "required": true,
-          "variadic": false
-        }
-      ],
-      "flags": [
-        {
-          "name": "off",
-          "short": null,
-          "description": "Turn ForceSSL OFF (default ON).",
-          "hasValue": false,
-          "valueHint": null,
-          "defaultValue": null
-        }
-      ],
       "examples": [],
       "mcp": null
     },

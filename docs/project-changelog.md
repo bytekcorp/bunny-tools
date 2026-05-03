@@ -4,6 +4,42 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.37] — 2026-05-03 (Idempotent hostname `add` collapses 3 subcommands; `--no-X` flag bug fix)
+
+Surface simplification + a real bug found via live testing.
+
+### BREAKING
+- **Removed `bunny pullzone hostname enable-ssl`** (rc.26) — its work is now inside `add`.
+- **Removed `bunny pullzone hostname force-ssl`** (rc.36, just shipped) — same; toggle via `add --no-force-ssl` (state assertion: re-run flips OFF).
+- **Removed MCP tools** `bunny.pullzone_hostname_enable_ssl` and `bunny.pullzone_hostname_force_ssl`. Use `bunny.pullzone_hostname_add` with `noSSL` / `noForceSSL` boolean fields.
+- **Migration:** scripts using `enable-ssl <pzId> <host>` should switch to `add <pzId> <host>` (same default behavior). Scripts using `force-ssl <pzId> <host> --off` should switch to `add <pzId> <host> --no-force-ssl`.
+
+### Added
+- **`bunny pullzone hostname add` is now an idempotent state-setter:**
+  - Default: link hostname + provision Let's Encrypt cert + enable ForceSSL (HTTP→HTTPS redirect).
+  - `--no-force-ssl`: provision cert, ensure ForceSSL=false (state assertion — re-running flips OFF a previously-on hostname).
+  - `--timeout=<sec>`: cert wait timeout (default 90).
+- **MCP `bunny.pullzone_hostname_add`** gains optional `noForceSSL` (boolean) and `timeoutMs` (number) fields.
+
+### Fixed
+- **CLI `--no-X` flags weren't being read correctly.** Commander.js negates `--no-foo` as `foo: false` — but our code was reading `noFoo: true` which is always undefined. Latent in rc.30+ for `domain connect --no-wait` and `--no-force-ssl`; would have hit users on first attempt to opt out. Fixed in `pullzone hostname add` and `domain connect`.
+
+### Live-tested on bytek.org
+- ADD default → cert + ForceSSL=true.
+- ADD re-run → idempotent (no state change).
+- ADD `--no-force-ssl` → flips ForceSSL=false (verified `Hostnames[].ForceSSL=false`).
+- ADD default again → brings ForceSSL back ON.
+
+### Test Coverage
+- 174/174 unit (unchanged; existing enable-ssl tests cover the underlying `enablePullZoneSSL` core which is still exported and used).
+- 46 e2e (updated to use `bunny.pullzone_hostname_add` for cert provisioning).
+
+### Surface
+- 55 active commands (was 57; removed 2 subcommands).
+- 18 MCP tools (was 20; removed 2).
+
+---
+
 ## [0.1.0-rc.36] — 2026-05-03 (Auto-ForceSSL + orphan rule cleanup)
 
 ### Added

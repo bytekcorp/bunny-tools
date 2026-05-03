@@ -8,7 +8,7 @@ import type { CommandSpec, Registry } from './types.js';
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.36',
+  version: '0.1.0-rc.37',
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
@@ -404,10 +404,19 @@ export const registry: Registry = {
     },
     {
       name: 'pullzone hostname add',
-      summary: 'Link a custom hostname to a pull zone (required before Type-7 PULLZONE DNS records resolve).',
+      summary:
+        'Idempotent: link hostname + provision Let\'s Encrypt cert + enable ForceSSL (HTTP→HTTPS). Pass --no-force-ssl to provision cert without the HTTP→HTTPS redirect.',
       args: [
         { name: 'pullZoneId', description: 'Pull zone id.', required: true },
         { name: 'hostname', description: 'Custom hostname (e.g. example.com).', required: true },
+      ],
+      flags: [
+        { name: 'no-force-ssl', description: 'Provision cert but disable HTTP→HTTPS redirect (state assertion: re-run flips OFF).', hasValue: false },
+        { name: 'timeout', description: 'Cert wait timeout in seconds (default 90).', hasValue: true, defaultValue: '90' },
+      ],
+      examples: [
+        { command: 'bunny pullzone hostname add 555 example.com', description: 'Link + cert + ForceSSL on (default-secure).' },
+        { command: 'bunny pullzone hostname add 555 legacy.example.com --no-force-ssl', description: 'Link + cert, but allow plain HTTP for legacy clients.' },
       ],
       status: 'active',
       phase: 3,
@@ -423,35 +432,6 @@ export const registry: Registry = {
       status: 'active',
       phase: 3,
       load: () => import('../commands/pull-zone/hostname/remove.js'),
-    },
-    {
-      name: 'pullzone hostname enable-ssl',
-      summary:
-        'Request a free Let\'s Encrypt certificate for a hostname, wait until provisioned, and enable ForceSSL (HTTP→HTTPS redirect). Use --no-force-ssl to skip the redirect.',
-      args: [
-        { name: 'pullZoneId', description: 'Pull zone id.', required: true },
-        { name: 'hostname', description: 'Custom hostname already linked to the pull zone.', required: true },
-      ],
-      flags: [
-        { name: 'no-force-ssl', description: 'Skip auto-enabling ForceSSL (HTTP→HTTPS redirect) after cert provisions.', hasValue: false },
-      ],
-      status: 'active',
-      phase: 3,
-      load: () => import('../commands/pull-zone/hostname/enable-ssl.js'),
-    },
-    {
-      name: 'pullzone hostname force-ssl',
-      summary: 'Toggle the HTTP→HTTPS redirect (ForceSSL) on a custom hostname. Requires a valid cert.',
-      args: [
-        { name: 'pullZoneId', description: 'Pull zone id.', required: true },
-        { name: 'hostname', description: 'Custom hostname.', required: true },
-      ],
-      flags: [
-        { name: 'off', description: 'Turn ForceSSL OFF (default ON).', hasValue: false },
-      ],
-      status: 'active',
-      phase: 3,
-      load: () => import('../commands/pull-zone/hostname/force-ssl.js'),
     },
 
     {

@@ -87,9 +87,9 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   // Handshake — proves the MCP server registers all expected tools.
   // -----------------------------------------------------------------------
 
-  it('listTools returns ≥18 active tools (rc.34)', async () => {
+  it('listTools returns ≥17 active tools (rc.37)', async () => {
     const result = await mcp.client.listTools();
-    expect(result.tools.length).toBeGreaterThanOrEqual(18);
+    expect(result.tools.length).toBeGreaterThanOrEqual(17);
     const names = result.tools.map((t) => t.name);
     // Spot-check a handful — full list locked down in unit tests.
     expect(names).toContain('bunny.manifest');
@@ -97,13 +97,15 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     expect(names).toContain('bunny.zone_get');
     expect(names).toContain('bunny.deploy');
     expect(names).toContain('bunny.purge');
-    // rc.25-26: pull-zone hostname management.
+    // rc.25 / rc.37: hostname tools (enable_ssl + force_ssl rolled into add).
     expect(names).toContain('bunny.pullzone_hostname_list');
     expect(names).toContain('bunny.pullzone_hostname_add');
     expect(names).toContain('bunny.pullzone_hostname_remove');
-    expect(names).toContain('bunny.pullzone_hostname_enable_ssl');
     // rc.34: atomic Connect Domain.
     expect(names).toContain('bunny.domain_connect');
+    // rc.37: enable_ssl + force_ssl are GONE — rolled into add.
+    expect(names).not.toContain('bunny.pullzone_hostname_enable_ssl');
+    expect(names).not.toContain('bunny.pullzone_hostname_force_ssl');
   });
 
   // -----------------------------------------------------------------------
@@ -355,27 +357,23 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
 
   const certDomain = process.env['BUNNY_E2E_CERT_DOMAIN'];
   it.skipIf(!certDomain)(
-    'bunny.pullzone_hostname_enable_ssl provisions cert via DNS-01',
+    'bunny.pullzone_hostname_add provisions cert via DNS-01 in one call (rc.37)',
     async () => {
       const host = `${suitePrefix()}-cert.${certDomain}`;
-      // Add the hostname first (rc.30 flow: addHostname → enable-ssl).
-      await mcp.client.callTool({
-        name: 'bunny.pullzone_hostname_add',
-        arguments: { pullZoneId, hostname: host },
-      });
+      // rc.37: `add` is now the idempotent state-setter — it links + provisions
+      // cert + enables ForceSSL in one call. Replaces the rc.26-36 enable_ssl tool.
       try {
-        const ssl = unwrapJson<{ ok: boolean; hasCertificate: boolean; waitedMs: number }>(
+        const result = unwrapJson<{ ok: boolean; hasCertificate?: boolean; forceSslSet?: boolean }>(
           (await mcp.client.callTool({
-            name: 'bunny.pullzone_hostname_enable_ssl',
+            name: 'bunny.pullzone_hostname_add',
             arguments: { pullZoneId, hostname: host },
           })) as { content?: Array<{ type: string; text?: string }> },
         );
-        expect(ssl.ok).toBe(true);
-        expect(ssl.hasCertificate).toBe(true);
-        expect(ssl.waitedMs).toBeGreaterThanOrEqual(0);
+        expect(result.ok).toBe(true);
+        expect(result.hasCertificate).toBe(true);
+        // ForceSSL flipped on by default (forceSslSet=true) OR was already true (undefined).
+        // Either is acceptable; the assertion is the cert provisioned.
       } finally {
-        // Cleanup hostname even when cert provisioning fails — leaving
-        // an unprovisioned hostname pollutes the PZ for re-runs.
         await mcp.client.callTool({
           name: 'bunny.pullzone_hostname_remove',
           arguments: { pullZoneId, hostname: host },

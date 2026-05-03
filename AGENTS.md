@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.36  |  **Active commands:** 57/58
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.37  |  **Active commands:** 55/56
 
 <!-- HANDCURATED:START -->
 
@@ -80,10 +80,8 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 - `bunny pullzone edgerule add` [active] — Add an edge rule to a pull zone (raw JSON rule).
 - `bunny pullzone edgerule delete` [active] — Delete an edge rule by Guid.
 - `bunny pullzone hostname list` [active] — List custom hostnames linked to a pull zone.
-- `bunny pullzone hostname add` [active] — Link a custom hostname to a pull zone (required before Type-7 PULLZONE DNS records resolve).
+- `bunny pullzone hostname add` [active] — Idempotent: link hostname + provision Let's Encrypt cert + enable ForceSSL (HTTP→HTTPS). Pass --no-force-ssl to provision cert without the HTTP→HTTPS redirect.
 - `bunny pullzone hostname remove` [active] — Unlink a custom hostname from a pull zone.
-- `bunny pullzone hostname enable-ssl` [active] — Request a free Let's Encrypt certificate for a hostname, wait until provisioned, and enable ForceSSL (HTTP→HTTPS redirect). Use --no-force-ssl to skip the redirect.
-- `bunny pullzone hostname force-ssl` [active] — Toggle the HTTP→HTTPS redirect (ForceSSL) on a custom hostname. Requires a valid cert.
 - `bunny domain connect` [active] — Atomic Connect Domain: link hostname to PZ, provision Let's Encrypt cert, optionally create the apex Type-7 DNS record. Idempotent — safe to re-run.
 
 ### Phase 4

@@ -184,17 +184,47 @@ export const TOOLS: ToolDef[] = [
   {
     name: 'bunny.pullzone_hostname_add',
     description:
-      'Link a custom hostname to a pull zone. Required before Type-7 (PULLZONE) DNS records resolve. POSTs to /pullzone/{id}/addHostname.',
+      'Idempotent state-setter: link hostname + provision Let\'s Encrypt cert + enable ForceSSL (HTTP→HTTPS redirect). Pass `noForceSSL=true` to provision cert without the redirect (re-running with this flag flips ForceSSL OFF if previously on). Returns { ok, hostname, hasCertificate, forceSslSet? }.',
     inputSchema: z.object({
       pullZoneId: z.number().int().positive(),
       hostname: z.string().min(1),
+      noForceSSL: z.boolean().optional(),
+      timeoutMs: z.number().int().positive().max(300_000).optional(),
     }),
     run: async (raw) => {
-      const { pullZoneId, hostname } = z
-        .object({ pullZoneId: z.number().int().positive(), hostname: z.string().min(1) })
+      const { pullZoneId, hostname, noForceSSL, timeoutMs } = z
+        .object({
+          pullZoneId: z.number().int().positive(),
+          hostname: z.string().min(1),
+          noForceSSL: z.boolean().optional(),
+          timeoutMs: z.number().int().positive().max(300_000).optional(),
+        })
         .parse(raw);
-      const hostnames = await addPullZoneHostname(pullZoneId, hostname);
-      return { ok: true, hostnames };
+
+      // Idempotent linking — only POST addHostname when not already present.
+      const existing = await listPullZoneHostnames(pullZoneId);
+      if (!existing.includes(hostname)) {
+        await addPullZoneHostname(pullZoneId, hostname);
+      }
+
+      const sslResult = await enablePullZoneSSL(pullZoneId, hostname, {
+        ...(timeoutMs !== undefined ? { timeoutMs } : {}),
+        ...(noForceSSL ? { noForceSSL: true } : {}),
+      });
+      // State assertion when --no-force-ssl: ensure ForceSSL=false even if a
+      // prior run left it true. enablePullZoneSSL with noForceSSL skips the
+      // auto-flip-on but doesn't actively turn it off.
+      if (noForceSSL) {
+        await setHostnameForceSSL(pullZoneId, hostname, false);
+      }
+      return {
+        ok: true,
+        hostname,
+        linked: true,
+        hasCertificate: sslResult.hasCertificate,
+        ...(sslResult.forceSslSet ? { forceSslSet: true } : {}),
+        ...(noForceSSL ? { forceSslSet: false } : {}),
+      };
     },
   },
   {
@@ -239,48 +269,6 @@ export const TOOLS: ToolDef[] = [
         ...(args.recordName !== undefined ? { recordName: args.recordName } : {}),
         ...(args.noForceSSL ? { noForceSSL: true } : {}),
       });
-    },
-  },
-  {
-    name: 'bunny.pullzone_hostname_enable_ssl',
-    description:
-      'Request a free Let\'s Encrypt certificate for a hostname, wait until provisioned (up to 90s), and enable ForceSSL (HTTP→HTTPS redirect) by default. Pass noForceSSL=true to opt out. Required before Type-7 (PULLZONE) DNS records resolve. Returns { ok, hasCertificate, waitedMs, forceSslSet? }.',
-    inputSchema: z.object({
-      pullZoneId: z.number().int().positive(),
-      hostname: z.string().min(1),
-      noForceSSL: z.boolean().optional(),
-    }),
-    run: async (raw) => {
-      const { pullZoneId, hostname, noForceSSL } = z
-        .object({
-          pullZoneId: z.number().int().positive(),
-          hostname: z.string().min(1),
-          noForceSSL: z.boolean().optional(),
-        })
-        .parse(raw);
-      const result = await enablePullZoneSSL(pullZoneId, hostname, noForceSSL ? { noForceSSL: true } : {});
-      return { ok: true, ...result };
-    },
-  },
-  {
-    name: 'bunny.pullzone_hostname_force_ssl',
-    description:
-      'Toggle the HTTP→HTTPS auto-redirect (ForceSSL) on a custom hostname. Set force=false to disable. Requires a valid cert (HasCertificate=true) when enabling.',
-    inputSchema: z.object({
-      pullZoneId: z.number().int().positive(),
-      hostname: z.string().min(1),
-      force: z.boolean(),
-    }),
-    run: async (raw) => {
-      const { pullZoneId, hostname, force } = z
-        .object({
-          pullZoneId: z.number().int().positive(),
-          hostname: z.string().min(1),
-          force: z.boolean(),
-        })
-        .parse(raw);
-      await setHostnameForceSSL(pullZoneId, hostname, force);
-      return { ok: true, hostname, forceSSL: force };
     },
   },
   {
