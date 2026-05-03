@@ -4,6 +4,38 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.39] — 2026-05-03 (OIDC trusted publishing; release workflow change)
+
+### Changed
+- **Release workflow pivoted to GitHub Actions OIDC trusted publishing** (breaking with manual `npm publish` era).
+  - No local npm token needed. No OTP prompts. Ephemeral GitHub identity signs every RC.
+  - Tag push `v0.1.0-rc.X` triggers `.github/workflows/release.yml`: typecheck → lint → test → build → drift-check → publish.
+  - Every RC published to `latest` dist-tag (pre-1.0 convention; switches to `next` on GA).
+  - Each published RC includes npm provenance signature (cryptographic proof of origin).
+
+### Deployment Process
+1. Bump `version` in `package.json` AND `src/manifest/registry.ts` (must match).
+2. `npm run gen:all && npm run build` to regenerate manifest.json, AGENTS.md, schema/bunny.schema.json, dist/.
+3. Update `docs/project-changelog.md` and `docs/project-roadmap.md`.
+4. `git commit -m "feat/fix/chore: 0.1.0-rc.X — <title>"` + `git push origin main`.
+5. `git tag v0.1.0-rc.X && git push origin v0.1.0-rc.X`.
+6. GitHub Actions runs CI gates and publishes to npm automatically (OIDC handles auth).
+
+### Documentation
+- New `docs/deployment-guide.md` — step-by-step release recipe, OIDC rationale, troubleshooting.
+- No `~/.npmrc` token workarounds documented (OIDC is the only blessed path).
+- No `--otp=<code>` instructions anywhere (pre-1.0 burden eliminated).
+
+### Test Coverage
+- 174/174 unit (unchanged).
+- 46 e2e (unchanged).
+
+### Surface (unchanged)
+- 55 active commands.
+- 18 MCP tools.
+
+---
+
 ## [0.1.0-rc.38] — 2026-05-03 (Sectioned root help; one line per service)
 
 ### Added
@@ -852,27 +884,42 @@ Planned features deferred from v0.1 for faster GA stabilization:
 
 ## Information for Maintainers
 
-### Release Process
-1. **Alpha releases** (`0.1.0-alpha.N`): Automated per phase; no manual approval needed
-2. **RC release** (`0.1.0-rc.1`): Phase 6; manual review of docs + MCP server
-3. **GA release** (`0.1.0`): Phase 7; full release notes, npm publish, GH releases page
+### Release Process (OIDC Trusted Publishing)
+
+**Local `npm publish` is no longer supported.** All releases go through GitHub Actions.
+
+1. **RC releases** (`0.1.0-rc.X`): Automated via tag-triggered CI (rc.39+)
+   - Bump `version` in `package.json` and `src/manifest/registry.ts`
+   - Run `npm run gen:all && npm run build` to regenerate artifacts
+   - Update `docs/project-changelog.md` and `docs/project-roadmap.md`
+   - Commit and push: `git push origin main`
+   - Tag and push tag: `git tag v0.1.0-rc.X && git push origin v0.1.0-rc.X`
+   - GitHub Actions (`.github/workflows/release.yml`) runs CI gates and publishes via OIDC (no token needed)
+
+2. **GA release** (`0.1.0`): Same process once all phases complete
 
 ### Version Bumping
-- Alphas: `npm version prerelease --preid=alpha`
-- RC: `npm version prerelease --preid=rc`
-- GA: `npm version minor` (or major if breaking)
+- Update `package.json` `"version"` field and `src/manifest/registry.ts` `version` constant (must match)
+- Use conventional commits: `feat:` (features), `fix:` (bugfixes), `chore:` (versions/deps), `docs:` (docs-only)
 
-### Publishing
-```bash
-npm publish              # to npm registry
-git tag v0.1.0          # GitHub release
-git tag v1 -f           # floating tag (v1 always points to latest)
-```
+### OIDC Authentication
+- GitHub Actions has `permissions: { id-token: write }` for npm OIDC
+- npm 11.5+ installed in CI (Node 20 ships npm 10, upgraded in release.yml)
+- No npm token stored in GitHub Secrets
+- `npm publish --provenance --tag latest` signs every release cryptographically
+
+### Publishing Automation
+GitHub Actions workflow (`.github/workflows/release.yml`) on tag push:
+1. Typecheck, lint, test, build
+2. Verify drift-check (generated artifacts up to date)
+3. Publish to npm with OIDC identity (provenance signature included)
+4. Tag as `latest` (pre-1.0 convention; becomes `next` for prereleases post-GA)
 
 ### Documentation Updates
+- Per-release: add changelog entry (this file) with version, date, summary
+- Per-major change: update `docs/deployment-guide.md` if release process changes
 - Per-phase: update `docs/project-roadmap.md` progress
-- Per-release: add changelog entry (this file)
-- Per-major: update README.md examples
+- Per-major: update README.md examples and install instructions
 
 ---
 

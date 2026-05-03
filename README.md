@@ -3,7 +3,7 @@
 > Bunny.net CLI for storage deploy, CDN purge, and full resource management. Ships with an MCP stdio server so AI agents (Claude Code, Claude Desktop) can drive every command.
 
 [![CI](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/bunny-tools/alpha.svg)](https://www.npmjs.com/package/bunny-tools)
+[![npm](https://img.shields.io/npm/v/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Package name on npm:** `bunny-tools` &middot; **Binary:** `bunny`
@@ -162,9 +162,8 @@ bunny storage sync ./dist --zone=my-app
 | `bunny pullzone edgerule add <id> --rule=<json>` | Add an edge rule (raw JSON rule) |
 | `bunny pullzone edgerule delete <id> <rule-id>` | Delete an edge rule |
 | `bunny pullzone hostname list <id>` | List custom hostnames linked to a pull zone |
-| `bunny pullzone hostname add <id> <hostname>` | Link a custom hostname (e.g. `example.com`) |
+| `bunny pullzone hostname add <id> <hostname>` | Idempotent: link + provision Let's Encrypt cert + enable ForceSSL. `--no-force-ssl` opts out of HTTP→HTTPS redirect |
 | `bunny pullzone hostname remove <id> <hostname>` | Unlink a custom hostname |
-| `bunny pullzone hostname enable-ssl <id> <hostname>` | Provision a Let's Encrypt cert and wait until ready (required for Type-7 DNS records) |
 
 
 **Example**
@@ -172,11 +171,13 @@ bunny storage sync ./dist --zone=my-app
 ```bash
 bunny cdn edgerule list 12345
 
-# Wire DNS to a pull zone (3 steps — Bunny rejects PULLZONE records whose
-# FQDN isn't linked AND has a valid SSL certificate):
-bunny pullzone hostname add 5780316 example.com
-bunny pullzone hostname enable-ssl 5780316 example.com   # blocks ~30-90s
+# Wire DNS to a pull zone (2 steps — `add` does link + cert + ForceSSL
+# in one idempotent call; the DNS record points at the wired-up PZ):
+bunny pullzone hostname add 5780316 example.com           # ~2-90s
 bunny dns record add 783181 PULLZONE @ --pull-zone=5780316
+
+# Or do everything in one shot via the atomic Connect Domain command:
+bunny domain connect 5780316 example.com --dns-zone=783181
 ```
 
 ## DNS
@@ -370,11 +371,14 @@ This project uses bunny-tools. Run `bunny init` for first-time setup, then `bunn
 git clone https://github.com/bytekcorp/bunny-tools
 cd bunny-tools
 npm ci
+npm run build
 npm test
 npm run dev -- manifest --pretty
 ```
 
 For end-to-end testing against a real Bunny account (drift detection), see [`docs/e2e-testing.md`](docs/e2e-testing.md).
+
+For release instructions, see [`docs/deployment-guide.md`](docs/deployment-guide.md).
 
 ## License
 
