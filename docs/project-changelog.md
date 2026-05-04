@@ -4,6 +4,25 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.52] — 2026-05-04 (E2E env vars: rename CERT_DOMAIN → DOMAIN + auto-resolve DNS zone id)
+
+### Changed
+- **`BUNNY_E2E_CERT_DOMAIN` renamed to `BUNNY_E2E_DOMAIN`.** The old name was inherited from when there was a single cert-provisioning test using the domain. After rc.48 the same domain is used for hostname round-trip + atomic `domain_connect` flow; "cert" stopped being accurate. New name is short and accurate (matches the `BUNNY_E2E` master gate).
+- **`BUNNY_E2E_DNS_ZONE_ID` is now auto-resolved from `BUNNY_E2E_DOMAIN`** at test setup. Previously both had to be supplied as parallel env vars even though the id is trivially derivable from the domain (one `bunny dns list` call). Removes one secret to manage and one mismatch failure mode (set DOMAIN but forgot to update ID after a DNS rename). Explicit env var still wins as an escape hatch for pointing cert tests at a non-canonical zone.
+
+### Migration
+- GH Actions: secret `BUNNY_E2E_DOMAIN` is now read; `BUNNY_E2E_CERT_DOMAIN` no longer wired. Delete the old repo secret (`gh secret delete BUNNY_E2E_CERT_DOMAIN`).
+- `BUNNY_E2E_DNS_ZONE_ID` repo secret is no longer required (auto-resolved). Delete it unless you specifically want to override.
+- Local: `BUNNY_E2E_CERT_DOMAIN=...` won't be read anymore; use `BUNNY_E2E_DOMAIN=...`.
+
+### Rationale (why no backwards-compat fallback)
+A 2-line shim was considered but rejected — bunny-tools has one maintainer and the secret rename takes 5 seconds. Carrying a CERT_DOMAIN fallback forever would rot.
+
+### Test Coverage
+- 185/185 unit (unchanged).
+
+---
+
 ## [0.1.0-rc.51] — 2026-05-04 (Trim 3 long summaries that wrapped help output)
 
 ### Fixed

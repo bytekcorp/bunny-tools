@@ -67,6 +67,28 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     pullZoneId = extractIdNumeric(pzCreated);
     register('pullzone', pullZoneId, pullZoneName);
 
+    // 2c. Auto-resolve BUNNY_E2E_DNS_ZONE_ID from BUNNY_E2E_DOMAIN. Pre-rc.52
+    // both had to be supplied as separate env vars even though the id is
+    // trivially derivable from the domain (one dns list call). Now we
+    // resolve once here and stuff the result into env so all gated tests
+    // pick it up. Explicit BUNNY_E2E_DNS_ZONE_ID still wins (escape hatch
+    // for pointing at a non-canonical zone).
+    const e2eDomain = process.env['BUNNY_E2E_DOMAIN'];
+    if (e2eDomain && !process.env['BUNNY_E2E_DNS_ZONE_ID']) {
+      try {
+        const dnsList = await bunnyCliOk(['dns', 'list', '--json']);
+        const zones = JSON.parse(dnsList.stdout) as Array<{ Id: number; Domain: string }>;
+        const matched = zones.find((z) => z.Domain === e2eDomain);
+        if (matched) {
+          process.env['BUNNY_E2E_DNS_ZONE_ID'] = String(matched.Id);
+        }
+        // No-match path: leave DNS_ZONE_ID unset; gated tests skip cleanly.
+      } catch {
+        // Best-effort. If dns list fails (account-key issue, etc.) just
+        // leave DNS_ZONE_ID unset and let the cert tests skip.
+      }
+    }
+
     // 3. Bunny propagates storage-zone passwords into the data plane on a
     // ~5-second delay. Without this wait, the first MCP storage_upload
     // returns 401 even though the password is correct.
@@ -311,25 +333,24 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
 
   // -----------------------------------------------------------------------
   // Pull-zone hostname round-trip — exercises the rc.25 list/add/remove
-  // tools individually. Gated on BUNNY_E2E_CERT_DOMAIN.
+  // tools individually. Gated on BUNNY_E2E_DOMAIN + BUNNY_E2E_DNS_ZONE_ID
+  // (the latter auto-resolved from the former in beforeAll).
   //
-  // rc.48: also gated on BUNNY_E2E_DNS_ZONE_ID. Bunny's addHostname API
-  // enforces a DNS-pointing check ("The domain ... is not pointing to
-  // our servers") and rejects link attempts for hostnames that don't
-  // resolve to Bunny's CDN. The MCP tool has no link-only mode that
-  // skips this. To run these tests we need to pre-create a DNS record
-  // pointing at the pull zone, which itself requires DNS_ZONE_ID. The
-  // `domain_connect` test does this atomically; this single-tool test
-  // currently can't (would need either a new MCP flag or pre-test DNS
-  // setup). For now, gating prevents CI noise and makes the env-var
-  // requirement uniform across hostname-touching tests.
+  // Bunny's addHostname API enforces a DNS-pointing check ("The domain
+  // ... is not pointing to our servers") and rejects link attempts for
+  // hostnames that don't resolve to Bunny's CDN. The MCP tool has no
+  // link-only mode that skips this — running these tests needs a
+  // pre-existing DNS record pointing at the pull zone, which means
+  // DNS_ZONE_ID. The `domain_connect` test does this atomically; this
+  // single-tool test currently can't (would need either a new MCP flag
+  // or pre-test DNS setup). For now, gating prevents CI noise.
   // -----------------------------------------------------------------------
 
-  const certDomainAvailable =
-    !!process.env['BUNNY_E2E_CERT_DOMAIN'] && !!process.env['BUNNY_E2E_DNS_ZONE_ID'];
-  it.skipIf(!certDomainAvailable)('bunny.pullzone_hostname_{list,add,remove} round-trip', async () => {
-    const certDomainEnv = process.env['BUNNY_E2E_CERT_DOMAIN']!;
-    const host = `${suitePrefix()}-mcp-host.${certDomainEnv}`;
+  const e2eDomainAvailable = () =>
+    !!process.env['BUNNY_E2E_DOMAIN'] && !!process.env['BUNNY_E2E_DNS_ZONE_ID'];
+  it.skipIf(!e2eDomainAvailable())('bunny.pullzone_hostname_{list,add,remove} round-trip', async () => {
+    const e2eDomainEnv = process.env['BUNNY_E2E_DOMAIN']!;
+    const host = `${suitePrefix()}-mcp-host.${e2eDomainEnv}`;
 
     const initial = unwrapJson<{ hostnames: string[] }>(
       (await mcp.client.callTool({
@@ -373,21 +394,20 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   });
 
   // -----------------------------------------------------------------------
-  // enable_ssl — gated on BUNNY_E2E_CERT_DOMAIN because Let's Encrypt cert
+  // enable_ssl — gated on BUNNY_E2E_DOMAIN because Let's Encrypt cert
   // provisioning needs a real domain with Bunny NS authoritative (DNS-01).
-  // Set BUNNY_E2E_CERT_DOMAIN=chien.do (or any domain you control on Bunny
-  // DNS) to opt in. Skipped otherwise — including in CI nightly unless the
-  // var is configured. ~30-90s wall-clock for cert provisioning.
+  // Set BUNNY_E2E_DOMAIN=<domain you own on Bunny DNS> to opt in. Skipped
+  // otherwise — including in CI nightly unless the var is configured.
+  // ~30-90s wall-clock for cert provisioning.
   // -----------------------------------------------------------------------
 
-  const certDomain = process.env['BUNNY_E2E_CERT_DOMAIN'];
   // Same DNS-pointing constraint as the round-trip above: standalone
   // hostname add can't pass without a pre-existing DNS record. Gated on
-  // both env vars uniformly.
-  it.skipIf(!certDomainAvailable)(
+  // both BUNNY_E2E_DOMAIN + DNS_ZONE_ID uniformly.
+  it.skipIf(!e2eDomainAvailable())(
     'bunny.pullzone_hostname_add provisions cert via DNS-01 in one call (rc.37)',
     async () => {
-      const host = `${suitePrefix()}-cert.${certDomain}`;
+      const host = `${suitePrefix()}-cert.${process.env['BUNNY_E2E_DOMAIN']}`;
       // rc.37: `add` is now the idempotent state-setter — it links + provisions
       // cert + enables ForceSSL in one call. Replaces the rc.26-36 enable_ssl tool.
       try {
@@ -437,20 +457,16 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   // ever gets new logic worth covering.
   // -----------------------------------------------------------------------
   // -----------------------------------------------------------------------
-  // domain_connect — atomic Connect Domain. Gated on BUNNY_E2E_CERT_DOMAIN
-  // (same reason as enable_ssl: real domain needed for DNS-01). Cleans up
-  // the hostname + DNS record after the test.
+  // domain_connect — atomic Connect Domain. Gated on BUNNY_E2E_DOMAIN
+  // (same reason as enable_ssl: real domain needed for DNS-01). DNS zone
+  // id is auto-resolved from the domain in beforeAll. Cleans up the
+  // hostname + DNS record after the test.
   // -----------------------------------------------------------------------
-  it.skipIf(!certDomain)(
+  it.skipIf(!e2eDomainAvailable())(
     'bunny.domain_connect provisions hostname + cert + DNS record atomically',
     async () => {
-      const fqdn = `${suitePrefix()}-domain.${certDomain}`;
-      const dnsZoneIdEnv = process.env['BUNNY_E2E_DNS_ZONE_ID'];
-      // Need both a cert domain and its dns zone id to test the full path.
-      // If only certDomain is set, skip — addHostname alone is covered by
-      // the round-trip test above.
-      if (!dnsZoneIdEnv) return;
-      const dnsZoneId = Number.parseInt(dnsZoneIdEnv, 10);
+      const fqdn = `${suitePrefix()}-domain.${process.env['BUNNY_E2E_DOMAIN']}`;
+      const dnsZoneId = Number.parseInt(process.env['BUNNY_E2E_DNS_ZONE_ID']!, 10);
       const result = unwrapJson<{
         ok: boolean;
         hasCertificate: boolean;

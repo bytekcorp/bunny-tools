@@ -30,15 +30,17 @@ jobs:
         env:
           BUNNY_E2E: '1'
           BUNNY_ACCOUNT_KEY: ${{ secrets.BUNNY_E2E_ACCOUNT_KEY }}
-          # Optional. Unlocks cert-provisioning tests (Let's Encrypt DNS-01
-          # via Bunny DNS). When unset, those tests skip cleanly. Repo
-          # secret was added 2026-05-03 but wasn't wired here until rc.47.
-          BUNNY_E2E_CERT_DOMAIN: ${{ secrets.BUNNY_E2E_CERT_DOMAIN }}
-          # Optional. When BUNNY_E2E_CERT_DOMAIN is set, this unlocks the
-          # MCP domain_connect end-to-end test (atomic hostname + cert +
-          # apex DNS record creation). Skipped if unset even when
-          # CERT_DOMAIN is present.
-          BUNNY_E2E_DNS_ZONE_ID: ${{ secrets.BUNNY_E2E_DNS_ZONE_ID }}
+          # Optional. The domain used by the e2e suite for any test that
+          # needs a real registrable domain (cert provisioning, hostname
+          # round-trip, atomic domain_connect). When unset, those tests
+          # skip cleanly. The domain must have its DNS zone on Bunny in
+          # the same account; the suite auto-resolves the DNS zone id
+          # from this domain at startup (one `bunny dns list` call).
+          #
+          # rc.52: renamed from BUNNY_E2E_CERT_DOMAIN (which only made
+          # sense when this domain was used solely for cert tests; it's
+          # now used for hostname + domain_connect too).
+          BUNNY_E2E_DOMAIN: ${{ secrets.BUNNY_E2E_DOMAIN }}
         # `pipefail` is mandatory here — without it, a test failure piped
         # through `tee` silently exits 0 (because tee succeeds) and the
         # whole drift-detection workflow reports success. Setting it
