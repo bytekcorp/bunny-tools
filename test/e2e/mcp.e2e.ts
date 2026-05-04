@@ -101,7 +101,20 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   }, 90000);
 
   afterAll(async () => {
-    if (mcp) await mcp.close();
+    // rc.55: timeout-protect mcp.close() so cleanupAll() always runs.
+    // Pre-rc.55 a hung MCP transport could swallow the rest of afterAll,
+    // leaving 3 resources orphaned (1× storage zone + 1× pull zone + 1×
+    // DNS zone). With this guard, even a frozen close() releases control
+    // after 5s and Bunny resources still get torn down.
+    if (mcp) {
+      await Promise.race([
+        mcp.close(),
+        new Promise<void>((resolve) => setTimeout(resolve, 5000)),
+      ]).catch(() => {
+        // Best-effort. mcp.close() throwing or timing out is non-fatal —
+        // the child process is killed by the test runner anyway.
+      });
+    }
     await cleanupAll();
   });
 

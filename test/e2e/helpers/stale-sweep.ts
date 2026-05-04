@@ -1,12 +1,18 @@
 // Vitest globalSetup — before the suite starts, find any `bt-e2e-*` resource
-// older than 24h and delete it. Catches leftovers from prior runs that
-// failed before their cleanup phase. Returns no teardown hook.
+// older than the stale threshold and delete it. Catches leftovers from prior
+// runs that failed before their cleanup phase. Returns no teardown hook.
 
 import { bunnyCli } from './bunny-cli.js';
 import { parseStaleAge } from './prefix.js';
 import type { ResourceType } from './cleanup-registry.js';
 
-const STALE_AFTER_SEC = 24 * 60 * 60; // 24h
+// rc.55: tightened from 24h to 1h. Each suite run creates resources with a
+// unique prefix (`bt-e2e-<pid>-<unixts>-...`), so concurrent runs don't
+// collide; an orphan from one run never gets confused for an in-flight
+// resource of another. Shorter window means leaked resources self-clean
+// within an hour rather than a day. Original 24h was a paranoid hedge for
+// non-prefixed resources that never existed in this codebase.
+const STALE_AFTER_SEC = 60 * 60; // 1h
 
 type ListedRow = { type: ResourceType; id: string; name: string };
 

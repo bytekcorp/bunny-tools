@@ -36,10 +36,16 @@ export async function cleanupAll(): Promise<{ deleted: number; failed: number }>
     try {
       await deleteByType(r.type, r.id);
       deleted += 1;
-    } catch {
-      // Best-effort cleanup. Don't mask the original test failure with a
-      // noisy stderr trail; stale-sweep on next run covers any gaps.
+    } catch (err) {
+      // rc.55: surface cleanup failures to stderr so they appear in the
+      // CI nightly log + the auto-created drift issue body. Pre-rc.55 a
+      // silent catch made one failed run leak 3 resources without trace
+      // (found rc.54 — a dispatch left bt-e2e-45568-* dangling for ~1.5h
+      // before manual cleanup). stale-sweep still grabs them within 1h
+      // even if this stderr line gets lost.
       failed += 1;
+      // eslint-disable-next-line no-console
+      console.error(`[cleanup] ${r.type}:${r.id}${r.label ? ` (${r.label})` : ''} failed: ${(err as Error).message}`);
     }
   }
   return { deleted, failed };
