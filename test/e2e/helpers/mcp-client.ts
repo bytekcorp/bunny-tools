@@ -72,12 +72,28 @@ export async function spawnMcpClient(extraEnv: Record<string, string> = {}): Pro
 // Helpers parse MCP `callTool` results which are wrapped in a `content[]`
 // array per the protocol. Most tools return a single text/JSON content item;
 // these unwrap to the raw payload tests want to assert on.
-export function unwrapJson<T = unknown>(result: { content?: Array<{ type: string; text?: string }> }): T {
+//
+// rc.48: when the wrapped content is plain text (typically an error message
+// surfaced via the MCP `isError` envelope), JSON.parse throws SyntaxError
+// showing only the first few characters — useless for debugging. We now
+// surface the full text in the thrown error so test failures point at the
+// underlying API rejection, not the parse step.
+export function unwrapJson<T = unknown>(result: {
+  content?: Array<{ type: string; text?: string }>;
+  isError?: boolean;
+}): T {
   const first = result.content?.[0];
   if (!first || first.type !== 'text' || typeof first.text !== 'string') {
     throw new Error(`unexpected MCP content shape: ${JSON.stringify(result).slice(0, 200)}`);
   }
-  return JSON.parse(first.text) as T;
+  try {
+    return JSON.parse(first.text) as T;
+  } catch {
+    const tag = result.isError === true ? ' (isError=true)' : '';
+    throw new Error(
+      `MCP tool returned non-JSON text${tag} — body: ${first.text.slice(0, 500)}`,
+    );
+  }
 }
 
 export function unwrapText(result: { content?: Array<{ type: string; text?: string }> }): string {
