@@ -4,6 +4,24 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.48] — 2026-05-04 (Fix `whoami` for env-only / CI auth + nightly secret wiring)
+
+Found running the GA-readiness nightly. Two real issues, both surfacing the same root: stuff that worked locally because the local keychain was populated, but failed in CI where credentials live only in env vars.
+
+### Fixed
+- **`bunny whoami` reported "No credentials stored" when `BUNNY_ACCOUNT_KEY` was env-only.** `core/auth.ts:listScopes` previously enumerated only stored scopes (keychain + file). CI environments authenticate purely via env, so `whoami` reported empty even though every other command worked. AI agents querying via MCP `bunny.run whoami` got the same wrong signal. Fix: `listScopes` now also surfaces env-based account credentials with `storedIn: 'env'`. Per-zone env vars (`BUNNY_STORAGE_PASSWORD_<ZONE>`, etc.) aren't enumerated yet — they need a zone name to construct, and whoami operates at account level.
+- **`.github/workflows/e2e-nightly.yml` didn't pass `BUNNY_E2E_CERT_DOMAIN` and `BUNNY_E2E_DNS_ZONE_ID` secrets** through to the test step. Repo secrets had been added 2026-05-03 but the wiring was missed. Cert-gated MCP tests skipped silently in CI even when configured. Now wired.
+
+### Smoke verified
+- Local: `BUNNY_ACCOUNT_KEY=fake npx tsx src/cli.ts whoami` → shows `account ***fake` (was: "No credentials stored").
+- 184/184 unit tests still pass.
+
+### Why this matters for GA
+- AI agents using bunny-tools via MCP get wrong "no credentials" signal in CI/serverless environments → would attempt re-auth flows or block workflows that should succeed.
+- The rc.46 nightly run failed on this exact path; rc.48 unblocks the green-nightly milestone needed for confident GA.
+
+---
+
 ## [0.1.0-rc.47] — 2026-05-04 (Fix `bunny --version` reporting stale)
 
 Found during the GA-readiness smoke: `bunny --version`, `bunny manifest`, MCP server `initialize`, and `AGENTS.md` were all reporting `0.1.0-rc.43` despite the package being on rc.46. Cause: registry hardcoded the version string in source, never auto-synced from package.json. Drifted across rc.44/rc.45/rc.46.
