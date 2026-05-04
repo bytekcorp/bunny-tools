@@ -3,12 +3,25 @@
 //
 // Phase 1 only `manifest` is `active`. Later phases promote `planned` → `active`.
 
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { CommandSpec, Registry } from './types.js';
+
+// Single source of truth for version: package.json. Hardcoding here drifted
+// (registry stuck at rc.43 across rc.44/45/46 RCs); reading at module load
+// keeps `bunny --version`, `bunny manifest`, AGENTS.md, and MCP server
+// initialize all in sync without per-RC bumps in two places.
+//
+// Using fs.readFileSync instead of `import ... with { type: 'json' }` so
+// the package keeps its declared Node 20+ floor — `with` import attributes
+// stabilized in Node 22.
+const PKG_PATH = fileURLToPath(new URL('../../package.json', import.meta.url));
+const VERSION = (JSON.parse(readFileSync(PKG_PATH, 'utf8')) as { version: string }).version;
 
 export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
-  version: '0.1.0-rc.43',
+  version: VERSION,
   description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },

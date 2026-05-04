@@ -4,6 +4,29 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.47] — 2026-05-04 (Fix `bunny --version` reporting stale)
+
+Found during the GA-readiness smoke: `bunny --version`, `bunny manifest`, MCP server `initialize`, and `AGENTS.md` were all reporting `0.1.0-rc.43` despite the package being on rc.46. Cause: registry hardcoded the version string in source, never auto-synced from package.json. Drifted across rc.44/rc.45/rc.46.
+
+### Fixed
+- **`src/manifest/registry.ts`** now reads `version` from `package.json` at module load via `fs.readFileSync`. Single source of truth — bumping `package.json` is now the only place where version changes for an RC. Used `readFileSync` rather than `import ... with { type: 'json' }` to keep the declared Node 20+ floor (the `with` import-attribute syntax stabilized in Node 22).
+
+### Why this is a real bug, not cosmetic
+- AI agents querying `bunny manifest` got the wrong version → would compare against the wrong feature surface.
+- `bunny --version` is the standard mechanism users + CI use to confirm an install. Reporting rc.43 when the binary is rc.46 is genuinely misleading.
+- AGENTS.md (consumed by AI agents and `bunny install mcp` config generation) had wrong version.
+
+### Smoke verified
+- `npx tsx src/cli.ts --version` → `0.1.0-rc.47`
+- `npx tsx src/cli.ts manifest | jq .version` → `0.1.0-rc.47`
+- MCP `initialize` returns `serverInfo.version: 0.1.0-rc.47`
+- AGENTS.md regenerated header: `**Version:** 0.1.0-rc.47`
+
+### Test Coverage
+- 184/184 unit (unchanged).
+
+---
+
 ## [0.1.0-rc.46] — 2026-05-03 (First full e2e run + coverage gaps closed)
 
 This is the "Phase 5 unblocked" RC — the e2e nightly task had been pending since the harness was built (Phase 1-4 in earlier sessions). First real fire surfaced 3 latent issues, all fixed here. Net: full e2e suite is green, including the new tests added below.
