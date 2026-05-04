@@ -1,6 +1,4 @@
-# bunny-tools
-
-> Broad-surface Bunny.net CLI + MCP server. 60 commands across Storage, CDN, DNS, Stream, and Edge Scripting - drive them from your shell or from any AI agent (Claude Code, Claude Desktop). If you've used `firebase deploy`, `bunny deploy` will feel familiar - one command for static-site upload + CDN purge.
+# Bunny CLI and MCP Server
 
 [![npm](https://img.shields.io/npm/v/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
 [![npm downloads](https://img.shields.io/npm/dm/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
@@ -12,7 +10,7 @@
 
 ## Why bunny-tools
 
-Bunny.net's official CLI ([`@bunny.net/cli`](https://www.npmjs.com/package/@bunny.net/cli)) covers Databases, Magic Containers, and Edge Scripts. bunny-tools is the broader surface - Storage, CDN, DNS, Stream, Edge Scripting - for teams that mostly need static-site deploy + CDN management. One binary replaces a folder of curl scripts and stale dashboard tabs:
+Bunny.net is a great CDN/storage/DNS/streaming platform but managing it from the terminal was DIY territory. bunny-tools fixes that with one binary covering Storage, CDN, DNS, Stream, and Edge Scripting - and a built-in MCP server so AI agents can drive every command:
 
 - **`bunny deploy` for static sites.** Familiar ergonomics if you've used `firebase deploy` - walk public dir → SHA-cached diff → parallel upload → CDN purge, in one command.
 - **`bunny.json` is your single source of truth.** Versioned in git. Every command honors it. JSON Schema published at `unpkg.com/bunny-tools/schema/bunny.schema.json`.
@@ -397,6 +395,20 @@ npm run dev -- manifest --pretty
 For end-to-end testing against a real Bunny account (drift detection), see [`docs/e2e-testing.md`](docs/e2e-testing.md).
 
 For release instructions, see [`docs/deployment-guide.md`](docs/deployment-guide.md).
+
+## FAQ
+
+**Is this the official Bunny.net CLI?**
+No. bunny-tools is a community CLI. Bunny.net publishes [`@bunny.net/cli`](https://www.npmjs.com/package/@bunny.net/cli), which focuses on Databases, Magic Containers, and Edge Scripts. bunny-tools covers a different surface (Storage, CDN, DNS, Stream, Edge Scripting) and ships an MCP server for AI agents.
+
+**Why the binary name `bunny`?**
+Short and matches the brand. Note that `@bunny.net/cli` also installs a `bunny` binary, so installing both globally will collide - pick one or use `npx` for the other.
+
+**Can I use this in CI?**
+Yes. `bunny init --ci` generates a `.github/workflows/bunny-deploy.yml`. All commands honor `BUNNY_API_KEY` and per-zone scoped env vars.
+
+**Does it work without Node.js?**
+Currently npm-only (Node 20+). A standalone binary is on the v0.2 roadmap.
 
 ## License
 
