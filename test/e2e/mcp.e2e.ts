@@ -346,9 +346,19 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   // or pre-test DNS setup). For now, gating prevents CI noise.
   // -----------------------------------------------------------------------
 
-  const e2eDomainAvailable = () =>
-    !!process.env['BUNNY_E2E_DOMAIN'] && !!process.env['BUNNY_E2E_DNS_ZONE_ID'];
-  it.skipIf(!e2eDomainAvailable())('bunny.pullzone_hostname_{list,add,remove} round-trip', async () => {
+  // Runtime skip (not it.skipIf) because BUNNY_E2E_DNS_ZONE_ID is auto-
+  // resolved during beforeAll. it.skipIf evaluates at test-collection time
+  // — before beforeAll runs — so the resolved value isn't visible yet.
+  // ctx.skip() at the top of the test body honors the post-beforeAll env.
+  function skipIfNoDomain(ctx: { skip: () => void }): boolean {
+    if (!process.env['BUNNY_E2E_DOMAIN'] || !process.env['BUNNY_E2E_DNS_ZONE_ID']) {
+      ctx.skip();
+      return true;
+    }
+    return false;
+  }
+  it('bunny.pullzone_hostname_{list,add,remove} round-trip', async (ctx) => {
+    if (skipIfNoDomain(ctx)) return;
     const e2eDomainEnv = process.env['BUNNY_E2E_DOMAIN']!;
     const host = `${suitePrefix()}-mcp-host.${e2eDomainEnv}`;
 
@@ -403,10 +413,12 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
 
   // Same DNS-pointing constraint as the round-trip above: standalone
   // hostname add can't pass without a pre-existing DNS record. Gated on
-  // both BUNNY_E2E_DOMAIN + DNS_ZONE_ID uniformly.
-  it.skipIf(!e2eDomainAvailable())(
+  // both BUNNY_E2E_DOMAIN + DNS_ZONE_ID uniformly. Runtime skip — see
+  // skipIfNoDomain comment above.
+  it(
     'bunny.pullzone_hostname_add provisions cert via DNS-01 in one call (rc.37)',
-    async () => {
+    async (ctx) => {
+      if (skipIfNoDomain(ctx)) return;
       const host = `${suitePrefix()}-cert.${process.env['BUNNY_E2E_DOMAIN']}`;
       // rc.37: `add` is now the idempotent state-setter — it links + provisions
       // cert + enables ForceSSL in one call. Replaces the rc.26-36 enable_ssl tool.
@@ -462,9 +474,10 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
   // id is auto-resolved from the domain in beforeAll. Cleans up the
   // hostname + DNS record after the test.
   // -----------------------------------------------------------------------
-  it.skipIf(!e2eDomainAvailable())(
+  it(
     'bunny.domain_connect provisions hostname + cert + DNS record atomically',
-    async () => {
+    async (ctx) => {
+      if (skipIfNoDomain(ctx)) return;
       const fqdn = `${suitePrefix()}-domain.${process.env['BUNNY_E2E_DOMAIN']}`;
       const dnsZoneId = Number.parseInt(process.env['BUNNY_E2E_DNS_ZONE_ID']!, 10);
       const result = unwrapJson<{
