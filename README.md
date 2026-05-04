@@ -1,12 +1,23 @@
-# Bunny CLI and MCP Server
+# bunny-tools
 
-> Bunny.net CLI for storage deploy, CDN purge, and full resource management. Ships with an MCP stdio server so AI agents (Claude Code, Claude Desktop) can drive every command.
+> The CLI Bunny.net never shipped. 60 commands across Storage, CDN, DNS, Stream, and Edge Scripting — plus a built-in MCP server so AI agents (Claude Code, Claude Desktop) can drive every command.
 
-[![CI](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
+[![npm downloads](https://img.shields.io/npm/dm/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
+[![CI](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/bytekcorp/bunny-tools/actions/workflows/ci.yml)
+[![e2e nightly](https://github.com/bytekcorp/bunny-tools/actions/workflows/e2e-nightly.yml/badge.svg)](https://github.com/bytekcorp/bunny-tools/actions/workflows/e2e-nightly.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Package name on npm:** `bunny-tools` &middot; **Binary:** `bunny`
+**Package:** `bunny-tools` &middot; **Binary:** `bunny` &middot; **Node:** ≥20
+
+## Why bunny-tools
+
+Bunny.net is a great CDN/storage/DNS/streaming platform but ships no first-party CLI. Most teams end up with a folder of curl scripts, hand-rolled deploy logic, and stale dashboard tabs. bunny-tools replaces all of that with one binary:
+
+- **`bunny deploy` is `firebase deploy` for Bunny.** Walk public dir → SHA-cached diff → parallel upload → CDN purge — in one command.
+- **`bunny.json` is your single source of truth.** Versioned in git. Every command honors it. JSON Schema published at `unpkg.com/bunny-tools/schema/bunny.schema.json`.
+- **AI-native via MCP.** AI agents see the same surface you do — no separate plugin per agent. `bunny install mcp` registers it with Claude Code in one shot.
+- **Verified end-to-end.** 185 unit tests + nightly drift detection against a real Bunny account. We catch Bunny API changes before they break your deploys.
 
 ## Install
 
@@ -57,11 +68,13 @@ Non-interactive form for CI:
 
 ```bash
 bunny init --non-interactive --features=storage \
-  --account-key=$BUNNY_API_KEY \
+  --api-key=$BUNNY_API_KEY \
   --storage-zone=my-app \
   --storage-password=$BUNNY_STORAGE_PASSWORD \
   --pull-zone=12345
 ```
+
+Add `--ci` to also generate `.github/workflows/bunny-deploy.yml` for GitHub Actions.
 
 ## Quickstart for AI agents
 
@@ -162,7 +175,7 @@ bunny storage sync ./dist --zone=my-app
 | `bunny pullzone edgerule add <id> --rule=<json>` | Add an edge rule (raw JSON rule) |
 | `bunny pullzone edgerule delete <id> <rule-id>` | Delete an edge rule |
 | `bunny pullzone hostname list <id>` | List custom hostnames linked to a pull zone |
-| `bunny pullzone hostname add <id> <hostname>` | Idempotent: link + provision Let's Encrypt cert + enable ForceSSL. `--no-force-ssl` opts out of HTTP→HTTPS redirect |
+| `bunny pullzone hostname add <id> <hostname>` | Link hostname + provision Let's Encrypt cert + ForceSSL. Idempotent. `--no-force-ssl` opts out of HTTP→HTTPS redirect |
 | `bunny pullzone hostname remove <id> <hostname>` | Unlink a custom hostname |
 
 
@@ -193,7 +206,7 @@ bunny domain connect 5780316 example.com --dns-zone=783181
 | `bunny dns record update <zone> <record-id> --body=<json>` | Update a record |
 | `bunny dns record delete <zone> <record-id>` | Delete a record |
 
-**Supported record types:** standard `A`, `AAAA`, `CNAME`, `TXT`, `MX`, `SRV`, `CAA`, `NS` plus Bunny routing types `REDIRECT`, `FLATTEN`, `PULLZONE`, `PTR`, `SCRIPT`. `PULLZONE` and `SCRIPT` need `--link-name=<id>` (the linked pull zone / script id). For `PULLZONE` you can use the convenience flag `--pull-zone=<id>` instead and the CLI will fill in both the value and link-name from the pull zone's metadata.
+**Supported record types:** standard `A`, `AAAA`, `CNAME`, `TXT`, `MX`, `SRV`, `CAA`, `NS` plus Bunny routing types `REDIRECT`, `PULLZONE`, `PTR`, `SCRIPT`. `PULLZONE` and `SCRIPT` need `--link-name=<id>` (the linked pull zone / script id). For `PULLZONE` you can use the convenience flag `--pull-zone=<id>` instead and the CLI will fill in both the value and link-name from the pull zone's metadata. (`FLATTEN` is documented in Bunny's OpenAPI spec but the live API rejects it; dropped from supported types — re-add when Bunny enables it server-side.)
 
 **Examples**
 
@@ -336,16 +349,21 @@ Four credential scopes (all use the `AccessKey` HTTP header):
 
 **Resolver chain (per call site):** `--flag` → scoped env (e.g. `BUNNY_STORAGE_PASSWORD_MY_APP`) → generic env (`BUNNY_STORAGE_PASSWORD`) → OS keychain (`<profile>:<scope>` keys) → `~/.config/bunny-tools/credentials.json` → interactive prompt.
 
-## GitHub Action
+## GitHub Actions
+
+`bunny init --ci` generates a workflow that uses npm-install + `bunny deploy`:
 
 ```yaml
-- uses: bytekcorp/bunny-tools-deploy-action@v1
-  with:
-    account-key: ${{ secrets.BUNNY_API_KEY }}
-    storage-password: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
+- name: Install bunny-tools
+  run: npm install -g bunny-tools
+- name: Deploy
+  env:
+    BUNNY_API_KEY: ${{ secrets.BUNNY_API_KEY }}
+    BUNNY_STORAGE_PASSWORD_MY_APP: ${{ secrets.BUNNY_STORAGE_PASSWORD_MY_APP }}
+  run: bunny deploy
 ```
 
-See [`action/README.md`](./action/README.md) for full inputs.
+A composite action wrapper (`bytekcorp/bunny-tools-deploy-action@v1`) is on the v0.2 roadmap for tighter ergonomics. The npm-install form above is the canonical path for v0.1.
 
 ## MCP server (AI integration)
 

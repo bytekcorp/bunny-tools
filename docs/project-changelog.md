@@ -4,6 +4,26 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.1] — 2026-05-04 (Discovery polish — README + npm metadata)
+
+Doc + metadata-only release. No code changes; no behavior changes; CI surface identical.
+
+### Changed
+- **README hero rewritten.** New tagline ("The CLI Bunny.net never shipped"), "Why bunny-tools" elevator pitch, downloads + nightly badges, Node version callout.
+- **Stale info fixed:**
+  - `--account-key` example → `--api-key` (rc.54 rename was missed in the README)
+  - DNS supported types list dropped `FLATTEN` (rc.40 dropped it; Bunny's live API rejects)
+  - `pullzone hostname add` row description matches the rc.51-trimmed summary
+  - GH Action snippet replaced with the canonical npm-install + `bunny deploy` form (composite-action repo is v0.2 backlog, not a current shipping path)
+- **`package.json` keywords added** (15 terms incl. `bunny`, `cdn`, `mcp`, `claude-code`) — npm search discoverability.
+- **GitHub repo description set** + **11 topics added** — GH search discoverability.
+- **`docs/launch-announcement-draft.md` added** — drafts for Bunny Discord, Reddit, X/Twitter, dev.to. Drip-feed; not all at once.
+
+### Why a patch release
+The npmjs.com package page renders README from whatever's in the published tarball. v0.1.0 shipped with stale flag names (`--account-key`) — anyone copying that command would hit "unknown option". 0.1.1 ships the corrected README so the npm landing matches reality.
+
+---
+
 ## [0.1.0] — 2026-05-04 (GA — first stable release)
 
 bunny-tools graduates from `0.1.0-rc.X` to GA. 54 release candidates over ~3 days of intensive iteration; everything that surfaced in real-account e2e + dogfooding is locked in.

@@ -1,7 +1,24 @@
 {
   "name": "bunny-tools",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bunny.net CLI for storage deploy, CDN purge, and full resource management. AI-friendly via MCP.",
+  "keywords": [
+    "bunny",
+    "bunny-net",
+    "bunnycdn",
+    "cdn",
+    "cli",
+    "deploy",
+    "storage",
+    "dns",
+    "stream",
+    "edge-scripting",
+    "magic-containers",
+    "mcp",
+    "model-context-protocol",
+    "ai-tools",
+    "claude-code"
+  ],
   "license": "MIT",
   "type": "module",
   "bin": {
