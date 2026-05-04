@@ -4,6 +4,24 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.49] — 2026-05-04 (Drop NAME_COL_MIN — root help no longer has a 14-char dead-space gap)
+
+### Changed
+- **Removed the 40-char minimum width on the command-name column.** Each section now auto-widens to its own longest left + 2-char gap. Matches wrangler/gh/aws conventions. Originally the floor existed so short rows aligned with long-arg rows in mixed sections, but per-section auto-width already handles that — the floor only ever padded sections where every row was short (root help, where every entry collapses to `bunny <group> <subcmd>`), creating ~14 chars of dead whitespace.
+
+### Visible effect
+- **Root help:** GETTING STARTED column shrinks from 40 → 26 chars; SERVICES 40 → 28; UTILITIES 40 → 24. Descriptions shift left by 12-16 chars per row. Pages scan visibly tighter.
+- **Group help (e.g. `bunny dns --help`):** unchanged. Longest leaf already exceeded 40 (`bunny dns record add <zoneId> <type> <name> [value]` ≈ 51 chars), so the floor never applied.
+- **FLAGS / GLOBAL FLAGS on leaves:** unchanged — already auto-width since rc.45.
+
+### Trade-off
+Description columns no longer align *across sections* (GETTING STARTED at col 28, SERVICES at col 30, UTILITIES at col 26 in root help). Previous "all sections start at col 42" was visually consistent at the cost of dead space. Same trade wrangler made.
+
+### Test Coverage
+- 184/184 unit (unchanged). Help-smoke test catches any regression in the formatter.
+
+---
+
 ## [0.1.0-rc.48] — 2026-05-04 (Fix `whoami` for env-only / CI auth + nightly secret wiring)
 
 Found running the GA-readiness nightly. Two real issues, both surfacing the same root: stuff that worked locally because the local keychain was populated, but failed in CI where credentials live only in env vars.

@@ -54,15 +54,15 @@ const SECTIONS: Array<{ label: string; prefixes: string[] }> = [
   },
 ];
 
-// Minimum width for the "command" column before description starts. Per-group
-// alignment widens this to fit the longest left-column row in the group, so
-// commands with long arg signatures (e.g. `pullzone hostname add <pullZoneId>
-// <hostname>`) don't push their description column out of alignment with
-// neighbouring rows. The min keeps single-arg commands from leaving a giant
-// gap.
-const NAME_COL_MIN = 40;
-// Minimum gap between left column and description, used when the longest
-// left exceeds NAME_COL_MIN.
+// Gap between the command-name column and the description column. Each
+// section auto-widens to its longest left + this gap; no minimum floor.
+//
+// rc.49: dropped the previous 40-char floor (NAME_COL_MIN). Was originally
+// added so short rows aligned with long-arg rows in mixed sections, but
+// per-section auto-width already handles that — the floor only ever
+// padded sections where every row was short (e.g. root help where every
+// entry collapses to `<subcmd>`), creating ~14 chars of dead whitespace.
+// Matches wrangler/gh/aws conventions.
 const NAME_COL_GAP = 2;
 
 export function formatHelp(cmd: Command, _helper: Help): string {
@@ -288,15 +288,16 @@ function renderGroupChildren(groupPath: string): string[] {
   const active = registry.commands.filter((c) => c.status === 'active');
   const matches = active.filter((c) => c.name.startsWith(groupPath + ' '));
   // Pick the column width that fits the longest left in the group so every
-  // description aligns. Without this, rows whose left exceeds NAME_COL_MIN
-  // fall back to a single-space gap and look ragged.
+  // description aligns within the section.
   const colWidth = groupColWidth(matches.map((c) => commandRowLeft(c)));
   return matches.map((c) => '  ' + formatCommandRow(c, colWidth));
 }
 
 // Format a single command row with a left "name + args" column and a right
-// "description" column, padded for column alignment.
-function formatCommandRow(spec: CommandSpec, colWidth: number = NAME_COL_MIN): string {
+// "description" column, padded for column alignment. Callers always pass
+// `colWidth` from a section-level groupColWidth() — the default is just a
+// safety floor for any orphan caller.
+function formatCommandRow(spec: CommandSpec, colWidth: number = 0): string {
   const argSig = (spec.args ?? [])
     .map((a) => (a.required ? `<${a.name}>` : `[${a.name}]`))
     .join(' ');
@@ -304,18 +305,18 @@ function formatCommandRow(spec: CommandSpec, colWidth: number = NAME_COL_MIN): s
   return formatRow(left, spec.summary, colWidth);
 }
 
-function formatRow(left: string, right: string, colWidth: number = NAME_COL_MIN): string {
+function formatRow(left: string, right: string, colWidth: number = 0): string {
   if (right.length === 0) return left;
   const pad = Math.max(colWidth - left.length, 1);
   return `${left}${' '.repeat(pad)}${right}`;
 }
 
-// For a row group, compute the column width that aligns every description.
-// Falls back to NAME_COL_MIN when no row exceeds it (preserves the existing
-// look for short-arg commands like `bunny dns list`).
+// Section column width: longest left + gap. No floor — short-row sections
+// (e.g. root help where every entry is `bunny <group> <subcmd>`) get a
+// tight column instead of being padded to a global minimum.
 function groupColWidth(lefts: string[]): number {
   const longest = lefts.reduce((m, l) => Math.max(m, l.length), 0);
-  return longest + NAME_COL_GAP > NAME_COL_MIN ? longest + NAME_COL_GAP : NAME_COL_MIN;
+  return longest + NAME_COL_GAP;
 }
 
 // Build the left-column string for a CommandSpec — same shape as
