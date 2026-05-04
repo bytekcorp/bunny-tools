@@ -4,6 +4,27 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.50] — 2026-05-04 (Root help: unify command-block column across all 3 sections)
+
+### Changed
+- **Root help command sections (GETTING STARTED / SERVICES / UTILITIES) now share ONE column width.** rc.49 had per-section auto-width, which produced a "staircase" in root help (descriptions at col 28 / 30 / 26) — the eye reads the three sections as one visual command block, so column drift between them is hard to scan. wrangler doesn't have this problem because their root help has a single COMMANDS list; bunny intentionally shows three labeled sections at root, so the unification has to be explicit.
+- **GLOBAL FLAGS keeps its own column width.** That's a separate visual block (flags vs commands); aligning it with the command column would force GLOBAL FLAGS rows to have ~6 chars of dead space.
+
+### Visible effect (root help only)
+- All three command sections' descriptions now start at col 28 (longest left = `bunny storagezone <subcmd>`).
+- GETTING STARTED descriptions shift right by 2 chars vs rc.49.
+- UTILITIES descriptions shift right by 4 chars vs rc.49.
+- SERVICES unchanged (was already the longest section).
+
+### Unchanged
+- Group help (`bunny dns --help`, etc.) — single COMMANDS section, never had a staircase to fix.
+- Leaf help FLAGS / EXAMPLES / GLOBAL FLAGS — auto-width per block since rc.45.
+
+### Test Coverage
+- 184/184 unit (unchanged).
+
+---
+
 ## [0.1.0-rc.49] — 2026-05-04 (Drop NAME_COL_MIN — root help no longer has a 14-char dead-space gap)
 
 ### Changed

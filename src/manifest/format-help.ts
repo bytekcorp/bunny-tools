@@ -218,12 +218,22 @@ function renderRootCommands(): string[] {
   const groupMeta = new Map((registry.groups ?? []).map((g) => [g.name, g]));
   const out: string[] = [];
 
-  for (let i = 0; i < SECTIONS.length; i++) {
-    const section = SECTIONS[i]!;
-    if (i > 0) out.push('');
+  // Two-pass: bucket every section first, gather ALL command lefts across
+  // the whole COMMANDS block, compute ONE column width. Reads as a single
+  // visual block — descriptions land at the same column whether the row
+  // is in GETTING STARTED, SERVICES, or UTILITIES.
+  //
+  // rc.50: was per-section in rc.49. Three sections produced a staircase
+  // (col 28 / 30 / 26) that's hard to scan. GLOBAL FLAGS still has its
+  // own width — that's a different block (flags vs commands).
+  type SectionBucket = {
+    section: (typeof SECTIONS)[number];
+    byTop: Map<string, CommandSpec[]>;
+  };
+  const buckets: SectionBucket[] = [];
+  const allLefts: string[] = [];
 
-    // Bucket active commands by their top-level word so we can decide
-    // per-prefix whether to collapse or render bare.
+  for (const section of SECTIONS) {
     const byTop = new Map<string, CommandSpec[]>();
     for (const cmd of active) {
       if (!belongsToGroup(cmd.name, section.prefixes)) continue;
@@ -232,24 +242,25 @@ function renderRootCommands(): string[] {
       byTop.get(top)!.push(cmd);
     }
     if (byTop.size === 0) continue;
+    buckets.push({ section, byTop });
 
-    out.push(label(section.label));
-
-    // Pre-compute every left-column string in this section so we can pick
-    // ONE column width that aligns all rows.
-    const sectionLefts: string[] = [];
     for (const top of section.prefixes) {
       const cmds = byTop.get(top);
       if (!cmds || cmds.length === 0) continue;
       const bareCmd = cmds.find((c) => c.name === top);
       if (cmds.length === 1 && bareCmd) {
-        sectionLefts.push(commandRowLeft(bareCmd));
+        allLefts.push(commandRowLeft(bareCmd));
       } else {
-        sectionLefts.push(`${registry.binary} ${top} <subcmd>`);
+        allLefts.push(`${registry.binary} ${top} <subcmd>`);
       }
     }
-    const colWidth = groupColWidth(sectionLefts);
+  }
+  const colWidth = groupColWidth(allLefts);
 
+  for (let i = 0; i < buckets.length; i++) {
+    if (i > 0) out.push('');
+    const { section, byTop } = buckets[i]!;
+    out.push(label(section.label));
     for (const top of section.prefixes) {
       const cmds = byTop.get(top);
       if (!cmds || cmds.length === 0) continue;
