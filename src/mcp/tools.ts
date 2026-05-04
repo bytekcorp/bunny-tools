@@ -184,7 +184,7 @@ export const TOOLS: ToolDef[] = [
   {
     name: 'bunny.pullzone_hostname_add',
     description:
-      'Idempotent state-setter: link hostname + provision Let\'s Encrypt cert + enable ForceSSL (HTTP→HTTPS redirect). Pass `noForceSSL=true` to provision cert without the redirect (re-running with this flag flips ForceSSL OFF if previously on). Returns { ok, hostname, hasCertificate, forceSslSet? }.',
+      'Idempotent state-setter: link hostname + provision Let\'s Encrypt cert + enable ForceSSL (HTTP→HTTPS redirect). Pass `noForceSSL=true` to provision cert without the redirect (re-running with this flag flips ForceSSL OFF if previously on). Returns { ok, hostname, hostnames, hasCertificate, forceSslSet? }.',
     inputSchema: z.object({
       pullZoneId: z.number().int().positive(),
       hostname: z.string().min(1),
@@ -217,10 +217,16 @@ export const TOOLS: ToolDef[] = [
       if (noForceSSL) {
         await setHostnameForceSSL(pullZoneId, hostname, false);
       }
+      // rc.53: include post-mutation hostnames list. Mirrors hostname_remove
+      // shape — every hostname-mutating MCP tool now returns { ok, hostname,
+      // hostnames, ... }. AI agents get post-state in one call instead of
+      // needing a follow-up hostname_list. One extra GET is cheap; the
+      // alternative (caller-side polling) is slower in aggregate.
+      const hostnames = await listPullZoneHostnames(pullZoneId);
       return {
         ok: true,
         hostname,
-        linked: true,
+        hostnames,
         hasCertificate: sslResult.hasCertificate,
         ...(sslResult.forceSslSet ? { forceSslSet: true } : {}),
         ...(noForceSSL ? { forceSslSet: false } : {}),
@@ -229,7 +235,8 @@ export const TOOLS: ToolDef[] = [
   },
   {
     name: 'bunny.pullzone_hostname_remove',
-    description: 'Unlink a custom hostname from a pull zone.',
+    description:
+      'Unlink a custom hostname from a pull zone. Returns { ok, hostname, hostnames }.',
     inputSchema: z.object({
       pullZoneId: z.number().int().positive(),
       hostname: z.string().min(1),
@@ -239,13 +246,16 @@ export const TOOLS: ToolDef[] = [
         .object({ pullZoneId: z.number().int().positive(), hostname: z.string().min(1) })
         .parse(raw);
       const hostnames = await removePullZoneHostname(pullZoneId, hostname);
-      return { ok: true, hostnames };
+      // rc.53: include `hostname` (the one acted on) for symmetry with
+      // hostname_add. Every mutation tool says what was acted on AND
+      // returns the post-state list.
+      return { ok: true, hostname, hostnames };
     },
   },
   {
     name: 'bunny.domain_connect',
     description:
-      'Atomic Connect Domain: link hostname to pull zone, provision Let\'s Encrypt cert (waits up to 90s), optionally create apex Type-7 DNS record. Mirrors the Bunny dashboard "Connect Domain" button. Idempotent — safe to re-run. Pass `dnsZoneId` to also create the DNS record.',
+      'Atomic Connect Domain: link hostname to pull zone, provision Let\'s Encrypt cert (waits up to 90s), optionally create apex Type-7 DNS record. Mirrors the Bunny dashboard "Connect Domain" button. Idempotent — safe to re-run. Pass `dnsZoneId` to also create the DNS record. Returns { ok, hostname, hostnames, hasCertificate, dnsRecordId?, certWaitedMs }.',
     inputSchema: z.object({
       pullZoneId: z.number().int().positive(),
       hostname: z.string().min(1),
@@ -264,11 +274,24 @@ export const TOOLS: ToolDef[] = [
         })
         .parse(raw);
       const { connectDomain } = await import('../core/domain.js');
-      return connectDomain(args.pullZoneId, args.hostname, {
+      const result = await connectDomain(args.pullZoneId, args.hostname, {
         ...(args.dnsZoneId !== undefined ? { dnsZoneId: args.dnsZoneId } : {}),
         ...(args.recordName !== undefined ? { recordName: args.recordName } : {}),
         ...(args.noForceSSL ? { noForceSSL: true } : {}),
       });
+      // rc.53: enrich with post-state hostnames + the hostname acted on,
+      // unifying the shape with hostname_add and hostname_remove. Drop the
+      // `hostnameLinked` field — `hostnames.includes(hostname)` is the
+      // canonical post-state check.
+      const hostnames = await listPullZoneHostnames(args.pullZoneId);
+      return {
+        ok: result.ok,
+        hostname: args.hostname,
+        hostnames,
+        hasCertificate: result.hasCertificate,
+        ...(result.dnsRecordId !== undefined ? { dnsRecordId: result.dnsRecordId } : {}),
+        certWaitedMs: result.certWaitedMs,
+      };
     },
   },
   {

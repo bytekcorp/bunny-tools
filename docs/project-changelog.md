@@ -4,6 +4,28 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.53] — 2026-05-04 (Unify MCP hostname-mutation tool response shape)
+
+### Changed (breaking on MCP tool surface — internal AI-agent contract)
+- **`bunny.pullzone_hostname_add` now returns `{ ok, hostname, hostnames, hasCertificate, forceSslSet? }`.** The `hostnames` field (post-mutation list) is new. The `linked: true` field is removed — `hostnames.includes(hostname)` is the canonical post-state check.
+- **`bunny.pullzone_hostname_remove` now returns `{ ok, hostname, hostnames }`.** The `hostname` field (the one acted on) is new for symmetry with `add`.
+- **`bunny.domain_connect` now returns `{ ok, hostname, hostnames, hasCertificate, dnsRecordId?, certWaitedMs }`.** The `hostnames` field is new. The internal `hostnameLinked` boolean is no longer surfaced (caller checks `hostnames` instead). `core/domain.ts:connectDomain` still returns `hostnameLinked` for CLI consumers.
+
+### Why
+Surfaced when rc.52's auto-resolve let the e2e suite first run hostname-add tests against a real domain. Test code asserted on `added.hostnames` (plural) — natural mental model — but the tool returned `{ hostname }` singular. Three tools with three slightly different shapes (`add` had no list, `remove` had list with no `hostname`, `domain_connect` had neither).
+
+Now every hostname-mutating tool returns `{ ok, hostname, hostnames, ...metadata }`. AI agents get post-state in one read instead of needing a follow-up `pullzone_hostname_list` call. Cost: 1 extra GET per mutation (~50ms). Worth it.
+
+### Migration (for AI-agent integrations using the MCP tools directly)
+- `add` callers reading `result.linked` → use `result.hostnames.includes(result.hostname)` instead.
+- `domain_connect` callers reading `result.hostnameLinked` → same.
+
+### Test Coverage
+- 185/185 unit (unchanged).
+- Updated mcp.e2e.ts assertions to match the new shape.
+
+---
+
 ## [0.1.0-rc.52] — 2026-05-04 (E2E env vars: rename CERT_DOMAIN → DOMAIN + auto-resolve DNS zone id)
 
 ### Changed

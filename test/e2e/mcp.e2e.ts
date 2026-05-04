@@ -371,12 +371,10 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     expect(Array.isArray(initial.hostnames)).toBe(true);
     expect(initial.hostnames).not.toContain(host);
 
-    // bunny.pullzone_hostname_add returns metadata about the single linked
-    // hostname: { ok, hostname, linked, hasCertificate, forceSslSet? }.
-    // (The plural `hostnames` array is the shape of pullzone_hostname_list,
-    // which the rc.45-era test conflated. Surfaced when rc.52's auto-resolve
-    // first let this test run against a real domain.)
-    const added = unwrapJson<{ ok: boolean; hostname: string; hasCertificate?: boolean }>(
+    // rc.53: every hostname-mutating MCP tool returns
+    // { ok, hostname, hostnames, ...metadata }. Caller can verify
+    // post-state in one read — no follow-up list call needed.
+    const added = unwrapJson<{ ok: boolean; hostname: string; hostnames: string[] }>(
       (await mcp.client.callTool({
         name: 'bunny.pullzone_hostname_add',
         arguments: { pullZoneId, hostname: host },
@@ -384,32 +382,27 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     );
     expect(added.ok).toBe(true);
     expect(added.hostname).toBe(host);
+    expect(added.hostnames).toContain(host);
 
-    // rc.45: idempotency check. Re-adding the same hostname must not 4xx
-    // (Bunny would reject "already linked") and must not produce a duplicate.
-    // Verify the dedup via a fresh list call.
-    const reAdded = unwrapJson<{ ok: boolean; hostname: string }>(
+    // Idempotency: re-add must not 4xx, and the post-state list must
+    // still contain exactly one entry for this host.
+    const reAdded = unwrapJson<{ ok: boolean; hostnames: string[] }>(
       (await mcp.client.callTool({
         name: 'bunny.pullzone_hostname_add',
         arguments: { pullZoneId, hostname: host },
       })) as { content?: Array<{ type: string; text?: string }> },
     );
     expect(reAdded.ok).toBe(true);
-    const afterAdd = unwrapJson<{ hostnames: string[] }>(
-      (await mcp.client.callTool({
-        name: 'bunny.pullzone_hostname_list',
-        arguments: { pullZoneId },
-      })) as { content?: Array<{ type: string; text?: string }> },
-    );
-    expect(afterAdd.hostnames.filter((h) => h === host).length).toBe(1);
+    expect(reAdded.hostnames.filter((h) => h === host).length).toBe(1);
 
-    const removed = unwrapJson<{ ok: boolean; hostnames: string[] }>(
+    const removed = unwrapJson<{ ok: boolean; hostname: string; hostnames: string[] }>(
       (await mcp.client.callTool({
         name: 'bunny.pullzone_hostname_remove',
         arguments: { pullZoneId, hostname: host },
       })) as { content?: Array<{ type: string; text?: string }> },
     );
     expect(removed.ok).toBe(true);
+    expect(removed.hostname).toBe(host);
     expect(removed.hostnames).not.toContain(host);
   });
 
@@ -492,6 +485,8 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
       const dnsZoneId = Number.parseInt(process.env['BUNNY_E2E_DNS_ZONE_ID']!, 10);
       const result = unwrapJson<{
         ok: boolean;
+        hostname: string;
+        hostnames: string[];
         hasCertificate: boolean;
         dnsRecordId?: number;
       }>(
@@ -506,6 +501,8 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
         })) as { content?: Array<{ type: string; text?: string }> },
       );
       expect(result.ok).toBe(true);
+      expect(result.hostname).toBe(fqdn);
+      expect(result.hostnames).toContain(fqdn);
       expect(result.hasCertificate).toBe(true);
       expect(result.dnsRecordId).toBeGreaterThan(0);
 
