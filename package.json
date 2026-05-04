@@ -1,14 +1,19 @@
 {
   "name": "bunny-tools",
-  "version": "0.1.1",
-  "description": "Bunny.net CLI for storage deploy, CDN purge, and full resource management. AI-friendly via MCP.",
+  "version": "0.1.2",
+  "description": "Bunny.net CLI + MCP server. Deploy static sites to Bunny Storage and purge CDN with one command. Manage Storage, Pull Zones, DNS, Stream, Edge Scripting from a single binary — plus AI-native MCP for Claude Code & Claude Desktop.",
   "keywords": [
     "bunny",
     "bunny-net",
+    "bunny.net",
     "bunnycdn",
     "cdn",
+    "cdn-purge",
     "cli",
     "deploy",
+    "static-site",
+    "static-deploy",
+    "firebase-deploy",
     "storage",
     "dns",
     "stream",
@@ -17,7 +22,9 @@
     "mcp",
     "model-context-protocol",
     "ai-tools",
-    "claude-code"
+    "claude-code",
+    "nodejs",
+    "typescript"
   ],
   "license": "MIT",
   "type": "module",

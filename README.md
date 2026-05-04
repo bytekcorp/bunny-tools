@@ -1,6 +1,6 @@
 # bunny-tools
 
-> The CLI Bunny.net never shipped. 60 commands across Storage, CDN, DNS, Stream, and Edge Scripting — plus a built-in MCP server so AI agents (Claude Code, Claude Desktop) can drive every command.
+> Broad-surface Bunny.net CLI + MCP server. 60 commands across Storage, CDN, DNS, Stream, and Edge Scripting — drive them from your shell or from any AI agent (Claude Code, Claude Desktop). If you've used `firebase deploy`, `bunny deploy` will feel familiar — one command for static-site upload + CDN purge.
 
 [![npm](https://img.shields.io/npm/v/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
 [![npm downloads](https://img.shields.io/npm/dm/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
@@ -12,9 +12,9 @@
 
 ## Why bunny-tools
 
-Bunny.net is a great CDN/storage/DNS/streaming platform but ships no first-party CLI. Most teams end up with a folder of curl scripts, hand-rolled deploy logic, and stale dashboard tabs. bunny-tools replaces all of that with one binary:
+Bunny.net's official CLI ([`@bunny.net/cli`](https://www.npmjs.com/package/@bunny.net/cli)) covers Databases, Magic Containers, and Edge Scripts. bunny-tools is the broader surface — Storage, CDN, DNS, Stream, Edge Scripting — for teams that mostly need static-site deploy + CDN management. One binary replaces a folder of curl scripts and stale dashboard tabs:
 
-- **`bunny deploy` is `firebase deploy` for Bunny.** Walk public dir → SHA-cached diff → parallel upload → CDN purge — in one command.
+- **`bunny deploy` for static sites.** Familiar ergonomics if you've used `firebase deploy` — walk public dir → SHA-cached diff → parallel upload → CDN purge, in one command.
 - **`bunny.json` is your single source of truth.** Versioned in git. Every command honors it. JSON Schema published at `unpkg.com/bunny-tools/schema/bunny.schema.json`.
 - **AI-native via MCP.** AI agents see the same surface you do — no separate plugin per agent. `bunny install mcp` registers it with Claude Code in one shot.
 - **Verified end-to-end.** 185 unit tests + nightly drift detection against a real Bunny account. We catch Bunny API changes before they break your deploys.
