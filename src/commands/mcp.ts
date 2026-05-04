@@ -1,4 +1,4 @@
-// `bunny mcp` — boots the stdio MCP server. Stays alive until stdin closes.
+// `bunny mcp` - boots the stdio MCP server. Stays alive until stdin closes.
 
 import type { ParsedInvocation } from '../manifest/types.js';
 import { startMcpServer } from '../mcp/server.js';

@@ -1,7 +1,7 @@
-// `bunny install mcp` — bootstrap Claude Code's MCP config so users don't
+// `bunny install mcp` - bootstrap Claude Code's MCP config so users don't
 // have to memorize the long `claude mcp add` command. v1 supports Claude
 // only; Cursor/Windsurf get a clear "manual config" message pointing at
-// docs/install-mcp.md (future) — those tools have their own config files
+// docs/install-mcp.md (future) - those tools have their own config files
 // and the cross-tool surface is too varied to wrap in v0.1.
 
 import { spawn } from 'node:child_process';
@@ -40,7 +40,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   }
 
   // `claude mcp add` requires `--` to separate its own options from the
-  // subprocess command — without it, `-y` is parsed as a (nonexistent)
+  // subprocess command - without it, `-y` is parsed as a (nonexistent)
   // claude option and the command fails. Per `claude mcp add --help`:
   //   claude mcp add my-server -- my-command --some-flag arg1
   const args = ['mcp', 'add'];

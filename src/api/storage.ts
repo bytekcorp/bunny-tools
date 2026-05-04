@@ -13,7 +13,7 @@ export type StorageEntry = {
   IsDirectory: boolean;
   LastChanged: string;
   // ETag/Checksum may or may not be present depending on API. Bunny exposes
-  // a `Checksum` field on storage list — sha256 of the file. We use it for
+  // a `Checksum` field on storage list - sha256 of the file. We use it for
   // diff when present; SHA256 of local file is the source of truth otherwise.
   Checksum?: string;
 };
@@ -86,7 +86,7 @@ export function createStorageClient(opts: StorageClientOptions) {
 
 export type StorageClient = ReturnType<typeof createStorageClient>;
 
-// Recursive listing — flattens directory tree into a single array of files
+// Recursive listing - flattens directory tree into a single array of files
 // (no directories). Used by deploy diff + storage:list --recursive.
 export async function listRecursive(
   client: StorageClient,

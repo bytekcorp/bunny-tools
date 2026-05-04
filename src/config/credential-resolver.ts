@@ -102,7 +102,7 @@ export function normalizeFileStore(raw: unknown): FileStore {
     const active = typeof r['active'] === 'string' && r['active'].length > 0 ? r['active'] : DEFAULT_PROFILE;
     return { active, profiles: r['profiles'] as Record<string, Record<string, string>> };
   }
-  // Old flat shape — wrap entries into the default profile.
+  // Old flat shape - wrap entries into the default profile.
   const flat: Record<string, string> = {};
   for (const [k, v] of Object.entries(r)) {
     if (typeof v === 'string') flat[k] = v;
@@ -304,7 +304,7 @@ export async function listScopesInProfile(
   return [...found].sort();
 }
 
-// Backwards-compat shim for code still calling listCredentialScopes() — returns
+// Backwards-compat shim for code still calling listCredentialScopes() - returns
 // the active profile's scopes, prefixed with `<profile>:` for clarity.
 export async function listCredentialScopes(
   overrides: { keytar?: KeytarLike | null } = {},

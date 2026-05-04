@@ -1,5 +1,5 @@
 // `.bunny-state.json` cache: lets warm runs skip rehashing unchanged files.
-// Versioned schema — bump `v` if shape changes.
+// Versioned schema - bump `v` if shape changes.
 
 import { z } from 'zod';
 import { atomicWriteJson, readJsonOrNull } from '../util/fs.js';
@@ -26,7 +26,7 @@ export async function loadState(path: string): Promise<StateFile | null> {
   if (!raw) return null;
   const parsed = StateFileSchema.safeParse(raw);
   if (!parsed.success) {
-    // Corrupt or older version — treat as empty (forces full rehash, never crashes deploy).
+    // Corrupt or older version - treat as empty (forces full rehash, never crashes deploy).
     return null;
   }
   return parsed.data;

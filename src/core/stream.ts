@@ -1,4 +1,4 @@
-// core/stream — typed wrappers for Stream library + video CRUD. UI-free.
+// core/stream - typed wrappers for Stream library + video CRUD. UI-free.
 // Library CRUD uses account scope. Video CRUD uses per-library scope.
 
 import { readFile } from 'node:fs/promises';

@@ -29,7 +29,7 @@ function buildProgram(): Command {
     .option('-e, --env <alias>', 'One-shot .bunnyrc alias (no need for `bunny use` first).')
     .option('-p, --profile <name>', 'One-shot credential profile (overrides active). See `bunny configure list`.');
 
-  // Bare `bunny` (no subcommand) prints help on stdout with exit 0 — matches
+  // Bare `bunny` (no subcommand) prints help on stdout with exit 0 - matches
   // wrangler / firebase-tools / aws-cli convention so users can pipe the output
   // (`bunny | grep deploy`) and CI scripts can detect "no command" without a
   // failure. Commander's default for no-args + has-subcommands is help on
@@ -143,7 +143,7 @@ function registerCommand(root: Command, spec: CommandSpec): void {
     // Commander v12 invokes the action callback with: positional args (one slot
     // per declared argument, `undefined` if missing), then the parsed options
     // object, then the command instance. Slicing by the declared arg count
-    // keeps just the positionals — the prior `slice(0, -1).filter(!= undefined)`
+    // keeps just the positionals - the prior `slice(0, -1).filter(!= undefined)`
     // dropped only the command and let the options object leak into `args`,
     // mis-assigning it to the first positional slot when an optional arg was
     // omitted (e.g. `bunny storage list` with no path).

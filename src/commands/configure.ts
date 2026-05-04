@@ -1,4 +1,4 @@
-// `bunny configure` — interactive (or --non-interactive) credential walkthrough
+// `bunny configure` - interactive (or --non-interactive) credential walkthrough
 // for a named profile. Replaces the old `bunny auth set` flow.
 
 import type { ParsedInvocation } from '../manifest/types.js';

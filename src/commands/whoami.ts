@@ -1,4 +1,4 @@
-// `bunny whoami` — show the current account context.
+// `bunny whoami` - show the current account context.
 // Lists stored credential scopes (masked), counts zones reachable with the account key.
 
 import type { ParsedInvocation } from '../manifest/types.js';
@@ -14,7 +14,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
 
   const scopes = await listScopes();
 
-  // Probe what the account key can see — but don't fail hard if any product is unreachable.
+  // Probe what the account key can see - but don't fail hard if any product is unreachable.
   let storageCount: number | string = '?';
   let pullCount: number | string = '?';
   let dnsCount: number | string = '?';

@@ -1,4 +1,4 @@
-// core/domain — atomic Connect Domain flow. Bundles addHostname →
+// core/domain - atomic Connect Domain flow. Bundles addHostname →
 // loadFreeCertificate (poll) → DNS Type-7 record into one idempotent op.
 // Mirrors what the Bunny dashboard's "Connect Domain" button does behind
 // the scenes, with each step skipping cleanly if its preconditions are
@@ -14,7 +14,7 @@ import { createAccountClient } from '../api/account.js';
 import { resolveCredential } from '../config/credential-resolver.js';
 
 export type ConnectDomainOptions = {
-  /** Skip cert polling — caller will wait/check separately. Default false. */
+  /** Skip cert polling - caller will wait/check separately. Default false. */
   noWait?: boolean;
   /** Cert wait timeout in ms (default 90s, matching enable-ssl default). */
   timeoutMs?: number;
@@ -30,7 +30,7 @@ export type ConnectDomainOptions = {
   recordName?: string;
   /**
    * Skip auto-flipping ForceSSL=true after cert provisions. Default false
-   * (so HTTP→HTTPS redirect is enabled by default — 2026 best practice).
+   * (so HTTP→HTTPS redirect is enabled by default - 2026 best practice).
    */
   noForceSSL?: boolean;
 };
@@ -49,7 +49,7 @@ export async function connectDomain(
   hostname: string,
   opts: ConnectDomainOptions = {},
 ): Promise<ConnectDomainResult> {
-  // 1. Hostname add — idempotent. Fetch first so re-runs don't fail the
+  // 1. Hostname add - idempotent. Fetch first so re-runs don't fail the
   // call. Bunny's addHostname returns 204 on add OR if hostname is already
   // linked, but we skip the API call entirely when it's already there to
   // make the operation observable from the result envelope.
@@ -58,7 +58,7 @@ export async function connectDomain(
     await addPullZoneHostname(pullZoneId, hostname);
   }
 
-  // 2. Cert provisioning — enablePullZoneSSL already short-circuits when
+  // 2. Cert provisioning - enablePullZoneSSL already short-circuits when
   // HasCertificate is true, so re-runs are cheap. Skip entirely if caller
   // opted out via noWait (advanced flow: connect now, poll separately).
   let hasCertificate = false;
@@ -72,7 +72,7 @@ export async function connectDomain(
     certWaitedMs = result.waitedMs;
   }
 
-  // 3. DNS Type-7 record — only when caller asked for it. Without this,
+  // 3. DNS Type-7 record - only when caller asked for it. Without this,
   // connectDomain just preps the PZ side; user creates the DNS record
   // separately (e.g. via their existing DNS provider).
   //

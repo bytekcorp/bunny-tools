@@ -1,6 +1,6 @@
 // One-shot bunny.json migration: when `deploy.ignore` is byte-equal to the
 // rc.13-32 legacy default, rewrite it with the rc.33+ static-site baseline.
-// Idempotent — after the first migration the array no longer matches legacy
+// Idempotent - after the first migration the array no longer matches legacy
 // so subsequent deploys no-op. Any user customization (added/removed/reordered
 // entry) blocks the migration to preserve intent.
 

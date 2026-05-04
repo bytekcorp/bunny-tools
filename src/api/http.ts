@@ -156,6 +156,6 @@ function retryAfterMs(header: string | string[] | undefined): number | null {
   if (!value) return null;
   const seconds = Number.parseInt(value, 10);
   if (Number.isFinite(seconds)) return seconds * 1000;
-  // HTTP-date format — ignore for simplicity; backoff falls through.
+  // HTTP-date format - ignore for simplicity; backoff falls through.
   return null;
 }

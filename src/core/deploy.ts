@@ -1,4 +1,4 @@
-// core/deploy — orchestrates the full deploy pipeline. UI-free; emits progress events.
+// core/deploy - orchestrates the full deploy pipeline. UI-free; emits progress events.
 
 import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -18,14 +18,14 @@ import { syncEdgeRulesForPullZone } from './edge-rules-sync.js';
 
 // Files over this threshold trigger a non-blocking warning at upload time.
 // Captures the "I accidentally committed a 50MB binary" case without gating
-// the deploy. KISS — no flag, no config knob until someone asks.
+// the deploy. KISS - no flag, no config knob until someone asks.
 const LARGE_FILE_THRESHOLD_BYTES = 5 * 1024 * 1024;
 
 // Extensions where Bunny's edge MIME table doesn't match modern browser
 // expectations. We DO send the correct Content-Type at upload (mime-types
 // gives us `text/javascript; charset=utf-8` for `.mjs`), but Bunny's edge
 // has its own MIME table that overrides upload metadata for unknown types
-// — `.mjs` ends up served as `application/octet-stream`, breaking ES
+// - `.mjs` ends up served as `application/octet-stream`, breaking ES
 // modules. Surface a one-shot warning per deploy with the bunny.json fix.
 const KNOWN_BROKEN_EDGE_MIME = new Set(['.mjs', '.wasm', '.webmanifest']);
 
@@ -81,7 +81,7 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
   const ev = opts.onEvent ?? (() => {});
 
   // 0. One-shot ignore migration. Only rewrites bunny.json when its
-  // `deploy.ignore` is byte-equal to the rc.32 legacy default — meaning
+  // `deploy.ignore` is byte-equal to the rc.32 legacy default - meaning
   // the user never customized. Best-effort: failure (read-only FS, etc.)
   // is logged but doesn't block the deploy.
   if (opts.configFilePath && !opts.dryRun) {
@@ -156,8 +156,7 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
   const mimeOverrides = opts.config.deploy.mimeTypes;
 
   // Pre-scan for files whose extensions Bunny's edge doesn't natively
-  // recognize. Emit ONE warning per extension with the bunny.json fix —
-  // not per-file (would be noisy on a sites with many .mjs files).
+  // recognize. Emit ONE warning per extension with the bunny.json fix -   // not per-file (would be noisy on a sites with many .mjs files).
   const seenBroken = new Set<string>();
   for (const entry of toUpload) {
     const lastDot = entry.path.lastIndexOf('.');
@@ -169,7 +168,7 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
         type: 'warn',
         message:
           `Bunny edge may serve "${ext}" as application/octet-stream regardless of upload Content-Type. ` +
-          `Fix: declare in bunny.json (Bunny URL triggers use simple wildcards, not glob — \`*${ext}\` matches): ` +
+          `Fix: declare in bunny.json (Bunny URL triggers use simple wildcards, not glob - \`*${ext}\` matches): ` +
           `"deploy.headers": [{ "pattern": "*${ext}", "headers": { "Content-Type": "${contentTypeFor('a' + ext)}" } }]`,
       });
     }
@@ -227,14 +226,14 @@ export async function runDeploy(opts: DeployOptions): Promise<DeployResult> {
   await saveState(stateFile, diff.newState);
 
   // 8b. Sync declarative edge rules (bunny.json deploy.headers + edgeRules)
-  // to all configured PZs. Always runs when there's at least one PZ — when
+  // to all configured PZs. Always runs when there's at least one PZ - when
   // both arrays are empty AND the PZ has previously-managed rules, this
   // cleans them up. Idempotent; managed-by-bunny-tools description marker
   // prevents touching user-added rules.
   //
   // Cost: one extra getPullZone() per PZ on every deploy (~50ms). Worth
   // it to prevent orphaned managed rules when users remove headers from
-  // bunny.json. (rc.36 — was conditional on `hasDeclaredRules` in rc.34/35,
+  // bunny.json. (rc.36 - was conditional on `hasDeclaredRules` in rc.34/35,
   // which orphaned rules on un-configure. See plans/reports/...rc35... )
   if (opts.config.deploy.pullZones.length > 0) {
     ev({ type: 'phase', phase: 'edge-rules-sync' });

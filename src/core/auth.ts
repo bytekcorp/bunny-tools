@@ -1,4 +1,4 @@
-// core/auth — scope helpers + thin profile-aware wrappers around the resolver.
+// core/auth - scope helpers + thin profile-aware wrappers around the resolver.
 // CLI commands and MCP tools use these. UI-free.
 
 import type { AuthScope } from '../api/http.js';
@@ -38,7 +38,7 @@ export async function clearKey(scope: AuthScope, opts: { profile?: string } = {}
 // credentials. The latter is the CI / non-interactive path: callers set
 // BUNNY_API_KEY without ever running `bunny configure`. Pre-rc.47 this
 // function only enumerated stored scopes, so `bunny whoami` reported
-// "No credentials stored" in CI environments — misleading.
+// "No credentials stored" in CI environments - misleading.
 export async function listScopes(profile?: string): Promise<StoredScope[]> {
   const p = profile ?? (await getActiveProfile());
   const accounts = await listScopesInProfile(p);
@@ -58,7 +58,7 @@ export async function listScopes(profile?: string): Promise<StoredScope[]> {
     }
   }
   // Surface env-based account key when it isn't already present from
-  // stored scopes. We only check `account` here — per-zone storage/stream
+  // stored scopes. We only check `account` here - per-zone storage/stream
   // env vars (BUNNY_STORAGE_PASSWORD_<ZONE>, etc.) need a zone name to
   // construct, and whoami works at account level.
   const envAccountKey = process.env['BUNNY_API_KEY'];

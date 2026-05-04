@@ -1,4 +1,4 @@
-// `bunny update` — self-update via npm. Detects the install method
+// `bunny update` - self-update via npm. Detects the install method
 // (`npm install -g`, `npx -y`, or unknown) and either runs the upgrade or
 // tells the user what's actually happening so they don't get confused.
 // Permission errors get a concrete retry command, not a generic stack
@@ -19,7 +19,7 @@ export async function run(_inv: ParsedInvocation): Promise<number> {
 
   if (mode === 'npx') {
     progress.info(
-      "You're running bunny-tools via `npx`. There's nothing to update — `npx -y bunny-tools <cmd>` always pulls the latest published version.",
+      "You're running bunny-tools via `npx`. There's nothing to update - `npx -y bunny-tools <cmd>` always pulls the latest published version.",
     );
     return 0;
   }
@@ -31,7 +31,7 @@ export async function run(_inv: ParsedInvocation): Promise<number> {
   // pre-warn about pnpm/yarn/brew so the failure mode is informative.
   if (mode === 'unknown') {
     process.stderr.write(
-      'Install path could not be classified — attempting `npm install -g bunny-tools@latest` anyway.\n' +
+      'Install path could not be classified - attempting `npm install -g bunny-tools@latest` anyway.\n' +
         'If you installed via pnpm/yarn/brew, run the equivalent for your package manager instead.\n\n',
     );
   }
@@ -62,7 +62,7 @@ function detectInstallMode(): Mode {
   // process.argv[1] is the bin entry. realpathSync resolves the symlink hop
   // for `npm install -g` (matches the rc.15 main-detection fix). When the
   // user runs via `npx -y bunny-tools`, the resolved path lives under
-  // ~/.npm/_npx/<hash>/.../bunny-tools/dist/cli.js — that's the npx cache.
+  // ~/.npm/_npx/<hash>/.../bunny-tools/dist/cli.js - that's the npx cache.
   const argv1 = process.argv[1];
   if (typeof argv1 !== 'string' || argv1.length === 0) return 'unknown';
   let real: string;
@@ -74,7 +74,7 @@ function detectInstallMode(): Mode {
   // Compare the resolved binary path to known shapes.
   if (real.includes(`${nodeSep()}_npx${nodeSep()}`)) return 'npx';
   // Also handle the `bunny` symlink case where argv1 is the symlink and
-  // import.meta.url is the resolved cli.js — npx vs global differ in the
+  // import.meta.url is the resolved cli.js - npx vs global differ in the
   // _npx segment.
   if (fileURLToPath(import.meta.url).includes(`${nodeSep()}_npx${nodeSep()}`)) {
     return 'npx';

@@ -8,9 +8,9 @@
 
 ## Principles
 
-**YAGNI** (You Aren't Gonna Need It) — don't build for v0.2 in v0.1  
-**KISS** (Keep It Simple, Stupid) — favor clarity over cleverness  
-**DRY** (Don't Repeat Yourself) — extract to `src/core/*` when used 2+ places
+**YAGNI** (You Aren't Gonna Need It) - don't build for v0.2 in v0.1  
+**KISS** (Keep It Simple, Stupid) - favor clarity over cleverness  
+**DRY** (Don't Repeat Yourself) - extract to `src/core/*` when used 2+ places
 
 ---
 
@@ -150,9 +150,9 @@ CLI walker creates intermediate group commands with these descriptions; `bunny -
 **rc.18 (BREAKING):** Hyphen aliases dropped pre-GA. Only canonical flat forms work:
 ```bash
 bunny pullzone list           # canonical (works)
-bunny pull-zone list          # hyphen alias (dropped rc.18 — DOES NOT WORK)
+bunny pull-zone list          # hyphen alias (dropped rc.18 - DOES NOT WORK)
 bunny storagezone create ...  # canonical (works)
-bunny storage-zone create ... # hyphen alias (dropped rc.18 — DOES NOT WORK)
+bunny storage-zone create ... # hyphen alias (dropped rc.18 - DOES NOT WORK)
 ```
 
 **Exception:** `cdn` alias retained for `pullzone` group (dashboard parity):

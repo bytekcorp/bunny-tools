@@ -21,7 +21,7 @@ const PullZoneEntry = z.object({
   tag: z.string().optional(),
 });
 
-// `headers` — Netlify/Cloudflare-style declarative response headers per path
+// `headers` - Netlify/Cloudflare-style declarative response headers per path
 // pattern. Compiled to edge rules at deploy time; one rule per (pattern, key)
 // pair. `Cache-Control: max-age=N` is special-cased to OverrideCacheTime +
 // OverrideBrowserCacheTime; other directives fall through to SetResponseHeader.
@@ -30,7 +30,7 @@ const HeaderRule = z.object({
   headers: z.record(z.string().min(1), z.string()),
 });
 
-// `edgeRules` — raw edge rule declarations. Pass-through after marker. Each
+// `edgeRules` - raw edge rule declarations. Pass-through after marker. Each
 // entry maps 1:1 to a Bunny edge rule on the configured pull zones.
 const EdgeRuleSpec = z.object({
   description: z.string().min(1),

@@ -5,7 +5,7 @@ This is **drift detection**, not unit testing. The 122 unit tests in `test/**/*.
 ## Running locally
 
 ```bash
-# Without BUNNY_E2E set, the entire suite is skipped — safe to run anywhere.
+# Without BUNNY_E2E set, the entire suite is skipped - safe to run anywhere.
 npm run test:e2e
 
 # With BUNNY_E2E=1 + a Bunny account key, all 30 tests run against the real
@@ -39,14 +39,14 @@ BUNNY_E2E=1 BUNNY_ACCOUNT_KEY=<your-key> npm run test:e2e
 
 For contributors who don't have a real account:
 
-1. Sign up at https://bunny.net (free tier supports everything tested except Stream video bandwidth — and the test fixture is 8 KB)
+1. Sign up at https://bunny.net (free tier supports everything tested except Stream video bandwidth - and the test fixture is 8 KB)
 2. Generate an Account API Key in dashboard → Account Settings → API
 3. Export it: `export BUNNY_ACCOUNT_KEY=<your-key>`
 4. Run the suite: `BUNNY_E2E=1 npm run test:e2e`
 
 ## Adding a new service
 
-Each `*.e2e.ts` file is independent — adding a new service is one file with no harness changes:
+Each `*.e2e.ts` file is independent - adding a new service is one file with no harness changes:
 
 ```ts
 import { afterAll, describe, expect, it } from 'vitest';
@@ -75,21 +75,21 @@ If the new service needs a cleanup routine, add the type to `helpers/cleanup-reg
 
 | Failure pattern | Likely cause |
 | --- | --- |
-| `[error] Bunny rejected credentials (HTTP 401)` shortly after creation | Resource newly created — needs ~5s propagation. Already handled in beforeAll for storage + stream; if a new test fails like this, add a `setTimeout` after creation |
-| `HTTP 404` on read after delete | Eventual consistency — usually self-resolves in <1s; only flaky for zones in heavy DELETE/POST patterns |
-| `unknown command` | Registry mismatch — the e2e file references a command that's not `active` in `src/manifest/registry.ts`. Either promote the command or skip the test |
+| `[error] Bunny rejected credentials (HTTP 401)` shortly after creation | Resource newly created - needs ~5s propagation. Already handled in beforeAll for storage + stream; if a new test fails like this, add a `setTimeout` after creation |
+| `HTTP 404` on read after delete | Eventual consistency - usually self-resolves in <1s; only flaky for zones in heavy DELETE/POST patterns |
+| `unknown command` | Registry mismatch - the e2e file references a command that's not `active` in `src/manifest/registry.ts`. Either promote the command or skip the test |
 | `HTTP 400` with field-level error | Bunny schema drift OR our request body shape is wrong. Cross-check with `curl` against the same endpoint |
-| Multiple tests fail with `bt-e2e-*` orphans accumulating | Cleanup registry isn't being called — check that `afterAll(cleanupAll)` is at the file level, not inside a nested `describe` |
+| Multiple tests fail with `bt-e2e-*` orphans accumulating | Cleanup registry isn't being called - check that `afterAll(cleanupAll)` is at the file level, not inside a nested `describe` |
 
 ## CI flow
 
 The nightly GitHub Action at `.github/workflows/e2e-nightly.yml` runs the same suite at 03:00 UTC daily plus on `workflow_dispatch`. On failure, it opens a GitHub issue labeled `e2e,drift` with the failure log and a link to the run.
 
-**Required secret:** `BUNNY_E2E_ACCOUNT_KEY` — set in GitHub repo Settings → Secrets and variables → Actions. Use the same value your local `BUNNY_ACCOUNT_KEY` uses, or a separate dedicated test-account key.
+**Required secret:** `BUNNY_E2E_ACCOUNT_KEY` - set in GitHub repo Settings → Secrets and variables → Actions. Use the same value your local `BUNNY_ACCOUNT_KEY` uses, or a separate dedicated test-account key.
 
 **Manual trigger:** Actions tab → "e2e-nightly" → "Run workflow" button. Useful for verifying the workflow + secret without waiting for the nightly cron.
 
-**Rotating the secret:** when the account key rotates, just update the GitHub secret — no code changes needed.
+**Rotating the secret:** when the account key rotates, just update the GitHub secret - no code changes needed.
 
 ## Stale resource sweep
 
@@ -98,5 +98,5 @@ Vitest's `globalSetup` (`test/e2e/helpers/stale-sweep.ts`) runs once before each
 ## Constraints
 
 - **Sequential only.** `pool: 'forks', singleFork: true` keeps the whole suite serial. Parallel runs would thrash Bunny's rate limiter and race on listing endpoints. If you need to parallelize for speed later, isolate each runner to a unique prefix root via `BT_E2E_PREFIX`.
-- **No fake mode.** This suite hits real Bunny by design. To test locally without a Bunny account, run the unit suite (`npm test`) — that's what mocks are for.
+- **No fake mode.** This suite hits real Bunny by design. To test locally without a Bunny account, run the unit suite (`npm test`) - that's what mocks are for.
 - **Containers app create is `.skip`-ed** until Bunny's v3 schema rewrite lands in v0.2.

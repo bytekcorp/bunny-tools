@@ -13,7 +13,7 @@ import type { CommandSpec, Registry } from './types.js';
 // initialize all in sync without per-RC bumps in two places.
 //
 // Using fs.readFileSync instead of `import ... with { type: 'json' }` so
-// the package keeps its declared Node 20+ floor — `with` import attributes
+// the package keeps its declared Node 20+ floor - `with` import attributes
 // stabilized in Node 22.
 const PKG_PATH = fileURLToPath(new URL('../../package.json', import.meta.url));
 const VERSION = (JSON.parse(readFileSync(PKG_PATH, 'utf8')) as { version: string }).version;
@@ -22,7 +22,7 @@ export const registry: Registry = {
   cliName: 'bunny-tools',
   binary: 'bunny',
   version: VERSION,
-  description: 'Bunny.net CLI — storage deploy, CDN purge, full resource management.',
+  description: 'Bunny.net CLI - storage deploy, CDN purge, full resource management.',
   groups: [
     { name: 'configure', description: 'Manage credential profiles (set/list/switch/remove).' },
     { name: 'storage', description: 'File operations within a storage zone (upload/download/list/delete/sync).' },
@@ -73,7 +73,7 @@ export const registry: Registry = {
       load: () => import('../commands/manifest.js'),
     },
 
-    // Phase 2 — daily-use deploy loop
+    // Phase 2 - daily-use deploy loop
     {
       name: 'init',
       summary: 'Initialize bunny.json + creds. Auth → feature multi-select → per-feature config.',
@@ -207,7 +207,7 @@ export const registry: Registry = {
       load: () => import('../commands/purge.js'),
     },
 
-    // Phase 3 — storage + zones
+    // Phase 3 - storage + zones
     {
       name: 'storage upload',
       summary: 'Upload a file to a storage zone.',
@@ -495,7 +495,7 @@ export const registry: Registry = {
       load: () => import('../commands/domain/connect.js'),
     },
 
-    // Phase 4 — DNS
+    // Phase 4 - DNS
     {
       name: 'dns list',
       summary: 'List DNS zones.',
@@ -517,7 +517,7 @@ export const registry: Registry = {
       summary: 'Create a DNS zone for a domain.',
       args: [{ name: 'domain', description: 'Domain name.', required: true }],
       examples: [
-        { command: 'bunny dns create example.com', description: 'Provision a DNS zone — Bunny returns the assigned NS records.' },
+        { command: 'bunny dns create example.com', description: 'Provision a DNS zone - Bunny returns the assigned NS records.' },
       ],
       status: 'active',
       phase: 4,
@@ -604,7 +604,7 @@ export const registry: Registry = {
       load: () => import('../commands/dns/record/delete.js'),
     },
 
-    // Phase 5 — Stream / Magic Containers / Edge Scripting
+    // Phase 5 - Stream / Magic Containers / Edge Scripting
     {
       name: 'stream library list',
       summary: 'List Stream video libraries.',
@@ -693,7 +693,7 @@ export const registry: Registry = {
         { name: 'region', description: 'Deploy region.', hasValue: true },
         { name: 'port', description: 'Container port.', hasValue: true },
       ],
-      // Demoted in rc.12 — Bunny Containers v3 schema requires `runtimeType`,
+      // Demoted in rc.12 - Bunny Containers v3 schema requires `runtimeType`,
       // `containerTemplates[]`, and `autoScaling.{min,max}`. Current body shape
       // produced HTTP 400 in live testing. Re-promote in v0.2 after a schema
       // rewrite. Existing list/delete commands stay active.
@@ -744,7 +744,7 @@ export const registry: Registry = {
       load: () => import('../commands/scripting/delete.js'),
     },
 
-    // rc.19 — DX polish (install bootstrap + self-update)
+    // rc.19 - DX polish (install bootstrap + self-update)
     {
       name: 'install mcp',
       summary: 'Register bunny-tools as an MCP server in Claude Code (one-shot bootstrap).',
@@ -773,7 +773,7 @@ export const registry: Registry = {
       load: () => import('../commands/update.js'),
     },
 
-    // Phase 6 — MCP server
+    // Phase 6 - MCP server
     {
       name: 'mcp',
       summary: 'Boot the bunny-tools MCP stdio server (for AI agents).',
@@ -791,7 +791,7 @@ export const registry: Registry = {
       load: () => import('../commands/mcp.js'),
     },
 
-    // rc.8 — wrangler-inspired wins.
+    // rc.8 - wrangler-inspired wins.
     {
       name: 'whoami',
       summary: 'Show the current account context (stored credentials + reachable zone counts).',

@@ -26,7 +26,7 @@ export async function readJsonOrNull<T>(path: string): Promise<T | null> {
     if (code === 'ENOENT') return null;
     throw err;
   }
-  // Treat parse errors as "no usable file" — caller can decide whether to
+  // Treat parse errors as "no usable file" - caller can decide whether to
   // overwrite or surface a separate validation error.
   try {
     return JSON.parse(raw) as T;

@@ -1,4 +1,4 @@
-// `bunny configure switch <profile>` — set the active profile.
+// `bunny configure switch <profile>` - set the active profile.
 
 import type { ParsedInvocation } from '../../manifest/types.js';
 import { setActiveProfile } from '../../config/credential-resolver.js';

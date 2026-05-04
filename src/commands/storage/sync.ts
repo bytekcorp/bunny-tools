@@ -1,4 +1,4 @@
-// `storage sync` — thin sync of a local dir to a storage zone, no purge.
+// `storage sync` - thin sync of a local dir to a storage zone, no purge.
 // Reuses the walk + parallel-upload primitives from src/deploy/.
 
 import type { ParsedInvocation } from '../../manifest/types.js';

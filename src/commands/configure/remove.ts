@@ -1,4 +1,4 @@
-// `bunny configure remove [--profile=<name>] [--scope=<scope>]` — remove a profile
+// `bunny configure remove [--profile=<name>] [--scope=<scope>]` - remove a profile
 // (all its scopes) or remove a single scope within a profile.
 
 import type { ParsedInvocation } from '../../manifest/types.js';

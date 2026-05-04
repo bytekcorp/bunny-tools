@@ -1,4 +1,4 @@
-// core/dns — typed wrappers + record-type validation. UI-free.
+// core/dns - typed wrappers + record-type validation. UI-free.
 
 import { z } from 'zod';
 import { createAccountClient } from '../api/account.js';
@@ -17,7 +17,7 @@ export function computeFqdn(name: string, domain: string): string {
 
 // Bunny DNS record type → numeric code (per Bunny API spec, verified live).
 // REDIRECT/PULLZONE/PTR/SCRIPT are Bunny-specific routing types not present
-// in standard DNS. Numeric codes are Bunny-internal — they don't match
+// in standard DNS. Numeric codes are Bunny-internal - they don't match
 // RFC 1035 numbering.
 //
 // FLATTEN (code 6) is documented in Bunny's OpenAPI spec but the live API
@@ -44,7 +44,7 @@ export const SUPPORTED_TYPES = Object.keys(RECORD_TYPE_CODES);
 
 export type SupportedType = keyof typeof RECORD_TYPE_CODES;
 
-// zod discriminated union — required fields per type. Validates BEFORE we hit the API.
+// zod discriminated union - required fields per type. Validates BEFORE we hit the API.
 const baseFields = z.object({
   name: z.string(),
   value: z.string().min(1),
@@ -210,7 +210,7 @@ async function preflightPullzoneRecord(
   // No conflict-with-other-records check: Bunny accepts PULLZONE alongside
   // A/AAAA at the same Name (verified live in rc.30). CNAME may still be
   // exclusive per DNS RFC, but Bunny's gate isn't visible to us so we
-  // don't pre-empt — let Bunny return its own error if any.
+  // don't pre-empt - let Bunny return its own error if any.
 }
 
 export async function updateRecord(zoneId: number, recordId: number, body: Record<string, unknown>): Promise<DnsRecord> {

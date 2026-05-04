@@ -1,4 +1,4 @@
-// core/scripting — Edge Scripting (Bunny Compute) CRUD. UI-free.
+// core/scripting - Edge Scripting (Bunny Compute) CRUD. UI-free.
 
 import { readFile } from 'node:fs/promises';
 import { createAccountClient } from '../api/account.js';

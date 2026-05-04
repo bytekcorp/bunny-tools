@@ -20,7 +20,7 @@ export function contentTypeFor(path: string, overrides?: MimeOverrides): string 
   // 1. User overrides win.
   if (overrides && overrides[ext]) return withCharset(overrides[ext]);
 
-  // 2. mime-types lookup (extension WITHOUT dot — the package's API).
+  // 2. mime-types lookup (extension WITHOUT dot - the package's API).
   const looked = mime.lookup(ext.slice(1));
   if (looked) return withCharset(looked);
 
@@ -29,7 +29,7 @@ export function contentTypeFor(path: string, overrides?: MimeOverrides): string 
 
 // Append `; charset=utf-8` to text-y types so Bunny serves them with the
 // charset hint. mime-types' charset() helper is conservative and only flags
-// types that are actually text — match its behavior so binary types don't
+// types that are actually text - match its behavior so binary types don't
 // get a misleading charset.
 function withCharset(type: string): string {
   if (type.includes('charset=')) return type;

@@ -43,7 +43,7 @@ export async function walkPublicDir(opts: WalkOptions): Promise<WalkedFile[]> {
     suppressErrors: true,
   });
 
-  // Apply ignore (gitignore semantics) — ignore lib expects relative posix paths.
+  // Apply ignore (gitignore semantics) - ignore lib expects relative posix paths.
   const filtered = ig.filter(entries.map((p) => p.replace(/\\/g, '/')));
 
   const dirCounts = new Map<string, number>();
@@ -65,7 +65,7 @@ export async function walkPublicDir(opts: WalkOptions): Promise<WalkedFile[]> {
     for (const [dir, count] of dirCounts) {
       if (count > cap) {
         opts.onWarn(
-          `Directory "${dir || '(root)'}" has ${count} files — Bunny recommends ≤${cap} per folder.`,
+          `Directory "${dir || '(root)'}" has ${count} files - Bunny recommends ≤${cap} per folder.`,
         );
       }
     }

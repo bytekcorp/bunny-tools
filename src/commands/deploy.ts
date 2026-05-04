@@ -1,4 +1,4 @@
-// `bunny deploy` — sync public dir to storage zone and purge CDN. Thin wrapper.
+// `bunny deploy` - sync public dir to storage zone and purge CDN. Thin wrapper.
 
 import type { ParsedInvocation } from '../manifest/types.js';
 import { loadBunnyJson } from '../config/bunny-json.js';

@@ -1,4 +1,4 @@
-// `bunny pullzone hostname add` — idempotent state-setter for hostname +
+// `bunny pullzone hostname add` - idempotent state-setter for hostname +
 // cert + ForceSSL. Default: link + provision Let's Encrypt cert + enable
 // HTTP→HTTPS redirect (production-ready out of the box). Re-running with
 // different flags brings the hostname to the new desired state.
@@ -9,7 +9,7 @@
 //
 // rc.37 collapsed the rc.26-36 enable-ssl + force-ssl subcommands into
 // flags here. Existing scripts using those subcommands will fail with
-// "unknown command" — see CHANGELOG for migration.
+// "unknown command" - see CHANGELOG for migration.
 
 import type { ParsedInvocation } from '../../../manifest/types.js';
 import {

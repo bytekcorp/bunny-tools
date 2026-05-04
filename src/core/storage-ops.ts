@@ -1,4 +1,4 @@
-// core/storage-ops — typed wrappers around the Edge Storage API.
+// core/storage-ops - typed wrappers around the Edge Storage API.
 // Resolves region per zone from the account API; caches per-call.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';

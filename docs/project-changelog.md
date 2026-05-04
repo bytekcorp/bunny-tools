@@ -4,7 +4,7 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
-## [0.1.1] — 2026-05-04 (Discovery polish — README + npm metadata)
+## [0.1.1] - 2026-05-04 (Discovery polish - README + npm metadata)
 
 Doc + metadata-only release. No code changes; no behavior changes; CI surface identical.
 
@@ -15,16 +15,16 @@ Doc + metadata-only release. No code changes; no behavior changes; CI surface id
   - DNS supported types list dropped `FLATTEN` (rc.40 dropped it; Bunny's live API rejects)
   - `pullzone hostname add` row description matches the rc.51-trimmed summary
   - GH Action snippet replaced with the canonical npm-install + `bunny deploy` form (composite-action repo is v0.2 backlog, not a current shipping path)
-- **`package.json` keywords added** (15 terms incl. `bunny`, `cdn`, `mcp`, `claude-code`) — npm search discoverability.
-- **GitHub repo description set** + **11 topics added** — GH search discoverability.
-- **`docs/launch-announcement-draft.md` added** — drafts for Bunny Discord, Reddit, X/Twitter, dev.to. Drip-feed; not all at once.
+- **`package.json` keywords added** (15 terms incl. `bunny`, `cdn`, `mcp`, `claude-code`) - npm search discoverability.
+- **GitHub repo description set** + **11 topics added** - GH search discoverability.
+- **`docs/launch-announcement-draft.md` added** - drafts for Bunny Discord, Reddit, X/Twitter, dev.to. Drip-feed; not all at once.
 
 ### Why a patch release
-The npmjs.com package page renders README from whatever's in the published tarball. v0.1.0 shipped with stale flag names (`--account-key`) — anyone copying that command would hit "unknown option". 0.1.1 ships the corrected README so the npm landing matches reality.
+The npmjs.com package page renders README from whatever's in the published tarball. v0.1.0 shipped with stale flag names (`--account-key`) - anyone copying that command would hit "unknown option". 0.1.1 ships the corrected README so the npm landing matches reality.
 
 ---
 
-## [0.1.0] — 2026-05-04 (GA — first stable release)
+## [0.1.0] - 2026-05-04 (GA - first stable release)
 
 bunny-tools graduates from `0.1.0-rc.X` to GA. 54 release candidates over ~3 days of intensive iteration; everything that surfaced in real-account e2e + dogfooding is locked in.
 
@@ -78,7 +78,7 @@ Built and dogfooded by [@chienqan](https://github.com/chienqan).
 
 ---
 
-## [0.1.0-rc.54] — 2026-05-04 (Rename `BUNNY_ACCOUNT_KEY` → `BUNNY_API_KEY`)
+## [0.1.0-rc.54] - 2026-05-04 (Rename `BUNNY_ACCOUNT_KEY` → `BUNNY_API_KEY`)
 
 The credential is called "API Key" everywhere in Bunny's dashboard and docs; "account key" was our invention. Industry convention is also `<SERVICE>_API_KEY` (Stripe, OpenAI, Anthropic, GitHub, npm). Renaming pre-GA before the env var name becomes a published contract.
 
@@ -91,7 +91,7 @@ The credential is called "API Key" everywhere in Bunny's dashboard and docs; "ac
 
 ### Unchanged (intentional)
 - **Internal scope name `account`** stays. `--scope=account` is correct because it describes the credential's role/level (vs `--scope=storage:<zone>` / `--scope=stream:<lib>`), independent of what the credential is called from Bunny's perspective.
-- **Per-product env vars**: `BUNNY_STORAGE_PASSWORD_<ZONE>` and `BUNNY_STREAM_KEY_<LIB>` keep their product prefixes — clearer hierarchy.
+- **Per-product env vars**: `BUNNY_STORAGE_PASSWORD_<ZONE>` and `BUNNY_STREAM_KEY_<LIB>` keep their product prefixes - clearer hierarchy.
 - **Comments referencing the credential by scope name** ("the account key") inside internal code are fine; they describe the scope concept.
 
 ### Migration (one-time, ~5 seconds)
@@ -119,15 +119,15 @@ Pre-GA, single maintainer, 5-second migration. Same call as rc.52's `BUNNY_E2E_C
 
 ---
 
-## [0.1.0-rc.53] — 2026-05-04 (Unify MCP hostname-mutation tool response shape)
+## [0.1.0-rc.53] - 2026-05-04 (Unify MCP hostname-mutation tool response shape)
 
-### Changed (breaking on MCP tool surface — internal AI-agent contract)
-- **`bunny.pullzone_hostname_add` now returns `{ ok, hostname, hostnames, hasCertificate, forceSslSet? }`.** The `hostnames` field (post-mutation list) is new. The `linked: true` field is removed — `hostnames.includes(hostname)` is the canonical post-state check.
+### Changed (breaking on MCP tool surface - internal AI-agent contract)
+- **`bunny.pullzone_hostname_add` now returns `{ ok, hostname, hostnames, hasCertificate, forceSslSet? }`.** The `hostnames` field (post-mutation list) is new. The `linked: true` field is removed - `hostnames.includes(hostname)` is the canonical post-state check.
 - **`bunny.pullzone_hostname_remove` now returns `{ ok, hostname, hostnames }`.** The `hostname` field (the one acted on) is new for symmetry with `add`.
 - **`bunny.domain_connect` now returns `{ ok, hostname, hostnames, hasCertificate, dnsRecordId?, certWaitedMs }`.** The `hostnames` field is new. The internal `hostnameLinked` boolean is no longer surfaced (caller checks `hostnames` instead). `core/domain.ts:connectDomain` still returns `hostnameLinked` for CLI consumers.
 
 ### Why
-Surfaced when rc.52's auto-resolve let the e2e suite first run hostname-add tests against a real domain. Test code asserted on `added.hostnames` (plural) — natural mental model — but the tool returned `{ hostname }` singular. Three tools with three slightly different shapes (`add` had no list, `remove` had list with no `hostname`, `domain_connect` had neither).
+Surfaced when rc.52's auto-resolve let the e2e suite first run hostname-add tests against a real domain. Test code asserted on `added.hostnames` (plural) - natural mental model - but the tool returned `{ hostname }` singular. Three tools with three slightly different shapes (`add` had no list, `remove` had list with no `hostname`, `domain_connect` had neither).
 
 Now every hostname-mutating tool returns `{ ok, hostname, hostnames, ...metadata }`. AI agents get post-state in one read instead of needing a follow-up `pullzone_hostname_list` call. Cost: 1 extra GET per mutation (~50ms). Worth it.
 
@@ -141,7 +141,7 @@ Now every hostname-mutating tool returns `{ ok, hostname, hostnames, ...metadata
 
 ---
 
-## [0.1.0-rc.52] — 2026-05-04 (E2E env vars: rename CERT_DOMAIN → DOMAIN + auto-resolve DNS zone id)
+## [0.1.0-rc.52] - 2026-05-04 (E2E env vars: rename CERT_DOMAIN → DOMAIN + auto-resolve DNS zone id)
 
 ### Changed
 - **`BUNNY_E2E_CERT_DOMAIN` renamed to `BUNNY_E2E_DOMAIN`.** The old name was inherited from when there was a single cert-provisioning test using the domain. After rc.48 the same domain is used for hostname round-trip + atomic `domain_connect` flow; "cert" stopped being accurate. New name is short and accurate (matches the `BUNNY_E2E` master gate).
@@ -153,32 +153,32 @@ Now every hostname-mutating tool returns `{ ok, hostname, hostnames, ...metadata
 - Local: `BUNNY_E2E_CERT_DOMAIN=...` won't be read anymore; use `BUNNY_E2E_DOMAIN=...`.
 
 ### Rationale (why no backwards-compat fallback)
-A 2-line shim was considered but rejected — bunny-tools has one maintainer and the secret rename takes 5 seconds. Carrying a CERT_DOMAIN fallback forever would rot.
+A 2-line shim was considered but rejected - bunny-tools has one maintainer and the secret rename takes 5 seconds. Carrying a CERT_DOMAIN fallback forever would rot.
 
 ### Test Coverage
 - 185/185 unit (unchanged).
 
 ---
 
-## [0.1.0-rc.51] — 2026-05-04 (Trim 3 long summaries that wrapped help output)
+## [0.1.0-rc.51] - 2026-05-04 (Trim 3 long summaries that wrapped help output)
 
 ### Fixed
 - **`pullzone hostname add` summary was 164 chars** → wrapped mid-description on `bunny pullzone --help` for any terminal narrower than 220 cols. The summary explained the `--no-force-ssl` negation inline, but that detail is already documented on the flag itself. Trimmed to 68 chars: "Link hostname + provision Let's Encrypt cert + ForceSSL. Idempotent."
-- **`domain connect` summary was 150 chars** — same wrap class. Trimmed to 75 chars: "Atomic: link hostname + cert + optional apex Type-7 DNS record. Idempotent."
-- **`init` summary was 94 chars** — borderline; tripped the new guard. Trimmed to 80 chars by dropping "a" and "in one shot" without losing meaning.
+- **`domain connect` summary was 150 chars** - same wrap class. Trimmed to 75 chars: "Atomic: link hostname + cert + optional apex Type-7 DNS record. Idempotent."
+- **`init` summary was 94 chars** - borderline; tripped the new guard. Trimmed to 80 chars by dropping "a" and "in one shot" without losing meaning.
 
 ### Added
-- **`every command summary fits in 90 chars` regression guard** in `test/manifest/examples-parse.test.ts`. Combined with the longest plausible left column (~50 chars) + 4-char indent/gap, 90-char summaries keep every COMMANDS row under 144 chars — fits 100-col terminals (modern floor) with headroom.
+- **`every command summary fits in 90 chars` regression guard** in `test/manifest/examples-parse.test.ts`. Combined with the longest plausible left column (~50 chars) + 4-char indent/gap, 90-char summaries keep every COMMANDS row under 144 chars - fits 100-col terminals (modern floor) with headroom.
 
 ### Test Coverage
 - 185/185 unit (was 184 + 1 new guard).
 
 ---
 
-## [0.1.0-rc.50] — 2026-05-04 (Root help: unify command-block column across all 3 sections)
+## [0.1.0-rc.50] - 2026-05-04 (Root help: unify command-block column across all 3 sections)
 
 ### Changed
-- **Root help command sections (GETTING STARTED / SERVICES / UTILITIES) now share ONE column width.** rc.49 had per-section auto-width, which produced a "staircase" in root help (descriptions at col 28 / 30 / 26) — the eye reads the three sections as one visual command block, so column drift between them is hard to scan. wrangler doesn't have this problem because their root help has a single COMMANDS list; bunny intentionally shows three labeled sections at root, so the unification has to be explicit.
+- **Root help command sections (GETTING STARTED / SERVICES / UTILITIES) now share ONE column width.** rc.49 had per-section auto-width, which produced a "staircase" in root help (descriptions at col 28 / 30 / 26) - the eye reads the three sections as one visual command block, so column drift between them is hard to scan. wrangler doesn't have this problem because their root help has a single COMMANDS list; bunny intentionally shows three labeled sections at root, so the unification has to be explicit.
 - **GLOBAL FLAGS keeps its own column width.** That's a separate visual block (flags vs commands); aligning it with the command column would force GLOBAL FLAGS rows to have ~6 chars of dead space.
 
 ### Visible effect (root help only)
@@ -188,23 +188,23 @@ A 2-line shim was considered but rejected — bunny-tools has one maintainer and
 - SERVICES unchanged (was already the longest section).
 
 ### Unchanged
-- Group help (`bunny dns --help`, etc.) — single COMMANDS section, never had a staircase to fix.
-- Leaf help FLAGS / EXAMPLES / GLOBAL FLAGS — auto-width per block since rc.45.
+- Group help (`bunny dns --help`, etc.) - single COMMANDS section, never had a staircase to fix.
+- Leaf help FLAGS / EXAMPLES / GLOBAL FLAGS - auto-width per block since rc.45.
 
 ### Test Coverage
 - 184/184 unit (unchanged).
 
 ---
 
-## [0.1.0-rc.49] — 2026-05-04 (Drop NAME_COL_MIN — root help no longer has a 14-char dead-space gap)
+## [0.1.0-rc.49] - 2026-05-04 (Drop NAME_COL_MIN - root help no longer has a 14-char dead-space gap)
 
 ### Changed
-- **Removed the 40-char minimum width on the command-name column.** Each section now auto-widens to its own longest left + 2-char gap. Matches wrangler/gh/aws conventions. Originally the floor existed so short rows aligned with long-arg rows in mixed sections, but per-section auto-width already handles that — the floor only ever padded sections where every row was short (root help, where every entry collapses to `bunny <group> <subcmd>`), creating ~14 chars of dead whitespace.
+- **Removed the 40-char minimum width on the command-name column.** Each section now auto-widens to its own longest left + 2-char gap. Matches wrangler/gh/aws conventions. Originally the floor existed so short rows aligned with long-arg rows in mixed sections, but per-section auto-width already handles that - the floor only ever padded sections where every row was short (root help, where every entry collapses to `bunny <group> <subcmd>`), creating ~14 chars of dead whitespace.
 
 ### Visible effect
 - **Root help:** GETTING STARTED column shrinks from 40 → 26 chars; SERVICES 40 → 28; UTILITIES 40 → 24. Descriptions shift left by 12-16 chars per row. Pages scan visibly tighter.
 - **Group help (e.g. `bunny dns --help`):** unchanged. Longest leaf already exceeded 40 (`bunny dns record add <zoneId> <type> <name> [value]` ≈ 51 chars), so the floor never applied.
-- **FLAGS / GLOBAL FLAGS on leaves:** unchanged — already auto-width since rc.45.
+- **FLAGS / GLOBAL FLAGS on leaves:** unchanged - already auto-width since rc.45.
 
 ### Trade-off
 Description columns no longer align *across sections* (GETTING STARTED at col 28, SERVICES at col 30, UTILITIES at col 26 in root help). Previous "all sections start at col 42" was visually consistent at the cost of dead space. Same trade wrangler made.
@@ -214,12 +214,12 @@ Description columns no longer align *across sections* (GETTING STARTED at col 28
 
 ---
 
-## [0.1.0-rc.48] — 2026-05-04 (Fix `whoami` for env-only / CI auth + nightly secret wiring)
+## [0.1.0-rc.48] - 2026-05-04 (Fix `whoami` for env-only / CI auth + nightly secret wiring)
 
 Found running the GA-readiness nightly. Two real issues, both surfacing the same root: stuff that worked locally because the local keychain was populated, but failed in CI where credentials live only in env vars.
 
 ### Fixed
-- **`bunny whoami` reported "No credentials stored" when `BUNNY_ACCOUNT_KEY` was env-only.** `core/auth.ts:listScopes` previously enumerated only stored scopes (keychain + file). CI environments authenticate purely via env, so `whoami` reported empty even though every other command worked. AI agents querying via MCP `bunny.run whoami` got the same wrong signal. Fix: `listScopes` now also surfaces env-based account credentials with `storedIn: 'env'`. Per-zone env vars (`BUNNY_STORAGE_PASSWORD_<ZONE>`, etc.) aren't enumerated yet — they need a zone name to construct, and whoami operates at account level.
+- **`bunny whoami` reported "No credentials stored" when `BUNNY_ACCOUNT_KEY` was env-only.** `core/auth.ts:listScopes` previously enumerated only stored scopes (keychain + file). CI environments authenticate purely via env, so `whoami` reported empty even though every other command worked. AI agents querying via MCP `bunny.run whoami` got the same wrong signal. Fix: `listScopes` now also surfaces env-based account credentials with `storedIn: 'env'`. Per-zone env vars (`BUNNY_STORAGE_PASSWORD_<ZONE>`, etc.) aren't enumerated yet - they need a zone name to construct, and whoami operates at account level.
 - **`.github/workflows/e2e-nightly.yml` didn't pass `BUNNY_E2E_CERT_DOMAIN` and `BUNNY_E2E_DNS_ZONE_ID` secrets** through to the test step. Repo secrets had been added 2026-05-03 but the wiring was missed. Cert-gated MCP tests skipped silently in CI even when configured. Now wired.
 
 ### Smoke verified
@@ -232,12 +232,12 @@ Found running the GA-readiness nightly. Two real issues, both surfacing the same
 
 ---
 
-## [0.1.0-rc.47] — 2026-05-04 (Fix `bunny --version` reporting stale)
+## [0.1.0-rc.47] - 2026-05-04 (Fix `bunny --version` reporting stale)
 
 Found during the GA-readiness smoke: `bunny --version`, `bunny manifest`, MCP server `initialize`, and `AGENTS.md` were all reporting `0.1.0-rc.43` despite the package being on rc.46. Cause: registry hardcoded the version string in source, never auto-synced from package.json. Drifted across rc.44/rc.45/rc.46.
 
 ### Fixed
-- **`src/manifest/registry.ts`** now reads `version` from `package.json` at module load via `fs.readFileSync`. Single source of truth — bumping `package.json` is now the only place where version changes for an RC. Used `readFileSync` rather than `import ... with { type: 'json' }` to keep the declared Node 20+ floor (the `with` import-attribute syntax stabilized in Node 22).
+- **`src/manifest/registry.ts`** now reads `version` from `package.json` at module load via `fs.readFileSync`. Single source of truth - bumping `package.json` is now the only place where version changes for an RC. Used `readFileSync` rather than `import ... with { type: 'json' }` to keep the declared Node 20+ floor (the `with` import-attribute syntax stabilized in Node 22).
 
 ### Why this is a real bug, not cosmetic
 - AI agents querying `bunny manifest` got the wrong version → would compare against the wrong feature surface.
@@ -255,21 +255,21 @@ Found during the GA-readiness smoke: `bunny --version`, `bunny manifest`, MCP se
 
 ---
 
-## [0.1.0-rc.46] — 2026-05-03 (First full e2e run + coverage gaps closed)
+## [0.1.0-rc.46] - 2026-05-03 (First full e2e run + coverage gaps closed)
 
-This is the "Phase 5 unblocked" RC — the e2e nightly task had been pending since the harness was built (Phase 1-4 in earlier sessions). First real fire surfaced 3 latent issues, all fixed here. Net: full e2e suite is green, including the new tests added below.
+This is the "Phase 5 unblocked" RC - the e2e nightly task had been pending since the harness was built (Phase 1-4 in earlier sessions). First real fire surfaced 3 latent issues, all fixed here. Net: full e2e suite is green, including the new tests added below.
 
 ### Added
-- **Help smoke test** (`test/manifest/help-smoke.test.ts`) — builds Commander tree in-process, walks every command, asserts non-empty `helpInformation()` + presence of expected section labels (USAGE/COMMANDS/FLAGS/EXAMPLES/GLOBAL FLAGS) per command level. Catches formatter regressions without per-command spawn cost.
-- **Examples-validity test** (`test/manifest/examples-parse.test.ts`) — scans every registered `examples` entry, extracts `--<flag>` references, asserts each is either a known global flag or declared on the spec. Catches typos in the rc.45 examples (and any future ones) before they ship as "advice that crashes."
-- **`bunny init --non-interactive --ci` e2e** (added to `deploy.e2e.ts`) — runs init in a fresh tmpdir against the existing test storage zone, asserts both `bunny.json` and `.github/workflows/bunny-deploy.yml` written with the load-bearing tokens (`npm install -g bunny-tools`, `run: bunny deploy`, `BUNNY_ACCOUNT_KEY`, `BUNNY_STORAGE_PASSWORD_*`). Bug #10 (rc.10) shipped a workflow with typo'd flag names — this guards.
-- **`bunny domain connect` CLI idempotency e2e** (`test/e2e/domain.e2e.ts`) — uses `--no-wait` to skip cert poll (cert provisions async + may fail; CLI exits 0 either way). Calls connect twice with same FQDN, asserts no error and exactly one entry in the hostname list. Bug #4 (rc.39 → rc.40) was that re-running created a duplicate DNS record.
-- **MCP hostname-add idempotency** (extended `mcp.e2e.ts` round-trip) — re-adds the same hostname between the original add and remove, asserts no error and no duplicate in the hostnames list.
+- **Help smoke test** (`test/manifest/help-smoke.test.ts`) - builds Commander tree in-process, walks every command, asserts non-empty `helpInformation()` + presence of expected section labels (USAGE/COMMANDS/FLAGS/EXAMPLES/GLOBAL FLAGS) per command level. Catches formatter regressions without per-command spawn cost.
+- **Examples-validity test** (`test/manifest/examples-parse.test.ts`) - scans every registered `examples` entry, extracts `--<flag>` references, asserts each is either a known global flag or declared on the spec. Catches typos in the rc.45 examples (and any future ones) before they ship as "advice that crashes."
+- **`bunny init --non-interactive --ci` e2e** (added to `deploy.e2e.ts`) - runs init in a fresh tmpdir against the existing test storage zone, asserts both `bunny.json` and `.github/workflows/bunny-deploy.yml` written with the load-bearing tokens (`npm install -g bunny-tools`, `run: bunny deploy`, `BUNNY_ACCOUNT_KEY`, `BUNNY_STORAGE_PASSWORD_*`). Bug #10 (rc.10) shipped a workflow with typo'd flag names - this guards.
+- **`bunny domain connect` CLI idempotency e2e** (`test/e2e/domain.e2e.ts`) - uses `--no-wait` to skip cert poll (cert provisions async + may fail; CLI exits 0 either way). Calls connect twice with same FQDN, asserts no error and exactly one entry in the hostname list. Bug #4 (rc.39 → rc.40) was that re-running created a duplicate DNS record.
+- **MCP hostname-add idempotency** (extended `mcp.e2e.ts` round-trip) - re-adds the same hostname between the original add and remove, asserts no error and no duplicate in the hostnames list.
 
 ### Fixed (3 latent test issues surfaced by first-ever real e2e run)
 - **`mcp.e2e.ts` hostname round-trip used `.example.com`** which Bunny rejects with `hostname_invalid`. Test had been broken since rc.25 but never run against real (nightly Phase 5 deferred). Fix: gate the round-trip on `BUNNY_E2E_CERT_DOMAIN` since the MCP tool always provisions cert synchronously (no link-only mode). CLI-side idempotency without cert is covered by `domain.e2e.ts` via `--no-wait`.
 - **Test placeholder hostnames** moved from `.example.com` → `.invalid` (RFC 6761) where the API path doesn't require cert provisioning. Bunny accepts `.invalid` for hostname linking; rejects `.example.com`.
-- **Init test asserted wrong workflow shape** — assumed a composite `bytekcorp/bunny-tools-deploy-action` reference; actual generator emits `npm install -g bunny-tools` + `bunny deploy`. Updated assertions.
+- **Init test asserted wrong workflow shape** - assumed a composite `bytekcorp/bunny-tools-deploy-action` reference; actual generator emits `npm install -g bunny-tools` + `bunny deploy`. Updated assertions.
 
 ### Test Coverage
 - Unit: 184/184 (was 175/175; +9 from new help-smoke + examples-parse files).
@@ -280,17 +280,17 @@ This is the "Phase 5 unblocked" RC — the e2e nightly task had been pending sin
 
 ---
 
-## [0.1.0-rc.45] — 2026-05-03 (EXAMPLES blocks + bold section headers + auto-width FLAGS)
+## [0.1.0-rc.45] - 2026-05-03 (EXAMPLES blocks + bold section headers + auto-width FLAGS)
 
 The biggest help-quality bump in v0.1. Three changes; the third does the heavy lifting.
 
 ### Added
-- **EXAMPLES block on leaf help.** When a command has `examples` in the registry, `--help` now renders an `EXAMPLES` section with 1–4 dimmed `$ <command>` lines and a description below each. Closes the "what do I actually type" gap that flag lists alone don't fill — same UX lever `gh` and `npm` use.
-- **Examples populated for 12 high-value leaves**: `dns record add` (4 — A/PULLZONE/TXT/MX), `dns create`, `pullzone create`, `pullzone edgerule add` (real .mjs MIME-fix snippet), `storage upload`, `storage list`, `storage sync`, `storagezone create`, `stream library create`, `stream video upload`, `scripting deploy`, `whoami`. Pre-existing examples retained on `init`, `configure`, `deploy`, `purge`, `domain connect`, `pullzone hostname add`, `install mcp`, `update`, `mcp`, `docs`. Total: 22/60 leaves now teach by example.
+- **EXAMPLES block on leaf help.** When a command has `examples` in the registry, `--help` now renders an `EXAMPLES` section with 1–4 dimmed `$ <command>` lines and a description below each. Closes the "what do I actually type" gap that flag lists alone don't fill - same UX lever `gh` and `npm` use.
+- **Examples populated for 12 high-value leaves**: `dns record add` (4 - A/PULLZONE/TXT/MX), `dns create`, `pullzone create`, `pullzone edgerule add` (real .mjs MIME-fix snippet), `storage upload`, `storage list`, `storage sync`, `storagezone create`, `stream library create`, `stream video upload`, `scripting deploy`, `whoami`. Pre-existing examples retained on `init`, `configure`, `deploy`, `purge`, `domain connect`, `pullzone hostname add`, `install mcp`, `update`, `mcp`, `docs`. Total: 22/60 leaves now teach by example.
 - **Examples flow through to MCP.** `bunny manifest` JSON already includes `examples`; AI agents querying the registry get the same teaching surface.
 
 ### Changed
-- **Section headers bolded** (USAGE, FLAGS, EXAMPLES, GLOBAL FLAGS, COMMANDS, GETTING STARTED, SERVICES, UTILITIES) via `picocolors`. Auto-disables under `NO_COLOR` and on non-TTY pipes — `bunny X --help | grep ...` still works. The visual zoning lets the eye lock onto labels and skip body text until it finds the right block.
+- **Section headers bolded** (USAGE, FLAGS, EXAMPLES, GLOBAL FLAGS, COMMANDS, GETTING STARTED, SERVICES, UTILITIES) via `picocolors`. Auto-disables under `NO_COLOR` and on non-TTY pipes - `bunny X --help | grep ...` still works. The visual zoning lets the eye lock onto labels and skip body text until it finds the right block.
 - **FLAGS and GLOBAL FLAGS auto-width** instead of the 40-char `NAME_COL_MIN` floor. The min was meant for COMMANDS rows where short-arg leaves should align with long-arg ones; flag blocks have no such asymmetry. `bunny deploy --help` now shows `--dry-run  Plan and report...` (10 chars + gap) instead of `--dry-run` followed by 31 chars of whitespace.
 
 ### Unchanged (intentional)
@@ -299,40 +299,40 @@ The biggest help-quality bump in v0.1. Three changes; the third does the heavy l
 - USAGE block still dropped on groups/root, retained on leaves with positional args.
 
 ### Test Coverage
-- 175/175 unit (unchanged — formatter logic flows through registry, all examples flow through `bunny manifest` JSON which is covered).
+- 175/175 unit (unchanged - formatter logic flows through registry, all examples flow through `bunny manifest` JSON which is covered).
 
 ---
 
-## [0.1.0-rc.44] — 2026-05-03 (Wrangler-style two-line help header)
+## [0.1.0-rc.44] - 2026-05-03 (Wrangler-style two-line help header)
 
 ### Changed
-- **Help title and description split onto separate lines.** Previous format was an em-dash one-liner (`bunny dns record — DNS record CRUD`); rc.44 mirrors wrangler's visual hierarchy with the title on its own line and the description as a paragraph below. Trade-off: +1 line per help page in exchange for a description that visually reads as a paragraph instead of sliding off the title row. Matters more as command names get longer (`bunny dns record add <zoneId> <type> <name>`).
-- **USAGE block dropped on groups and root.** It was always `bunny <X> <subcommand> [args] [flags]` — pure boilerplate when the COMMANDS section already enumerates every runnable command. USAGE retained on leaves where the positional-arg signature carries real information (`bunny dns record add <zoneId> <type> <name> [value] [flags]`).
+- **Help title and description split onto separate lines.** Previous format was an em-dash one-liner (`bunny dns record - DNS record CRUD`); rc.44 mirrors wrangler's visual hierarchy with the title on its own line and the description as a paragraph below. Trade-off: +1 line per help page in exchange for a description that visually reads as a paragraph instead of sliding off the title row. Matters more as command names get longer (`bunny dns record add <zoneId> <type> <name>`).
+- **USAGE block dropped on groups and root.** It was always `bunny <X> <subcommand> [args] [flags]` - pure boilerplate when the COMMANDS section already enumerates every runnable command. USAGE retained on leaves where the positional-arg signature carries real information (`bunny dns record add <zoneId> <type> <name> [value] [flags]`).
 - **No emoji.** Wrangler uses 🚢 / 🚀 / etc. on the description line; bunny-tools stays text-only for accessibility and grep-friendliness. Convention matches gh / aws / docker / firebase.
 
 ### Unchanged (intentional)
-- Per-section auto column widths (rc.42) preserved. COMMANDS computes its own column based on the longest left in that section; GLOBAL FLAGS uses its own min. Asymmetry on dense pages (e.g. `bunny dns --help`) is by design — forcing whole-screen alignment makes flag rows have 30+ chars of whitespace.
+- Per-section auto column widths (rc.42) preserved. COMMANDS computes its own column based on the longest left in that section; GLOBAL FLAGS uses its own min. Asymmetry on dense pages (e.g. `bunny dns --help`) is by design - forcing whole-screen alignment makes flag rows have 30+ chars of whitespace.
 
 ### Test Coverage
-- 175/175 unit (unchanged — formatter is internal, tests cover render-help.ts which is a separate JSON/text manifest renderer).
+- 175/175 unit (unchanged - formatter is internal, tests cover render-help.ts which is a separate JSON/text manifest renderer).
 
 ---
 
-## [0.1.0-rc.43] — 2026-05-03 (Scrub maintainer's domain from user-facing examples)
+## [0.1.0-rc.43] - 2026-05-03 (Scrub maintainer's domain from user-facing examples)
 
 ### Changed
 - **README.md AI-agent quickstart example** swapped `chien.do` → `example.com`. The maintainer's personal domain shouldn't appear in user-facing docs (it had been used as a real-life test target during rc.13–rc.30 development).
 - **src/core/dns.ts** comment in the PULLZONE pre-flight cleaned up: `verified live on bytek.org against rc.30` → `verified live in rc.30`. Same rationale.
 
 ### Note on docs/ and journals/
-- Historical changelog/journal entries that reference `bytek.org` are intentionally left intact — they're records of what specifically happened on each RC and the domain context is meaningful for future debugging.
+- Historical changelog/journal entries that reference `bytek.org` are intentionally left intact - they're records of what specifically happened on each RC and the domain context is meaningful for future debugging.
 
 ### Help-format design decision (no code change)
 - Subgroup help shows COMMANDS at one column width (per-group max) and GLOBAL FLAGS at another (NAME_COL_MIN=40). This asymmetry is intentional and matches wrangler / gh / docker / firebase. Forcing whole-screen alignment would push GLOBAL FLAGS rows into 30+ chars of whitespace before the description.
 
 ---
 
-## [0.1.0-rc.42] — 2026-05-03 (Help column alignment for long-arg commands)
+## [0.1.0-rc.42] - 2026-05-03 (Help column alignment for long-arg commands)
 
 ### Fixed
 - **Subgroup help description column was ragged for long-arg commands.** `bunny dns --help` and `bunny stream --help` showed `bunny dns record add <zoneId> <type> <name> [value] Add a DNS record...` with no padding because the left column exceeded the fixed 40-char min, falling back to a single-space gap. rc.42 computes per-group column width (longest left + 2 chars), so all rows in a group's COMMANDS block share one description column. Same fix applied to root-help sections.
@@ -342,10 +342,10 @@ The biggest help-quality bump in v0.1. Three changes; the third does the heavy l
 
 ---
 
-## [0.1.0-rc.41] — 2026-05-03 (Fix rc.40's MIME warning pattern syntax)
+## [0.1.0-rc.41] - 2026-05-03 (Fix rc.40's MIME warning pattern syntax)
 
 ### Fixed
-- **rc.40's `.mjs` warning suggested the wrong glob shape.** The warning emitted `"pattern": "**/*.mjs"` but Bunny's URL triggers don't accept `**` glob syntax — they silently no-op (verified live: rule "added" but didn't actually match anything). Correct syntax is `"pattern": "*.mjs"` (simple wildcard). rc.41 emits the corrected snippet so copy-paste actually works.
+- **rc.40's `.mjs` warning suggested the wrong glob shape.** The warning emitted `"pattern": "**/*.mjs"` but Bunny's URL triggers don't accept `**` glob syntax - they silently no-op (verified live: rule "added" but didn't actually match anything). Correct syntax is `"pattern": "*.mjs"` (simple wildcard). rc.41 emits the corrected snippet so copy-paste actually works.
 
 ### Live-tested on bytek.org
 - `*.mjs` rule → Bunny stored ActionType=5 (SetResponseHeader), `Content-Type: text/javascript; charset=utf-8` actually applied.
@@ -356,14 +356,14 @@ The biggest help-quality bump in v0.1. Three changes; the third does the heavy l
 
 ---
 
-## [0.1.0-rc.40] — 2026-05-03 (Three real-world bugs caught after rc.39 ship)
+## [0.1.0-rc.40] - 2026-05-03 (Three real-world bugs caught after rc.39 ship)
 
 ### Fixed
 - **`bunny domain connect` is now actually idempotent.** Previously each call appended a duplicate Type-7 DNS record on the target zone (despite the docstring claiming idempotency). rc.40 pre-checks: `listRecords(dnsZoneId)` → find any Type-7 with matching `(Name, LinkName)` → reuse its id instead of creating. Verified live: two consecutive `domain connect` calls now share `dnsRecordId`.
 - **FLATTEN dropped from supported DNS record types.** Bunny's OpenAPI spec says type=6 is Flatten, but the live API rejects it: `validation_error: Unknown record type` (verified against api.bunny.net). The CLI now surfaces a clear client-side rejection (`Invalid discriminator value`) instead of letting users hit Bunny's confusing rejection. If/when Bunny re-enables Flatten on the live API, restore the entry.
 
 ### Added
-- **`bunny deploy` warns when uploading extensions Bunny edge serves wrong.** `.mjs`, `.wasm`, `.webmanifest` upload metadata gets ignored by Bunny's edge MIME table — files end up served as `application/octet-stream`. rc.40 emits ONE warning per extension per deploy with the exact `bunny.json deploy.headers` snippet to fix it. (Bunny-side issue; CLI surfaces it earlier.)
+- **`bunny deploy` warns when uploading extensions Bunny edge serves wrong.** `.mjs`, `.wasm`, `.webmanifest` upload metadata gets ignored by Bunny's edge MIME table - files end up served as `application/octet-stream`. rc.40 emits ONE warning per extension per deploy with the exact `bunny.json deploy.headers` snippet to fix it. (Bunny-side issue; CLI surfaces it earlier.)
 
 ### Test Coverage
 - 175/175 unit (was 174; +1 connectDomain idempotency regression test that fails without the fix).
@@ -379,7 +379,7 @@ The biggest help-quality bump in v0.1. Three changes; the third does the heavy l
 
 ---
 
-## [0.1.0-rc.39] — 2026-05-03 (OIDC trusted publishing; release workflow change)
+## [0.1.0-rc.39] - 2026-05-03 (OIDC trusted publishing; release workflow change)
 
 ### Changed
 - **Release workflow pivoted to GitHub Actions OIDC trusted publishing** (breaking with manual `npm publish` era).
@@ -392,12 +392,12 @@ The biggest help-quality bump in v0.1. Three changes; the third does the heavy l
 1. Bump `version` in `package.json` AND `src/manifest/registry.ts` (must match).
 2. `npm run gen:all && npm run build` to regenerate manifest.json, AGENTS.md, schema/bunny.schema.json, dist/.
 3. Update `docs/project-changelog.md` and `docs/project-roadmap.md`.
-4. `git commit -m "feat/fix/chore: 0.1.0-rc.X — <title>"` + `git push origin main`.
+4. `git commit -m "feat/fix/chore: 0.1.0-rc.X - <title>"` + `git push origin main`.
 5. `git tag v0.1.0-rc.X && git push origin v0.1.0-rc.X`.
 6. GitHub Actions runs CI gates and publishes to npm automatically (OIDC handles auth).
 
 ### Documentation
-- New `docs/deployment-guide.md` — step-by-step release recipe, OIDC rationale, troubleshooting.
+- New `docs/deployment-guide.md` - step-by-step release recipe, OIDC rationale, troubleshooting.
 - No `~/.npmrc` token workarounds documented (OIDC is the only blessed path).
 - No `--otp=<code>` instructions anywhere (pre-1.0 burden eliminated).
 
@@ -411,23 +411,23 @@ The biggest help-quality bump in v0.1. Three changes; the third does the heavy l
 
 ---
 
-## [0.1.0-rc.38] — 2026-05-03 (Sectioned root help; one line per service)
+## [0.1.0-rc.38] - 2026-05-03 (Sectioned root help; one line per service)
 
 ### Added
 - **Root help (`bunny --help`) now sectioned wrangler/gh/aws-style:**
-  - `GETTING STARTED` — daily-workflow commands (init, deploy, configure).
-  - `SERVICES` — one line per top-level group (pullzone, domain, dns, stream, storage, storagezone, containers, scripting). Each row reads `bunny <group> <subcmd>     <description> (N cmds)`.
-  - `UTILITIES` — discovery + maintenance (purge, use, whoami, manifest, mcp, install, update, docs).
-- **Sub-group help unchanged** — `bunny pullzone --help` still expands all 11 leaves (including former sub-groups like `pullzone hostname add`, `pullzone edgerule list`).
+  - `GETTING STARTED` - daily-workflow commands (init, deploy, configure).
+  - `SERVICES` - one line per top-level group (pullzone, domain, dns, stream, storage, storagezone, containers, scripting). Each row reads `bunny <group> <subcmd>     <description> (N cmds)`.
+  - `UTILITIES` - discovery + maintenance (purge, use, whoami, manifest, mcp, install, update, docs).
+- **Sub-group help unchanged** - `bunny pullzone --help` still expands all 11 leaves (including former sub-groups like `pullzone hostname add`, `pullzone edgerule list`).
 
 ### Fixed
-- **Sub-group fragmentation.** Previously root help split each top-level service into multiple pointer rows (e.g. `pullzone ...`, `pullzone edgerule ...`, `pullzone hostname ...` — 3 rows for one service). Now collapsed into a single `bunny pullzone <subcmd>` line per service.
+- **Sub-group fragmentation.** Previously root help split each top-level service into multiple pointer rows (e.g. `pullzone ...`, `pullzone edgerule ...`, `pullzone hostname ...` - 3 rows for one service). Now collapsed into a single `bunny pullzone <subcmd>` line per service.
 
 ### Internal
 - `COMMAND_GROUPS` (rc.20–37) replaced with three categorical `SECTIONS`. Renderer auto-collapses any top-level word with sub-commands; renders bare commands directly when no subcommands exist.
 
 ### Test Coverage
-- 174/174 unit (unchanged; help renderer has no dedicated tests yet — output is human-only and verified by inspection).
+- 174/174 unit (unchanged; help renderer has no dedicated tests yet - output is human-only and verified by inspection).
 - 46 e2e (unchanged).
 
 ### Surface (unchanged)
@@ -436,25 +436,25 @@ The biggest help-quality bump in v0.1. Three changes; the third does the heavy l
 
 ---
 
-## [0.1.0-rc.37] — 2026-05-03 (Idempotent hostname `add` collapses 3 subcommands; `--no-X` flag bug fix)
+## [0.1.0-rc.37] - 2026-05-03 (Idempotent hostname `add` collapses 3 subcommands; `--no-X` flag bug fix)
 
 Surface simplification + a real bug found via live testing.
 
 ### BREAKING
-- **Removed `bunny pullzone hostname enable-ssl`** (rc.26) — its work is now inside `add`.
-- **Removed `bunny pullzone hostname force-ssl`** (rc.36, just shipped) — same; toggle via `add --no-force-ssl` (state assertion: re-run flips OFF).
+- **Removed `bunny pullzone hostname enable-ssl`** (rc.26) - its work is now inside `add`.
+- **Removed `bunny pullzone hostname force-ssl`** (rc.36, just shipped) - same; toggle via `add --no-force-ssl` (state assertion: re-run flips OFF).
 - **Removed MCP tools** `bunny.pullzone_hostname_enable_ssl` and `bunny.pullzone_hostname_force_ssl`. Use `bunny.pullzone_hostname_add` with `noSSL` / `noForceSSL` boolean fields.
 - **Migration:** scripts using `enable-ssl <pzId> <host>` should switch to `add <pzId> <host>` (same default behavior). Scripts using `force-ssl <pzId> <host> --off` should switch to `add <pzId> <host> --no-force-ssl`.
 
 ### Added
 - **`bunny pullzone hostname add` is now an idempotent state-setter:**
   - Default: link hostname + provision Let's Encrypt cert + enable ForceSSL (HTTP→HTTPS redirect).
-  - `--no-force-ssl`: provision cert, ensure ForceSSL=false (state assertion — re-running flips OFF a previously-on hostname).
+  - `--no-force-ssl`: provision cert, ensure ForceSSL=false (state assertion - re-running flips OFF a previously-on hostname).
   - `--timeout=<sec>`: cert wait timeout (default 90).
 - **MCP `bunny.pullzone_hostname_add`** gains optional `noForceSSL` (boolean) and `timeoutMs` (number) fields.
 
 ### Fixed
-- **CLI `--no-X` flags weren't being read correctly.** Commander.js negates `--no-foo` as `foo: false` — but our code was reading `noFoo: true` which is always undefined. Latent in rc.30+ for `domain connect --no-wait` and `--no-force-ssl`; would have hit users on first attempt to opt out. Fixed in `pullzone hostname add` and `domain connect`.
+- **CLI `--no-X` flags weren't being read correctly.** Commander.js negates `--no-foo` as `foo: false` - but our code was reading `noFoo: true` which is always undefined. Latent in rc.30+ for `domain connect --no-wait` and `--no-force-ssl`; would have hit users on first attempt to opt out. Fixed in `pullzone hostname add` and `domain connect`.
 
 ### Live-tested on bytek.org
 - ADD default → cert + ForceSSL=true.
@@ -472,7 +472,7 @@ Surface simplification + a real bug found via live testing.
 
 ---
 
-## [0.1.0-rc.36] — 2026-05-03 (Auto-ForceSSL + orphan rule cleanup)
+## [0.1.0-rc.36] - 2026-05-03 (Auto-ForceSSL + orphan rule cleanup)
 
 ### Added
 - **Auto-enable ForceSSL after cert provisions.** `pullzone hostname enable-ssl` and `domain connect` now flip `ForceSSL=true` on the matched hostname after Let's Encrypt cert lands. HTTP→HTTPS redirect is the 2026 default. Idempotent: re-running on a hostname that already has cert+ForceSSL is a no-op.
@@ -482,7 +482,7 @@ Surface simplification + a real bug found via live testing.
 - **MCP `bunny.pullzone_hostname_enable_ssl`** + **`bunny.domain_connect`** gain optional `noForceSSL?: boolean` field.
 
 ### Fixed
-- **Edge-rule sync no longer orphans managed rules when user removes `headers`/`edgeRules` from bunny.json.** rc.34/35 gated the sync on `hasDeclaredRules(config)` — empty config skipped sync entirely, leaving previously-managed rules on the PZ. rc.36 always runs sync when `pullZones` is non-empty (~50ms extra `getPullZone` per PZ per deploy). Empty config now correctly deletes orphaned managed rules. Verified live on bytek.org.
+- **Edge-rule sync no longer orphans managed rules when user removes `headers`/`edgeRules` from bunny.json.** rc.34/35 gated the sync on `hasDeclaredRules(config)` - empty config skipped sync entirely, leaving previously-managed rules on the PZ. rc.36 always runs sync when `pullZones` is non-empty (~50ms extra `getPullZone` per PZ per deploy). Empty config now correctly deletes orphaned managed rules. Verified live on bytek.org.
 
 ### Live-tested on bytek.org
 - enable-ssl → cert provisioned + ForceSSL=true (verified `Hostnames[].ForceSSL`).
@@ -500,17 +500,17 @@ Surface simplification + a real bug found via live testing.
 
 ---
 
-## [0.1.0-rc.35] — 2026-05-03 (rc.34 live-test fixes + e2e coverage)
+## [0.1.0-rc.35] - 2026-05-03 (rc.34 live-test fixes + e2e coverage)
 
 Two real bugs discovered via live smoke against bytek.org. Both rc.34 features (`bunny domain connect` and `deploy.headers` sync) tested end-to-end on a real PZ.
 
 ### Fixed
-- **`SetResponseHeader` edge rule shape** — `compileHeaderRule` was emitting `ActionParameter1: "Name: Value"` (combined string). Bunny rejects with "Please enter a valid header name." Correct shape: `ActionParameter1: name`, `ActionParameter2: value` (split). Verified live on bytek PZ.
-- **No-op sync runs reported false `updated` count** — `isShapeEqual` deep-compared local + remote rules, but Bunny normalizes the response shape (Triggers reshaped, fields reordered) so identical-spec rules looked different. Removed `isShapeEqual` entirely; trust the description hash (sha256 of spec) as the identity check. Same hash means same spec by construction. Result: idempotent re-runs report `added: 0, updated: 0, deleted: 0`. `updated` counter remains in result envelope for back-compat / future force-resync mode.
+- **`SetResponseHeader` edge rule shape** - `compileHeaderRule` was emitting `ActionParameter1: "Name: Value"` (combined string). Bunny rejects with "Please enter a valid header name." Correct shape: `ActionParameter1: name`, `ActionParameter2: value` (split). Verified live on bytek PZ.
+- **No-op sync runs reported false `updated` count** - `isShapeEqual` deep-compared local + remote rules, but Bunny normalizes the response shape (Triggers reshaped, fields reordered) so identical-spec rules looked different. Removed `isShapeEqual` entirely; trust the description hash (sha256 of spec) as the identity check. Same hash means same spec by construction. Result: idempotent re-runs report `added: 0, updated: 0, deleted: 0`. `updated` counter remains in result envelope for back-compat / future force-resync mode.
 
 ### Added
-- **MCP e2e for `bunny.domain_connect`** — gated on `BUNNY_E2E_CERT_DOMAIN` + `BUNNY_E2E_DNS_ZONE_ID`. Runs the full atomic flow against a real PZ + DNS zone; cleans up DNS record and hostname after.
-- **`listTools` ≥18 assertion + spot-check for `bunny.domain_connect`** — catches version-drift if the MCP tool isn't registered.
+- **MCP e2e for `bunny.domain_connect`** - gated on `BUNNY_E2E_CERT_DOMAIN` + `BUNNY_E2E_DNS_ZONE_ID`. Runs the full atomic flow against a real PZ + DNS zone; cleans up DNS record and hostname after.
+- **`listTools` ≥18 assertion + spot-check for `bunny.domain_connect`** - catches version-drift if the MCP tool isn't registered.
 - **Hard-cap bumped 20 → 22** to leave buffer for v0.2 tools.
 
 ### Live-tested on bytek.org (smoke)
@@ -523,28 +523,28 @@ Two real bugs discovered via live smoke against bytek.org. Both rc.34 features (
 
 ---
 
-## [0.1.0-rc.34] — 2026-05-03 (Connect Domain + CI generator + declarative edge rules)
+## [0.1.0-rc.34] - 2026-05-03 (Connect Domain + CI generator + declarative edge rules)
 
 Largest single ship of the session. Three subsystems landed together (originally planned as rc.34/35/36 separately).
 
-### Added — atomic Connect Domain
+### Added - atomic Connect Domain
 - **`bunny domain connect <pzId> <fqdn>`** new command. Bundles addHostname → enable-ssl (waits up to 90s) → optional Type-7 DNS record into one idempotent op. Mirrors the Bunny dashboard's "Connect Domain" button.
 - **Flags:** `--dns-zone <id>` (also create the apex Type-7 record), `--name <subdomain>` (default `@`), `--no-wait`, `--timeout <seconds>`.
 - **MCP:** new `bunny.domain_connect` tool with same shape (`pullZoneId`, `hostname`, optional `dnsZoneId`, optional `recordName`).
 
-### Added — `bunny init --ci` GH Actions generator
+### Added - `bunny init --ci` GH Actions generator
 - **`--ci` flag on `bunny init`** generates `.github/workflows/bunny-deploy.yml`. Triggers on `push:main` + `workflow_dispatch:`; installs bunny-tools globally; runs `bunny deploy --delete`. `paths-ignore` covers `**/*.md`, `docs/**`, `plans/**`.
 - **Per-zone secret:** uppercase `BUNNY_STORAGE_PASSWORD_<ZONE>` env var matches the resolver chain.
-- **Skips when file exists** — non-destructive. Prints "secrets to add" checklist after generation.
+- **Skips when file exists** - non-destructive. Prints "secrets to add" checklist after generation.
 - **GitHub Actions only for v1.** GitLab/CircleCI templates can land in v0.2.
 
-### Added — declarative edge rules in `bunny.json`
-- **`deploy.headers: [{ pattern, headers }]`** — Netlify/Cloudflare-style declarative response headers. Compiled to edge rules at deploy time.
-- **`deploy.edgeRules: [...]`** — raw edge rule declarations for full power (CountryCode triggers, BlockRequest, etc.).
-- **Smart `Cache-Control` compilation:** `Cache-Control: max-age=N` becomes TWO edge rules — `OverrideCacheTime` (edge cache) + `OverrideBrowserCacheTime` (browser cache). Other Cache-Control directives (`no-store`, `must-revalidate`) and other headers fall through to `SetResponseHeader`.
+### Added - declarative edge rules in `bunny.json`
+- **`deploy.headers: [{ pattern, headers }]`** - Netlify/Cloudflare-style declarative response headers. Compiled to edge rules at deploy time.
+- **`deploy.edgeRules: [...]`** - raw edge rule declarations for full power (CountryCode triggers, BlockRequest, etc.).
+- **Smart `Cache-Control` compilation:** `Cache-Control: max-age=N` becomes TWO edge rules - `OverrideCacheTime` (edge cache) + `OverrideBrowserCacheTime` (browser cache). Other Cache-Control directives (`no-store`, `must-revalidate`) and other headers fall through to `SetResponseHeader`.
 - **Auto-sync on every deploy** when either array is non-empty. Skipped entirely (no API calls) when both are empty.
 - **Idempotent + non-destructive:** managed rules tagged via `Description: "managed-by-bunny-tools: <kind> hash=<sha256-prefix>"`. User-added rules (created in dashboard or via raw API) are never touched.
-- **Diff: add/update/delete** — content-hash based; any spec change produces a different hash → handled cleanly.
+- **Diff: add/update/delete** - content-hash based; any spec change produces a different hash → handled cleanly.
 - **Multi-PZ:** sync runs against every PZ in `deploy.pullZones`.
 - New event: `edge-rules-sync` reports `+N added, ~M updated, -K deleted` per PZ.
 
@@ -563,15 +563,15 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.33] — 2026-05-03 (MIME complete + DX polish bundle)
+## [0.1.0-rc.33] - 2026-05-03 (MIME complete + DX polish bundle)
 
 ### Added
 - **`mime-types` package replaces manual `src/util/content-type.ts` table.** Covers ~1000 extensions from mime-db, including previously-missing `.webmanifest`, `.opus`, `.heic`. Auto-appends `; charset=utf-8` for UTF-8 text types per mime-db's charset table. `application/octet-stream` fallback unchanged.
-- **`bunny.json deploy.mimeTypes: { ".ext": "type" }` overrides** — dot-prefix keys; user values win over mime-types defaults. Schema validated.
+- **`bunny.json deploy.mimeTypes: { ".ext": "type" }` overrides** - dot-prefix keys; user values win over mime-types defaults. Schema validated.
 - **`bunny deploy --verbose`** prints `<path> [<mime>] (<size>)` per upload AND lists ALL orphan paths in dry-run output. Default dry-run shows first 10 orphans + count.
 - **Auto-migrate `bunny.json deploy.ignore`** to rc.33+ baseline (15 entries: includes `docs/**`, `plans/**`, `scripts/**`, `tests/**`, `*.md`, `LICENSE*`, etc.). Triggers ONLY when current array is byte-equal to the rc.13–32 legacy 5-entry default. Idempotent; preserves any user customization.
-- **MCP `bunny.dns_record_set` PULLZONE convenience** — accepts optional `pullZoneId: number`. When set + type=PULLZONE, auto-derives `value` (PZ name) and `linkName` (PZ id). Mirrors CLI's `--pull-zone` flag.
-- **Auto-spawned PZ detection** — after `dns record add` returns, if response has `AcceleratedPullZoneId !== 0`, prints `i Bunny auto-created pull zone <id> to handle this <TYPE> record.` Catches REDIRECT side effects.
+- **MCP `bunny.dns_record_set` PULLZONE convenience** - accepts optional `pullZoneId: number`. When set + type=PULLZONE, auto-derives `value` (PZ name) and `linkName` (PZ id). Mirrors CLI's `--pull-zone` flag.
+- **Auto-spawned PZ detection** - after `dns record add` returns, if response has `AcceleratedPullZoneId !== 0`, prints `i Bunny auto-created pull zone <id> to handle this <TYPE> record.` Catches REDIRECT side effects.
 - **`bunny deploy` warns on >5 MB files** at upload time. Non-blocking; helps catch accidentally committed binaries.
 - **`bunny init` now prints masked account key** when skipping auth (`Account key already configured (***xxxx)`).
 - **Sharper MCP `bunny.deploy` description**: "Recommended for CI/CD. End-to-end deploy: walks publicDir, diffs vs storage zone, uploads with proper MIME types in parallel, optionally purges CDN. Replaces custom upload scripts."
@@ -588,23 +588,23 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.32] — 2026-05-03 (MCP e2e coverage for hostname tools)
+## [0.1.0-rc.32] - 2026-05-03 (MCP e2e coverage for hostname tools)
 
 ### Added
-- **`test/e2e/mcp.e2e.ts` extended:** new `pullzone_hostname_{list,add,remove}` round-trip test against a throwaway PZ (uses `bt-e2e-*.example.com` placeholder hostnames) — exercises the rc.25 flow and rc.30 POST→DELETE remove fix end-to-end.
-- **`pullzone_hostname_enable_ssl` e2e** gated on new env var `BUNNY_E2E_CERT_DOMAIN` (set to a domain you own with Bunny NS authoritative — DNS-01 challenge needs that). Uses `bt-e2e-*.<domain>` and waits up to 90s for Let's Encrypt; cleans up hostname even on failure. Skipped silently in CI nightly unless var configured.
+- **`test/e2e/mcp.e2e.ts` extended:** new `pullzone_hostname_{list,add,remove}` round-trip test against a throwaway PZ (uses `bt-e2e-*.example.com` placeholder hostnames) - exercises the rc.25 flow and rc.30 POST→DELETE remove fix end-to-end.
+- **`pullzone_hostname_enable_ssl` e2e** gated on new env var `BUNNY_E2E_CERT_DOMAIN` (set to a domain you own with Bunny NS authoritative - DNS-01 challenge needs that). Uses `bt-e2e-*.<domain>` and waits up to 90s for Let's Encrypt; cleans up hostname even on failure. Skipped silently in CI nightly unless var configured.
 - **`listTools` count assertion bumped** from `≥14` (rc.22) to `≥17` (rc.31). Spot-check now includes the 4 hostname tools.
-- **Throwaway PZ added to MCP e2e beforeAll** alongside the existing storage zone and DNS zone — registered with cleanup-registry, deleted in afterAll.
+- **Throwaway PZ added to MCP e2e beforeAll** alongside the existing storage zone and DNS zone - registered with cleanup-registry, deleted in afterAll.
 
 ### Test Coverage
 - 146/146 unit + 45 e2e (was 44; +1 hostname round-trip; enable_ssl gated and not counted in default runs).
 
 ---
 
-## [0.1.0-rc.31] — 2026-05-03 (Drop init-time AGENTS.md write)
+## [0.1.0-rc.31] - 2026-05-03 (Drop init-time AGENTS.md write)
 
 ### Removed
-- **`bunny init` no longer touches user's `AGENTS.md`.** The implicit `## Deploy` hint and the `--no-agents-md` flag are gone. Reasoning: no major CLI (firebase, vercel, wrangler, gh, npm) modifies AI-context files in user projects on init — touching files outside the requested config is invasive. Discovery is already covered by `bunny --help`, `bunny manifest`, and the AGENTS.md inside the npm tarball (consumed by MCP servers as a resource).
+- **`bunny init` no longer touches user's `AGENTS.md`.** The implicit `## Deploy` hint and the `--no-agents-md` flag are gone. Reasoning: no major CLI (firebase, vercel, wrangler, gh, npm) modifies AI-context files in user projects on init - touching files outside the requested config is invasive. Discovery is already covered by `bunny --help`, `bunny manifest`, and the AGENTS.md inside the npm tarball (consumed by MCP servers as a resource).
 
 ### Internal
 - Removed `maybeWriteAgentsHint`, related constants and node:fs imports from `src/commands/init.ts`. ~30 LOC delta.
@@ -615,13 +615,13 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.30] — 2026-05-03 (PULLZONE field name fix + reverts rc.29 conflict-check)
+## [0.1.0-rc.30] - 2026-05-03 (PULLZONE field name fix + reverts rc.29 conflict-check)
 
 ### Reverted
 - **rc.29's PULLZONE conflict-detection removed.** Live test on bytek.org proved Bunny accepts PULLZONE alongside A at the same Name. Premise was wrong; the real gate was the input field name (see below). Conflict pre-flight had a latent `'@' vs ''` normalization bug that masked the wrongness in tests.
 
 ### Fixed
-- **PRIMARY: PULLZONE (Type-7) records now POST `PullZoneId` (numeric) instead of `LinkName` (string).** Bunny's `PUT /dnszone/{id}/records` validation requires the numeric `PullZoneId` field for Type-7; sending `LinkName` alone fails with `"The pull zone ID is not valid"` (Field: Value). Bunny derives `Value` and `LinkName` from `PullZoneId` on the response — so the chien.do "reference shape" we'd been mirroring was actually the response, never a valid request body. Identified by sniffing the dashboard's network call against bytek.org. SCRIPT (Type 11) still uses `LinkName` (untested but no contradicting evidence).
+- **PRIMARY: PULLZONE (Type-7) records now POST `PullZoneId` (numeric) instead of `LinkName` (string).** Bunny's `PUT /dnszone/{id}/records` validation requires the numeric `PullZoneId` field for Type-7; sending `LinkName` alone fails with `"The pull zone ID is not valid"` (Field: Value). Bunny derives `Value` and `LinkName` from `PullZoneId` on the response - so the chien.do "reference shape" we'd been mirroring was actually the response, never a valid request body. Identified by sniffing the dashboard's network call against bytek.org. SCRIPT (Type 11) still uses `LinkName` (untested but no contradicting evidence).
 - **`pullzone hostname remove` returned HTTP 405 in production.** Bunny's `/pullzone/{id}/removeHostname` endpoint requires DELETE, not POST. Asymmetric to `addHostname` (POST) but verified live.
 - **Bunny error envelopes stripped `ErrorKey` and `Field` from CLI output.** Command handlers caught errors with `(err as Error).message` and lost the structured envelope context. The shared formatter `formatBunnyError` (extracted from `cli.ts`) now applies in `dns record add` and other handlers, surfacing e.g. `[validation_error] The pull zone ID is not valid. (field: Value) (HTTP 400)` instead of just the message.
 
@@ -633,10 +633,10 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.29] — 2026-05-03 (PULLZONE conflict detection in pre-flight)
+## [0.1.0-rc.29] - 2026-05-03 (PULLZONE conflict detection in pre-flight)
 
 ### Fixed
-- **`dns record add PULLZONE` now detects existing resolving records at the same Name** — Bunny silently rejects PULLZONE-at-apex (and other names) when an A/AAAA/CNAME/REDIRECT/FLATTEN/PULLZONE already exists there, with the same misleading "The pull zone ID is not valid" error. Pre-flight now scans `dnsZone.Records[]` (already fetched, no extra API call) and surfaces: `Conflicting <type> record at <fqdn> (id=<X> value=<Y>). Run: bunny dns record delete <zoneId> <X>`.
+- **`dns record add PULLZONE` now detects existing resolving records at the same Name** - Bunny silently rejects PULLZONE-at-apex (and other names) when an A/AAAA/CNAME/REDIRECT/FLATTEN/PULLZONE already exists there, with the same misleading "The pull zone ID is not valid" error. Pre-flight now scans `dnsZone.Records[]` (already fetched, no extra API call) and surfaces: `Conflicting <type> record at <fqdn> (id=<X> value=<Y>). Run: bunny dns record delete <zoneId> <X>`.
 - Auxiliary types (TXT, MX, NS, SRV, CAA, PTR, SCRIPT) coexist fine at the same Name and are not flagged.
 
 ### Test Coverage
@@ -644,7 +644,7 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.28] — 2026-05-03 (Centralize PULLZONE pre-flight in core)
+## [0.1.0-rc.28] - 2026-05-03 (Centralize PULLZONE pre-flight in core)
 
 ### Fixed
 - **MCP `bunny.dns_record_set` and CLI `dns record add` (without --pull-zone) now also pre-flight PULLZONE records.** Previously the pre-flight (hostname-linked + cert-issued) lived only in the CLI command's `--pull-zone` flag handler; MCP and the bare CLI path bypassed it and surfaced Bunny's misleading "The pull zone ID is not valid" error. Pre-flight moved to `core/dns.addRecord` so every caller gets the friendly "Run: bunny pullzone hostname enable-ssl <id> <fqdn>" hint.
@@ -657,27 +657,27 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.27] — 2026-05-03 (Fix loadFreeCertificate HTTP shape)
+## [0.1.0-rc.27] - 2026-05-03 (Fix loadFreeCertificate HTTP shape)
 
 ### Fixed
-- **`enable-ssl` was failing with "The request is invalid"** — Bunny's `/pullzone/loadFreeCertificate` endpoint is **GET**, not POST (despite being a state-changing call). rc.26 was sending POST, Bunny returned 400.
-- **DNS-01 validation now opt-in via default** — added `useOnlyHttp01=false` query param. When the hostname is on a Bunny DNS zone (NameserversDetected=true), Bunny prefers DNS-01 over HTTP-01. Lets cert provision without any pre-existing A/AAAA records on the apex.
+- **`enable-ssl` was failing with "The request is invalid"** - Bunny's `/pullzone/loadFreeCertificate` endpoint is **GET**, not POST (despite being a state-changing call). rc.26 was sending POST, Bunny returned 400.
+- **DNS-01 validation now opt-in via default** - added `useOnlyHttp01=false` query param. When the hostname is on a Bunny DNS zone (NameserversDetected=true), Bunny prefers DNS-01 over HTTP-01. Lets cert provision without any pre-existing A/AAAA records on the apex.
 
 ### Test Coverage
-- 143/143 (no test count change — existing enable-ssl tests updated to mock the GET shape).
+- 143/143 (no test count change - existing enable-ssl tests updated to mock the GET shape).
 
 ---
 
-## [0.1.0-rc.26] — 2026-05-03 (Pull Zone SSL Provisioning + Cert Pre-flight)
+## [0.1.0-rc.26] - 2026-05-03 (Pull Zone SSL Provisioning + Cert Pre-flight)
 
 ### Added
-- **`bunny pullzone hostname enable-ssl <pzId> <hostname>`** — wraps `POST /pullzone/loadFreeCertificate?hostname=<host>`. Polls PZ.Hostnames[].HasCertificate every 5s up to 90s; returns when Let's Encrypt cert is provisioned.
-- **`dns record add --pull-zone <id>` cert pre-flight** — also checks `HasCertificate` on the matched hostname. If false, fails with copy-pasteable `bunny pullzone hostname enable-ssl <id> <fqdn>` instead of letting Bunny return the misleading "The pull zone ID is not valid" error.
-- **MCP tool:** `bunny.pullzone_hostname_enable_ssl` — same shape as add/remove, returns `{ ok, hasCertificate, waitedMs }`.
-- **`PullZoneHostname` type extended** — now exposes `Id`, `HasCertificate`, `ForceSSL`, `IsSystemHostname` (was `{ Value }` only).
+- **`bunny pullzone hostname enable-ssl <pzId> <hostname>`** - wraps `POST /pullzone/loadFreeCertificate?hostname=<host>`. Polls PZ.Hostnames[].HasCertificate every 5s up to 90s; returns when Let's Encrypt cert is provisioned.
+- **`dns record add --pull-zone <id>` cert pre-flight** - also checks `HasCertificate` on the matched hostname. If false, fails with copy-pasteable `bunny pullzone hostname enable-ssl <id> <fqdn>` instead of letting Bunny return the misleading "The pull zone ID is not valid" error.
+- **MCP tool:** `bunny.pullzone_hostname_enable_ssl` - same shape as add/remove, returns `{ ok, hasCertificate, waitedMs }`.
+- **`PullZoneHostname` type extended** - now exposes `Id`, `HasCertificate`, `ForceSSL`, `IsSystemHostname` (was `{ Value }` only).
 
 ### Fixed
-- **Cert chicken-and-egg surfaced clearly** — users no longer hit Bunny's silent rejection when wiring DNS to PZ without prior cert provisioning.
+- **Cert chicken-and-egg surfaced clearly** - users no longer hit Bunny's silent rejection when wiring DNS to PZ without prior cert provisioning.
 
 ### Test Coverage
 - **Unit tests:** 143 total (up from 139 in rc.25); +4 enable-ssl coverage.
@@ -689,25 +689,25 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.25] — 2026-05-03 (Pull Zone Hostname Management)
+## [0.1.0-rc.25] - 2026-05-03 (Pull Zone Hostname Management)
 
 ### Added
-- **`bunny pullzone hostname {list,add,remove}`** — wraps Bunny's dedicated `addHostname` / `removeHostname` subresource endpoints (previously only reachable via raw HTTP since `pullzone update` silently drops `Hostnames[]`).
-- **`dns record add --pull-zone <id>` pre-flight check** — fetches PZ + DNS zone, computes target FQDN, fails with copy-pasteable `bunny pullzone hostname add <id> <fqdn>` when the hostname isn't linked yet (instead of letting Bunny silently reject the Type-7 record).
+- **`bunny pullzone hostname {list,add,remove}`** - wraps Bunny's dedicated `addHostname` / `removeHostname` subresource endpoints (previously only reachable via raw HTTP since `pullzone update` silently drops `Hostnames[]`).
+- **`dns record add --pull-zone <id>` pre-flight check** - fetches PZ + DNS zone, computes target FQDN, fails with copy-pasteable `bunny pullzone hostname add <id> <fqdn>` when the hostname isn't linked yet (instead of letting Bunny silently reject the Type-7 record).
 - **3 new MCP tools:** `bunny.pullzone_hostname_list`, `bunny.pullzone_hostname_add`, `bunny.pullzone_hostname_remove`.
-- **`computeFqdn(name, domain)` helper** — exported, handles apex (`@`/empty), trailing-dot, wildcard (`*`).
+- **`computeFqdn(name, domain)` helper** - exported, handles apex (`@`/empty), trailing-dot, wildcard (`*`).
 
 ### Test Coverage
 - **Unit tests:** 139 total (up from 129 in rc.24); +3 hostname API + +5 FQDN helper coverage.
 - **E2E tests:** 44 (unchanged).
 
 ### Surface
-- 54 active commands (was 51) — `pullzone hostname {list,add,remove}` promoted.
+- 54 active commands (was 51) - `pullzone hostname {list,add,remove}` promoted.
 - 17 MCP tools (was 14).
 
 ---
 
-## [0.1.0-rc.24] — 2026-05-03 (DNS Routing Types Extended)
+## [0.1.0-rc.24] - 2026-05-03 (DNS Routing Types Extended)
 
 ### Added
 - **DNS routing types extended to 13:** REDIRECT (5), FLATTEN (6), PULLZONE (7), PTR (10), SCRIPT (11). Complete enum coverage.
@@ -721,10 +721,10 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.23] — 2026-05-03 (MCP E2E Harness Shipped)
+## [0.1.0-rc.23] - 2026-05-03 (MCP E2E Harness Shipped)
 
 ### Added
-- **MCP e2e harness (live):** `test/e2e/mcp.e2e.ts` spawns `bunny mcp`, connects via MCP SDK Client, exercises all 15 active tools + 2 skipped (init/deploy — MCP-native versions not needed). Helper: `test/e2e/helpers/mcp-client.ts`.
+- **MCP e2e harness (live):** `test/e2e/mcp.e2e.ts` spawns `bunny mcp`, connects via MCP SDK Client, exercises all 15 active tools + 2 skipped (init/deploy - MCP-native versions not needed). Helper: `test/e2e/helpers/mcp-client.ts`.
 - 13 active MCP tool tests + 2 skipped = 15 total coverage.
 
 ### Fixed
@@ -735,28 +735,28 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.22] — 2026-05-03 (Install MCP Fix)
+## [0.1.0-rc.22] - 2026-05-03 (Install MCP Fix)
 
 ### Fixed
 - **`bunny install mcp` regression:** Was passing `-y` to claude itself instead of npx. Corrected via `--` separator: `claude mcp add bunny-tools -- npx -y bunny-tools mcp`.
 
 ---
 
-## [0.1.0-rc.21] — 2026-05-03 (Subgroup Help Expansion)
+## [0.1.0-rc.21] - 2026-05-03 (Subgroup Help Expansion)
 
 ### Changed
 - **Subgroup help expansion:** `bunny stream --help` and similar now expands ALL leaf descendants regardless of depth (was showing only sub-pointers, leaving leaf commands hidden).
 
 ---
 
-## [0.1.0-rc.20] — 2026-05-03 (Root Help Alignment)
+## [0.1.0-rc.20] - 2026-05-03 (Root Help Alignment)
 
 ### Changed
 - **Root help collapse:** Commands with 3+ segments (e.g., `bunny pullzone edgerule add`) now show as 2-segment pointers (`pullzone edgerule ...`) for cleaner alignment in help output. Long arg signatures no longer break column layout.
 
 ---
 
-## [0.1.0-rc.19] — 2026-05-03 (DX Polish — 4 GA Wins)
+## [0.1.0-rc.19] - 2026-05-03 (DX Polish - 4 GA Wins)
 
 ### Added
 - **`bunny install mcp`:** Self-bootstraps Claude MCP configuration (new command, rc.19+).
@@ -769,7 +769,7 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.18] — 2026-05-03 (Hyphen Aliases Dropped — BREAKING)
+## [0.1.0-rc.18] - 2026-05-03 (Hyphen Aliases Dropped - BREAKING)
 
 ### Removed
 - **Hyphen aliases (BREAKING pre-GA):** `pull-zone`, `storage-zone`, `edge-rule` no longer work. Only canonical flat forms: `pullzone`, `storagezone`, `edgerule`. Exception: `cdn` alias for `pullzone` retained (dashboard parity).
@@ -779,21 +779,21 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.17] — 2026-05-03 (Cdn Alias Added)
+## [0.1.0-rc.17] - 2026-05-03 (Cdn Alias Added)
 
 ### Added
 - **`cdn` alias for `pullzone` group:** `bunny cdn list` → `bunny pullzone list`. Matches Bunny dashboard sidebar terminology.
 
 ---
 
-## [0.1.0-rc.16] — 2026-05-03 (Bare Bunny Help Convention)
+## [0.1.0-rc.16] - 2026-05-03 (Bare Bunny Help Convention)
 
 ### Changed
 - **Bare `bunny` output:** Prints help to stdout (not stderr) with exit code 0 (wrangler convention, rc.16+). Matches `wrangler --help` behavior.
 
 ---
 
-## [0.1.0-rc.15] — 2026-05-03 (ESM Main Detection Fix — CRITICAL)
+## [0.1.0-rc.15] - 2026-05-03 (ESM Main Detection Fix - CRITICAL)
 
 ### Fixed
 - **CRITICAL: Bare `bunny` on -g installs:** Binary was silently exiting on globally-installed npm package (ESM symlink resolution issue). Fixed via `realpathSync` + `fileURLToPath(import.meta.url)` for proper main detection.
@@ -801,14 +801,14 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.14] — 2026-05-03 (README Rewrite)
+## [0.1.0-rc.14] - 2026-05-03 (README Rewrite)
 
 ### Changed
 - **Bunny CLI README rewrite:** MCP install front-and-center. Clearer positioning of CLI vs MCP server. New title emphasis.
 
 ---
 
-## [0.1.0-rc.13] — 2026-05-03 (Vitest Security Bump & E2E Harness Live)
+## [0.1.0-rc.13] - 2026-05-03 (Vitest Security Bump & E2E Harness Live)
 
 ### Added
 - **E2E drift-detection harness (live):** 30 vitest tests hitting real Bunny API on nightly CI schedule (`npm run test:e2e` locally with `BUNNY_E2E=1`). Located in `test/e2e/` with 8 service files + helpers + mp4 fixture. Nightly workflow at `.github/workflows/e2e-nightly.yml` runs ~03:00 UTC, creates GitHub issues on failure labeled `e2e,drift`. Detects schema changes, endpoint breakage, status code shifts. All resources prefixed `bt-e2e-*` for cleanup.
@@ -827,10 +827,10 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.12] — 2026-05-03 (Six Bug Fixes & Stream Library Delete Added)
+## [0.1.0-rc.12] - 2026-05-03 (Six Bug Fixes & Stream Library Delete Added)
 
 ### Added
-- **`bunny stream library delete <id>`** — missing in rc.10, now available (get/delete completed rc.10 goal)
+- **`bunny stream library delete <id>`** - missing in rc.10, now available (get/delete completed rc.10 goal)
 
 ### Fixed
 - **Storage subdir 404:** Fixed joinPath trailing slash causing "not found" on storage subdir operations
@@ -848,13 +848,13 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.11] — 2026-05-03 (Internal-Only Transient)
+## [0.1.0-rc.11] - 2026-05-03 (Internal-Only Transient)
 
 **Status:** Internal-only. Transient version bumped during rc.12 fix work; never tagged or published to npm.
 
 ---
 
-## [0.1.0-rc.10] — 2026-05-03 (UX Polish & Phase 5 Shipped)
+## [0.1.0-rc.10] - 2026-05-03 (UX Polish & Phase 5 Shipped)
 
 ### Added
 - **Zone auto-defaults (H1):** `storage` commands default `--zone` from bunny.json or active alias. No `--zone` required when config present.
@@ -869,10 +869,10 @@ Largest single ship of the session. Three subsystems landed together (originally
   - `bunny scripting list|deploy|delete`
 
 ### Changed
-- `src/core/storage-ops.ts` — New `resolveActiveZone()` helper for zone defaulting.
-- `src/manifest/registry.ts` — 49 active commands total (up from 38 in rc.9).
-- `src/manifest/types.ts` — Added `groups?: { name, description, aliases? }` to registry structure.
-- `src/cli.ts` — Walker now honors group descriptions and registers aliases per group.
+- `src/core/storage-ops.ts` - New `resolveActiveZone()` helper for zone defaulting.
+- `src/manifest/registry.ts` - 49 active commands total (up from 38 in rc.9).
+- `src/manifest/types.ts` - Added `groups?: { name, description, aliases? }` to registry structure.
+- `src/cli.ts` - Walker now honors group descriptions and registers aliases per group.
 - Pull zone create: origin moved to positional arg (was `--origin=<url>`).
 
 ### Fixed
@@ -884,7 +884,7 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.9] — 2026-05-03 (Multi-Account Profiles)
+## [0.1.0-rc.9] - 2026-05-03 (Multi-Account Profiles)
 
 ### Added (BREAKING)
 - **Multi-account profiles (rc.9):** Credentials now stored per-profile in `~/.config/bunny-tools/credentials.json`.
@@ -900,15 +900,15 @@ Largest single ship of the session. Three subsystems landed together (originally
 - **Global `-p/--profile` flag:** One-shot profile override for any command (mirrors AWS `--profile`).
 - **`BUNNY_PROFILE` env var:** Set active profile per-shell or per-direnv.
 - **`bunny configure` restored (rc.9, replaces auth):** Profile-aware interactive walkthrough.
-  - `bunny configure` — update active profile
-  - `bunny configure --profile=work` — update/create work profile
-  - `bunny configure list` — show all profiles + active marker
-  - `bunny configure switch <profile>` — change active profile
-  - `bunny configure remove [--profile=<name>] [--scope=<scope>]` — delete profile or scope
+  - `bunny configure` - update active profile
+  - `bunny configure --profile=work` - update/create work profile
+  - `bunny configure list` - show all profiles + active marker
+  - `bunny configure switch <profile>` - change active profile
+  - `bunny configure remove [--profile=<name>] [--scope=<scope>]` - delete profile or scope
 - **Auto-migration (transparent):** rc.8 flat credentials shape automatically wrapped into `default` profile on first read.
 
 ### Removed (BREAKING)
-- `bunny auth set`, `bunny auth list`, `bunny auth clear` — replaced by `bunny configure *`.
+- `bunny auth set`, `bunny auth list`, `bunny auth clear` - replaced by `bunny configure *`.
 
 ### Changed
 - Credential resolver now profiles-aware. 6-step chain per active profile (flag > scoped env > generic env > keychain > file > prompt).
@@ -916,7 +916,7 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.8] — 2026-05-02 (Wrangler Follow-up)
+## [0.1.0-rc.8] - 2026-05-02 (Wrangler Follow-up)
 
 ### Added
 - **Global flag:** `-p/--profile <name>` (prepared for rc.9 multi-account; not yet used).
@@ -929,7 +929,7 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.7] — 2026-05-02 (Wrangler-Style Space-Delimited)
+## [0.1.0-rc.7] - 2026-05-02 (Wrangler-Style Space-Delimited)
 
 ### Changed (BREAKING)
 - **Space-delimited subcommands (rc.7):** Replaced colon syntax with space-delimited (wrangler-style).
@@ -945,19 +945,19 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.6] — 2026-05-02 (First OIDC Publish)
+## [0.1.0-rc.6] - 2026-05-02 (First OIDC Publish)
 
 ### Added
 - **OIDC trusted publishing:** npm secrets via GitHub OIDC (no NPM_TOKEN in secrets).
 - **Workflow:** `.github/workflows/release.yml` publishes on tag push `v*`.
 
 ### Changed
-- `package.json` — `repository.url` added for provenance.
-- `bin` path — standardized to `dist/cli.js`.
+- `package.json` - `repository.url` added for provenance.
+- `bin` path - standardized to `dist/cli.js`.
 
 ---
 
-## [0.1.0-rc.3] — 2026-05-02 (Init Simplification)
+## [0.1.0-rc.3] - 2026-05-02 (Init Simplification)
 
 ### Changed
 - **Firebase-style `bunny init` (rc.3):** Feature multi-select + per-feature config in one command.
@@ -965,7 +965,7 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.2] — 2026-05-02 (Manual OTP)
+## [0.1.0-rc.2] - 2026-05-02 (Manual OTP)
 
 ### Added
 - **Unified auth + init flow:** `bunny init` handles both credentials + project setup.
@@ -974,21 +974,21 @@ Largest single ship of the session. Three subsystems landed together (originally
 
 ---
 
-## [0.1.0-rc.1] — 2026-05-02 (Phases 2–4, 6–7 Shipped; Phase 5 → v0.2)
+## [0.1.0-rc.1] - 2026-05-02 (Phases 2–4, 6–7 Shipped; Phase 5 → v0.2)
 
 All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Scripting) preemptively deferred to v0.2 for faster GA stabilization.
 
 ### Added (Phases 2–7)
 
 #### Phase 2: Deploy Loop
-- `bunny deploy [--dry-run]` — storage sync + CDN purge (the main command)
-- `bunny purge <target>` — standalone purge by URL/tag/zone
-- `bunny init` — project initialization wizard
-- `bunny configure [--non-interactive]` — global credential setup
-- `bunny auth {set,list,clear}` — per-scope credential management (3 commands)
-- `bunny use <alias>` — alias switching for multi-env deployments
-- `src/core/deploy.ts` — business logic (walk, diff, upload orchestration, purge)
-- `src/deploy/` subsystem — internal modules (walk, diff, upload-queue, remote-list, state)
+- `bunny deploy [--dry-run]` - storage sync + CDN purge (the main command)
+- `bunny purge <target>` - standalone purge by URL/tag/zone
+- `bunny init` - project initialization wizard
+- `bunny configure [--non-interactive]` - global credential setup
+- `bunny auth {set,list,clear}` - per-scope credential management (3 commands)
+- `bunny use <alias>` - alias switching for multi-env deployments
+- `src/core/deploy.ts` - business logic (walk, diff, upload orchestration, purge)
+- `src/deploy/` subsystem - internal modules (walk, diff, upload-queue, remote-list, state)
 - State caching (`.bunny-state.json`) for warm-run optimization
 - 91+ tests across 16 test files
 
@@ -997,18 +997,18 @@ All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Sc
 - `bunny storage-zone:{list,get,create,update,delete}` (5 commands)
 - `bunny pull-zone:{list,get,create,update,delete}` (5 commands)
 - `bunny pull-zone:edge-rule:{list,add,delete}` (3 commands)
-- `src/core/storage-ops.ts` — zone-aware storage operations
-- `src/core/zones.ts` — zone CRUD, regional endpoint selection, caching
+- `src/core/storage-ops.ts` - zone-aware storage operations
+- `src/core/zones.ts` - zone CRUD, regional endpoint selection, caching
 
 #### Phase 4: DNS
 - `bunny dns:{list,get,create,delete}` (4 commands)
 - `bunny dns:record:{list,add,update,delete}` (4 commands)
-- `src/core/dns.ts` — DNS zone + record CRUD with zod-validated record types
+- `src/core/dns.ts` - DNS zone + record CRUD with zod-validated record types
 
 #### Phase 6: MCP Server
-- `bunny mcp` — MCP stdio server entry point
-- `src/mcp/server.ts` — JSON-RPC 2.0 transport
-- `src/mcp/tools.ts` — ~14 MCP tools wrapping core functions + 3 resources
+- `bunny mcp` - MCP stdio server entry point
+- `src/mcp/server.ts` - JSON-RPC 2.0 transport
+- `src/mcp/tools.ts` - ~14 MCP tools wrapping core functions + 3 resources
   - Tools: manifest, deploy, purge, storage (CRUD), zones (CRUD), DNS (CRUD)
   - Resources: bunny://manifest, bunny://agents, bunny://config/current
 - AGENTS.md polish with command tree + curated workflows/gotchas
@@ -1021,17 +1021,17 @@ All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Sc
 - Docker support (if applicable)
 
 #### New UI Helpers (P2+)
-- `src/ui/progress.ts` — spinner + progress bar
-- `src/ui/prompt.ts` — interactive credential input, confirmation
-- `src/ui/table.ts` — formatted table rendering for list commands
+- `src/ui/progress.ts` - spinner + progress bar
+- `src/ui/prompt.ts` - interactive credential input, confirmation
+- `src/ui/table.ts` - formatted table rendering for list commands
 
 #### New Utilities
-- `src/util/content-type.ts` — MIME type detection for uploads
+- `src/util/content-type.ts` - MIME type detection for uploads
 
 #### Test Coverage
-- `test/core/` — 7 test files (auth, configure, deploy, purge, zones, dns + deploy subsystem)
-- `test/deploy/` — 4 test files (walk, diff, upload-queue, state)
-- `test/mcp/` — 1 test file (tools + resources)
+- `test/core/` - 7 test files (auth, configure, deploy, purge, zones, dns + deploy subsystem)
+- `test/deploy/` - 4 test files (walk, diff, upload-queue, state)
+- `test/mcp/` - 1 test file (tools + resources)
 - All layers ≥80% coverage gate (CI enforced)
 
 ### Changed
@@ -1053,17 +1053,17 @@ All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Sc
 
 ---
 
-## [0.1.0-alpha.0] — 2026-05-02 (Phase 1 — Bootstrap & Foundations)
+## [0.1.0-alpha.0] - 2026-05-02 (Phase 1 - Bootstrap & Foundations)
 
 ### Added
 
 #### Core Architecture
-- **Registry-driven CLI** (`src/manifest/registry.ts`) — single source of truth for all command definitions
+- **Registry-driven CLI** (`src/manifest/registry.ts`) - single source of truth for all command definitions
   - 47 commands declared (1 active, 46 planned stubs for phases 2–6)
   - All surfaces (help, JSON, AGENTS.md, schema, MCP defs) auto-generated from registry
   - Lazy command loading keeps cold-start <50ms
   
-- **HTTP Client** (`src/api/http.ts`) — undici-based REST client with resilience
+- **HTTP Client** (`src/api/http.ts`) - undici-based REST client with resilience
   - Auth injection: `AccessKey` header resolved per call via credential chain
   - Retry logic: 429, 502, 503, 504 → exponential backoff (base * 2^attempt, max 30s) ± 25% jitter, max 5 attempts
   - Retry-After honor: respects server-provided retry delay
@@ -1088,12 +1088,12 @@ All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Sc
   - No credentials in error messages (asserted via test spy)
 
 #### Commands
-- **`bunny manifest`** — outputs registry as JSON
+- **`bunny manifest`** - outputs registry as JSON
   - `--pretty` flag for indented output
   - Used by humans, AI agents, and CI drift checks
 
 #### Utilities
-- **Logger** (`src/util/logger.ts`) — structured logging to stderr
+- **Logger** (`src/util/logger.ts`) - structured logging to stderr
   - `LOG_LEVEL` env control (debug, info, warn, error; default: error)
   - No credentials logged at any level
   - Optional picocolors for colored output
@@ -1113,9 +1113,9 @@ All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Sc
   - `src/` → `dist/cli.js` binary (esbuild'd)
   
 - **Generated Artifacts** (auto-generated, checked in)
-  - `manifest.json` — full registry as JSON (8 KB)
-  - `AGENTS.md` — AI-friendly docs with command tree + curated sections (5 KB)
-  - `schema/bunny.schema.json` — JSON Schema for bunny.json + per-command schemas (3 KB)
+  - `manifest.json` - full registry as JSON (8 KB)
+  - `AGENTS.md` - AI-friendly docs with command tree + curated sections (5 KB)
+  - `schema/bunny.schema.json` - JSON Schema for bunny.json + per-command schemas (3 KB)
   
 - **CI/CD** (GitHub Actions)
   - Matrix: Node 20.x, 22.x × ubuntu-latest, macos-latest
@@ -1162,13 +1162,13 @@ All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Sc
   - Round-trip: registry → JSON → shape preserved
 
 #### Documentation
-- **`docs/project-overview-pdr.md`** — Product Development Requirements
+- **`docs/project-overview-pdr.md`** - Product Development Requirements
   - Problem statement, goals, non-goals
   - Target personas, success metrics
   - Architectural decisions D1–D10, constraints
   - Release cadence (weekly alphas, GA week 7)
 
-- **`docs/system-architecture.md`** — System design
+- **`docs/system-architecture.md`** - System design
   - Layer diagram: CLI/MCP → core → api
   - Registry canonicity (all surfaces derive from it)
   - HTTP client contract + retry semantics
@@ -1177,7 +1177,7 @@ All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Sc
   - Data flow examples (manifest command, deploy mocked)
   - Phase 1 state vs future layers
 
-- **`docs/code-standards.md`** — Engineering rules
+- **`docs/code-standards.md`** - Engineering rules
   - File organization (kebab-case, ≤200 LOC target)
   - Language (strict TS, ESM, no `any`)
   - Logging (stderr only, no credentials, colorized)
@@ -1187,13 +1187,13 @@ All phases 2–4, 6–7 shipped in single release. Phase 5 (Stream/Containers/Sc
   - Test expectations (≥80% coverage, no real network)
   - Build pipeline, generators, drift check
 
-- **`docs/codebase-summary.md`** — File map & module guide
+- **`docs/codebase-summary.md`** - File map & module guide
   - Every file (13 source, 5 test) with purpose + key exports
   - Module dependency graph
   - Metrics (22ms cold-start, 1 active command, 47 stubs)
   - Development workflow (adding new commands)
 
-- **`docs/project-roadmap.md`** — Phase timeline & planning
+- **`docs/project-roadmap.md`** - Phase timeline & planning
   - Phase 1–7 breakdown with ships-as, scope, validation
   - Slip gate (Phase 4 >2w → Phase 5 defers to v0.2)
   - Timeline (week-by-week)
@@ -1301,7 +1301,7 @@ GitHub Actions workflow (`.github/workflows/release.yml`) on tag push:
 ## Migration Guide
 
 ### From v0.0 (Pre-release)
-N/A — v0.1.0-alpha.0 is first release.
+N/A - v0.1.0-alpha.0 is first release.
 
 ---
 
@@ -1315,8 +1315,8 @@ N/A — v0.1.0-alpha.0 is first release.
 - MCP server ready for AI integration via Claude Code, Claude Desktop, or compatible clients
 
 ### Credential Setup
-- `bunny configure` — one-time global setup (interactive or `--non-interactive`)
-- `bunny auth {set,list,clear}` — per-scope credential management
+- `bunny configure` - one-time global setup (interactive or `--non-interactive`)
+- `bunny auth {set,list,clear}` - per-scope credential management
 - Credential chain: CLI flag → scoped env → generic env → keychain → file → prompt
 
 ### Phase 5 (Stream/Containers) → v0.2

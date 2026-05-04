@@ -1,6 +1,6 @@
 // Stream API client. Two endpoints:
-// - https://api.bunny.net (account scope) — library CRUD
-// - https://video.bunnycdn.com (per-library scope `stream:<libraryId>`) — video CRUD
+// - https://api.bunny.net (account scope) - library CRUD
+// - https://video.bunnycdn.com (per-library scope `stream:<libraryId>`) - video CRUD
 
 import type { CredentialResolver } from './http.js';
 import { createHttpClient } from './http.js';

@@ -1,4 +1,4 @@
-// core/aliases — read/write `.bunnyrc` aliases. UI-free.
+// core/aliases - read/write `.bunnyrc` aliases. UI-free.
 
 import { join } from 'node:path';
 import type { Bunnyrc } from '../config/bunnyrc.js';

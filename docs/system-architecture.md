@@ -122,10 +122,10 @@ bunny scripting list|deploy|delete                                       (nested
 
 The registry is a declarative list of `CommandSpec` objects. Every surface derives from it:
 - **CLI help** (`--help`, `--help --json`)
-- **`bunny manifest` JSON** — full registry as JSON
-- **`AGENTS.md`** — auto-generated command tree + human-curated gotchas
-- **`schema/bunny.schema.json`** — zod schemas → JSON Schema
-- **MCP tool definitions** — command → MCP tool mapping (P6)
+- **`bunny manifest` JSON** - full registry as JSON
+- **`AGENTS.md`** - auto-generated command tree + human-curated gotchas
+- **`schema/bunny.schema.json`** - zod schemas → JSON Schema
+- **MCP tool definitions** - command → MCP tool mapping (P6)
 
 **Current state (rc.24):**
 - **Active:** 51 commands (all phases 1–7 shipped; Phase 5 un-deferred rc.10; new rc.19/rc.24: `install mcp`, `update`, DNS REDIRECT/FLATTEN/PULLZONE/PTR/SCRIPT types)
@@ -232,7 +232,7 @@ type AuthScope =
 // Resolution order (per active profile):
 // 1. Explicit CLI flag (--account-key, --storage-password, etc.)
 // 2. Scoped env per profile (BUNNY_ACCOUNT_KEY_<PROFILE>, BUNNY_STORAGE_PASSWORD_<PROFILE>_<ZONE>)
-// 3. Generic env fallback (BUNNY_STORAGE_PASSWORD — treated as active profile)
+// 3. Generic env fallback (BUNNY_STORAGE_PASSWORD - treated as active profile)
 // 4. OS keychain at <profile>:<scope> (service: 'bunny-tools')
 // 5. JSON file profiles[active_profile][scope]
 // 6. Interactive prompt (TTY only; CI fails fast with actionable error)
@@ -355,10 +355,10 @@ UI rendering lives in `src/commands/*` and `src/ui/*` (future).
 ### Registry Canonicity
 
 Every command's surface is derived from `src/manifest/registry.ts`:
-- **Help text** — from `description` + `flags` + `examples`
-- **JSON help** — from `CommandSpec` directly
-- **Validation** — from `args[].schema` + `flags[].schema` (zod, future)
-- **MCP tools** — from `mcp` mapping
+- **Help text** - from `description` + `flags` + `examples`
+- **JSON help** - from `CommandSpec` directly
+- **Validation** - from `args[].schema` + `flags[].schema` (zod, future)
+- **MCP tools** - from `mcp` mapping
 
 **Consequence:** To add a command, edit registry once. Help, JSON, AGENTS.md, schema, MCP defs all auto-generate on build.
 
@@ -420,7 +420,7 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 
 **Active:**
 - CLI entry (src/cli.ts) with **ESM main detection fix (rc.15)**, **help layout polish (rc.19)**
-- Registry (src/manifest/registry.ts) — **51 active commands** (all phases 1–7; new rc.19/rc.24: `install mcp`, `update`, 5 DNS types)
+- Registry (src/manifest/registry.ts) - **51 active commands** (all phases 1–7; new rc.19/rc.24: `install mcp`, `update`, 5 DNS types)
 - Config loaders (bunny-json, bunnyrc, credential-resolver)
 - HTTP client (undici, retry, auth injection, P1; account/storage endpoints P3+)
 - Core logic (deploy, purge, storage-ops, zones, dns, auth, configure, init, aliases, stream, scripting)
@@ -428,7 +428,7 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 - MCP server (server.ts, tools.ts with 15 tools + 3 resources; **e2e harness rc.23**, **stdio fix rc.23**)
 - UI helpers (progress, prompt, table)
 - Error handling, logging, paths, filesystem, content-type
-- **Help renderer (format-help.ts, rc.19)** — Wrangler-style layout; no emoji; TITLE → USAGE → COMMANDS → FLAGS
+- **Help renderer (format-help.ts, rc.19)** - Wrangler-style layout; no emoji; TITLE → USAGE → COMMANDS → FLAGS
 - All **51 active command implementations** (all working, ≥80% test coverage)
 - Vitest 4.x (upgraded rc.13 for security patch GHSA-67mh-4wv8-2f99); **129 unit + 44 e2e tests**
 
@@ -446,13 +446,13 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 ## Testing Strategy (All Phases; rc.13: Vitest 4.x)
 
 **Unit tests (129 tests, 80%+ coverage, all phases, Nock-mocked, vitest 4.x):**
-- `test/api/*` — HTTP client, auth, retry, error handling
-- `test/cli/*` — CLI main detection (rc.15+), entry point validation
-- `test/config/*` — Config loaders, credential chain, validation
-- `test/core/*` — Deploy, purge, zones, DNS, auth, configure, init, stream, scripting
-- `test/deploy/*` — Walk, diff, upload queue, state, remote list
-- `test/manifest/*` — Registry, help rendering, format-help (rc.19+)
-- `test/mcp/*` — MCP tools, resources
+- `test/api/*` - HTTP client, auth, retry, error handling
+- `test/cli/*` - CLI main detection (rc.15+), entry point validation
+- `test/config/*` - Config loaders, credential chain, validation
+- `test/core/*` - Deploy, purge, zones, DNS, auth, configure, init, stream, scripting
+- `test/deploy/*` - Walk, diff, upload queue, state, remote list
+- `test/manifest/*` - Registry, help rendering, format-help (rc.19+)
+- `test/mcp/*` - MCP tools, resources
 - **New (rc.24):** 7 unit tests for DNS routing types (REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT)
 
 **Integration (via Nock mocking):**
@@ -492,12 +492,12 @@ Every command's surface is derived from `src/manifest/registry.ts`:
 
 | Component | Time | Budget |
 |-----------|------|--------|
-| Node startup | ~5ms | — |
-| TS → JS (bundled) | ~5ms | — |
-| Require imports | ~7ms | — |
-| Registry parse | ~3ms | — |
-| Commander tree build | ~2ms | — |
-| `--help` render | ~0.5ms | — |
+| Node startup | ~5ms | - |
+| TS → JS (bundled) | ~5ms | - |
+| Require imports | ~7ms | - |
+| Registry parse | ~3ms | - |
+| Commander tree build | ~2ms | - |
+| `--help` render | ~0.5ms | - |
 | **Total** | ~22ms | <50ms ✓ |
 
 Commander.js baseline alone is ~22ms; we stay under budget with lazy command loading.

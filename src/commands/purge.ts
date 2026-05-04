@@ -1,4 +1,4 @@
-// `bunny purge <target>` — standalone CDN cache purge.
+// `bunny purge <target>` - standalone CDN cache purge.
 
 import type { ParsedInvocation } from '../manifest/types.js';
 import { parsePurgeArg, runPurgeCommand } from '../core/purge.js';

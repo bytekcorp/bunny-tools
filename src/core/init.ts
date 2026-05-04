@@ -1,4 +1,4 @@
-// core/init — unified bootstrap. Replaces the old configure + init split.
+// core/init - unified bootstrap. Replaces the old configure + init split.
 // One entrypoint that handles auth (skipped if creds exist), feature multi-select,
 // and per-feature project config. UI-free: callers inject prompts callbacks.
 
@@ -16,7 +16,7 @@ export const FEATURES = ['storage', 'dns', 'stream', 'containers', 'scripting'] 
 export type Feature = (typeof FEATURES)[number];
 
 export const FEATURE_LABELS: Record<Feature, string> = {
-  storage: 'Storage + CDN deploy   (recommended — the daily-deploy loop)',
+  storage: 'Storage + CDN deploy   (recommended - the daily-deploy loop)',
   dns: 'DNS records management',
   stream: 'Stream (video library)',
   containers: 'Magic Containers',
@@ -79,7 +79,7 @@ export async function runInit(
     };
   }
 
-  // Step 1 — Auth (skipped if creds already resolvable).
+  // Step 1 - Auth (skipped if creds already resolvable).
   const storedScopes: string[] = [];
   const accountAlreadySet = await hasAccountCredential();
   if (!accountAlreadySet) {
@@ -104,7 +104,7 @@ export async function runInit(
     cb.notify?.(`Account key already configured (${masked}). Skipping auth step.`);
   }
 
-  // Validate by listing zones — also gives us the lists for the next step.
+  // Validate by listing zones - also gives us the lists for the next step.
   const acct = createAccountClient({ resolveCredential });
   const [zones, pullZones] = await Promise.all([
     acct.listStorageZones().catch(() => [] as StorageZone[]),
@@ -112,7 +112,7 @@ export async function runInit(
   ]);
   cb.notify?.(`Found ${zones.length} storage zone(s), ${pullZones.length} pull zone(s).`);
 
-  // Step 2 — Feature picker (skipped if features pre-supplied).
+  // Step 2 - Feature picker (skipped if features pre-supplied).
   let features = input.features ?? (opts.interactive ? null : (['storage'] as Feature[]));
   if (features === null) {
     features = await cb.multiselect({
@@ -130,7 +130,7 @@ export async function runInit(
     throw new Error('At least one feature must be selected.');
   }
 
-  // Step 3 — Per-feature config. Builds the bunny.json deploy block.
+  // Step 3 - Per-feature config. Builds the bunny.json deploy block.
   const config: Record<string, unknown> = {
     $schema: 'https://unpkg.com/bunny-tools/schema/bunny.schema.json',
   };
@@ -148,22 +148,22 @@ export async function runInit(
       cb.notify?.(`Stream library key stored for library ${input.streamLibraryId}.`);
     } else {
       cb.notify?.(
-        'Stream selected — set per-library keys later via `bunny auth set --scope stream:<libraryId>`.',
+        'Stream selected - set per-library keys later via `bunny auth set --scope stream:<libraryId>`.',
       );
     }
   }
 
   if (features.includes('dns')) {
-    cb.notify?.('DNS selected — manage records via `bunny dns:*`. No project config needed.');
+    cb.notify?.('DNS selected - manage records via `bunny dns:*`. No project config needed.');
   }
   if (features.includes('containers')) {
-    cb.notify?.('Magic Containers selected — manage via `bunny containers:*`. No project config needed.');
+    cb.notify?.('Magic Containers selected - manage via `bunny containers:*`. No project config needed.');
   }
   if (features.includes('scripting')) {
-    cb.notify?.('Edge Scripting selected — manage via `bunny scripting:*`. No project config needed.');
+    cb.notify?.('Edge Scripting selected - manage via `bunny scripting:*`. No project config needed.');
   }
 
-  // Step 4 — Write artifacts.
+  // Step 4 - Write artifacts.
   await atomicWriteJson(bunnyJsonPath, config);
   const gitignoreUpdated = await maybeUpdateGitignore(cwd);
 
@@ -243,7 +243,7 @@ async function configureStorage(
       message: 'Pull zone for CDN (or pick "none")',
       choices: [
         ...pullZones.map((p) => ({ value: String(p.Id), label: `${p.Name} (id=${p.Id})` })),
-        { value: '', label: 'none — skip CDN purge' },
+        { value: '', label: 'none - skip CDN purge' },
       ],
     });
     if (choice.length > 0) pullZoneId = Number.parseInt(choice, 10);
@@ -255,9 +255,9 @@ async function configureStorage(
       name: 'purge',
       message: 'Purge strategy after deploy',
       choices: [
-        { value: 'all', label: 'all — full pull-zone purge' },
-        { value: 'tag:app', label: 'tag — Cache-Tag based (origin must set Cache-Tag header)' },
-        { value: 'none', label: 'none — skip purge' },
+        { value: 'all', label: 'all - full pull-zone purge' },
+        { value: 'tag:app', label: 'tag - Cache-Tag based (origin must set Cache-Tag header)' },
+        { value: 'none', label: 'none - skip purge' },
       ],
     });
   }

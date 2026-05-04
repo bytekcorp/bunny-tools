@@ -1,4 +1,4 @@
-// `bunny mcp` — stdio MCP server. Tools call into src/core/*; resources expose
+// `bunny mcp` - stdio MCP server. Tools call into src/core/*; resources expose
 // canonical manifest, AGENTS.md, and a masked view of current credentials.
 
 import { readFile } from 'node:fs/promises';

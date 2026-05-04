@@ -1,4 +1,4 @@
-// `bunny docs [topic]` — opens Bunny.net docs in the default browser.
+// `bunny docs [topic]` - opens Bunny.net docs in the default browser.
 // Topic table maps friendly names to known doc paths; otherwise treats topic
 // as a slug appended to the docs base.
 
@@ -9,7 +9,7 @@ import { createProgress } from '../ui/progress.js';
 const DOCS_BASE = 'https://docs.bunny.net';
 
 const TOPIC_MAP: Record<string, string> = {
-  // Common topics — friendly aliases → doc paths.
+  // Common topics - friendly aliases → doc paths.
   '': '/docs',
   api: '/reference/bunnynet-api-overview',
   storage: '/docs/storage-introduction',

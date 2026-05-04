@@ -1,4 +1,4 @@
-// TTY-aware progress reporter. Logs to stderr only — stdout is reserved for
+// TTY-aware progress reporter. Logs to stderr only - stdout is reserved for
 // command output / MCP transport.
 
 import pc from 'picocolors';

@@ -1,6 +1,6 @@
 # bunny-tools
 
-> Broad-surface Bunny.net CLI + MCP server. 60 commands across Storage, CDN, DNS, Stream, and Edge Scripting — drive them from your shell or from any AI agent (Claude Code, Claude Desktop). If you've used `firebase deploy`, `bunny deploy` will feel familiar — one command for static-site upload + CDN purge.
+> Broad-surface Bunny.net CLI + MCP server. 60 commands across Storage, CDN, DNS, Stream, and Edge Scripting - drive them from your shell or from any AI agent (Claude Code, Claude Desktop). If you've used `firebase deploy`, `bunny deploy` will feel familiar - one command for static-site upload + CDN purge.
 
 [![npm](https://img.shields.io/npm/v/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
 [![npm downloads](https://img.shields.io/npm/dm/bunny-tools.svg)](https://www.npmjs.com/package/bunny-tools)
@@ -12,11 +12,11 @@
 
 ## Why bunny-tools
 
-Bunny.net's official CLI ([`@bunny.net/cli`](https://www.npmjs.com/package/@bunny.net/cli)) covers Databases, Magic Containers, and Edge Scripts. bunny-tools is the broader surface — Storage, CDN, DNS, Stream, Edge Scripting — for teams that mostly need static-site deploy + CDN management. One binary replaces a folder of curl scripts and stale dashboard tabs:
+Bunny.net's official CLI ([`@bunny.net/cli`](https://www.npmjs.com/package/@bunny.net/cli)) covers Databases, Magic Containers, and Edge Scripts. bunny-tools is the broader surface - Storage, CDN, DNS, Stream, Edge Scripting - for teams that mostly need static-site deploy + CDN management. One binary replaces a folder of curl scripts and stale dashboard tabs:
 
-- **`bunny deploy` for static sites.** Familiar ergonomics if you've used `firebase deploy` — walk public dir → SHA-cached diff → parallel upload → CDN purge, in one command.
+- **`bunny deploy` for static sites.** Familiar ergonomics if you've used `firebase deploy` - walk public dir → SHA-cached diff → parallel upload → CDN purge, in one command.
 - **`bunny.json` is your single source of truth.** Versioned in git. Every command honors it. JSON Schema published at `unpkg.com/bunny-tools/schema/bunny.schema.json`.
-- **AI-native via MCP.** AI agents see the same surface you do — no separate plugin per agent. `bunny install mcp` registers it with Claude Code in one shot.
+- **AI-native via MCP.** AI agents see the same surface you do - no separate plugin per agent. `bunny install mcp` registers it with Claude Code in one shot.
 - **Verified end-to-end.** 185 unit tests + nightly drift detection against a real Bunny account. We catch Bunny API changes before they break your deploys.
 
 ## Install
@@ -61,7 +61,7 @@ bunny deploy                 # storage sync + CDN purge
 `bunny init` walks you through:
 
 1. Bunny account API key (skipped if already in env or keychain)
-2. Feature multi-select — Storage+CDN, DNS, Stream, Magic Containers, Edge Scripting
+2. Feature multi-select - Storage+CDN, DNS, Stream, Magic Containers, Edge Scripting
 3. Per-feature config (e.g. for Storage+CDN: public dir, storage zone, password, pull zone, purge strategy)
 
 Non-interactive form for CI:
@@ -103,8 +103,8 @@ This anchors Claude to bunny-tools for that project's deploy work.
 
 | Command | Description |
 | --- | --- |
-| `bunny init` | Interactive setup — auth + feature picker + bunny.json |
-| `bunny configure` | Walkthrough — store credentials in a named profile |
+| `bunny init` | Interactive setup - auth + feature picker + bunny.json |
+| `bunny configure` | Walkthrough - store credentials in a named profile |
 | `bunny configure list` | List all credential profiles + scopes (masked) |
 | `bunny configure switch <name>` | Set the active profile |
 | `bunny configure remove <name> [scope]` | Remove a profile, or a single scope inside one |
@@ -141,7 +141,7 @@ bunny purge tag:release-2026-05
 | `bunny storage download <remote> <local>` | Download a single file from a zone |
 | `bunny storage list [path]` | List a storage-zone path |
 | `bunny storage delete <path>` | Delete a file or path (use `--recursive` for dirs) |
-| `bunny storage sync <local-dir>` | Mirror local dir to zone — SHA-cached diff, parallel upload |
+| `bunny storage sync <local-dir>` | Mirror local dir to zone - SHA-cached diff, parallel upload |
 
 **Example**
 
@@ -162,7 +162,7 @@ bunny storage sync ./dist --zone=my-app
 
 ## Pull Zones (CDN)
 
-> **Tip:** `bunny cdn ...` works everywhere `bunny pullzone ...` does — Bunny's dashboard calls these "CDN", so the alias is there for muscle memory. Canonical name follows Bunny's API (`pullzone`).
+> **Tip:** `bunny cdn ...` works everywhere `bunny pullzone ...` does - Bunny's dashboard calls these "CDN", so the alias is there for muscle memory. Canonical name follows Bunny's API (`pullzone`).
 
 | Command | Description |
 | --- | --- |
@@ -184,7 +184,7 @@ bunny storage sync ./dist --zone=my-app
 ```bash
 bunny cdn edgerule list 12345
 
-# Wire DNS to a pull zone (2 steps — `add` does link + cert + ForceSSL
+# Wire DNS to a pull zone (2 steps - `add` does link + cert + ForceSSL
 # in one idempotent call; the DNS record points at the wired-up PZ):
 bunny pullzone hostname add 5780316 example.com           # ~2-90s
 bunny dns record add 783181 PULLZONE @ --pull-zone=5780316
@@ -206,7 +206,7 @@ bunny domain connect 5780316 example.com --dns-zone=783181
 | `bunny dns record update <zone> <record-id> --body=<json>` | Update a record |
 | `bunny dns record delete <zone> <record-id>` | Delete a record |
 
-**Supported record types:** standard `A`, `AAAA`, `CNAME`, `TXT`, `MX`, `SRV`, `CAA`, `NS` plus Bunny routing types `REDIRECT`, `PULLZONE`, `PTR`, `SCRIPT`. `PULLZONE` and `SCRIPT` need `--link-name=<id>` (the linked pull zone / script id). For `PULLZONE` you can use the convenience flag `--pull-zone=<id>` instead and the CLI will fill in both the value and link-name from the pull zone's metadata. (`FLATTEN` is documented in Bunny's OpenAPI spec but the live API rejects it; dropped from supported types — re-add when Bunny enables it server-side.)
+**Supported record types:** standard `A`, `AAAA`, `CNAME`, `TXT`, `MX`, `SRV`, `CAA`, `NS` plus Bunny routing types `REDIRECT`, `PULLZONE`, `PTR`, `SCRIPT`. `PULLZONE` and `SCRIPT` need `--link-name=<id>` (the linked pull zone / script id). For `PULLZONE` you can use the convenience flag `--pull-zone=<id>` instead and the CLI will fill in both the value and link-name from the pull zone's metadata. (`FLATTEN` is documented in Bunny's OpenAPI spec but the live API rejects it; dropped from supported types - re-add when Bunny enables it server-side.)
 
 **Examples**
 
@@ -217,7 +217,7 @@ bunny dns record add 783181 A www 1.2.3.4 --ttl=300
 # Redirect www → https://example.com
 bunny dns record add 783181 REDIRECT www https://example.com
 
-# Wire DNS to a pull zone — auto-fills value + link-name
+# Wire DNS to a pull zone - auto-fills value + link-name
 bunny dns record add 783181 PULLZONE "" --pull-zone=5780316
 
 # Or raw form if you already know the pz name
@@ -248,7 +248,7 @@ bunny stream video upload 42 ./demo.mp4 --title="My demo"
 | `bunny containers app list` | List container apps |
 | `bunny containers app delete <id>` | Delete a container app |
 
-> `containers app create` is deferred to v0.2 — Bunny's v3 schema requires `runtimeType` + `containerTemplates[]` + `autoScaling` which the current CLI surface doesn't yet model. Manage creation via the Bunny dashboard for now.
+> `containers app create` is deferred to v0.2 - Bunny's v3 schema requires `runtimeType` + `containerTemplates[]` + `autoScaling` which the current CLI surface doesn't yet model. Manage creation via the Bunny dashboard for now.
 
 ## Edge Scripting
 
@@ -269,7 +269,7 @@ bunny scripting deploy my-router --code=./worker.js
 | Command | Description |
 | --- | --- |
 | `bunny manifest --pretty` | Full registry as JSON (machine-readable surface) |
-| `bunny manifest --names` | One command name per line — handy for shell completion |
+| `bunny manifest --names` | One command name per line - handy for shell completion |
 | `bunny <any-command> --help-json` | Help for any command as JSON |
 | `bunny mcp` | Boot MCP stdio server (15 tools, 3 resources) |
 
@@ -342,10 +342,10 @@ Switch the active profile with `bunny configure switch <name>`, or one-shot with
 
 Four credential scopes (all use the `AccessKey` HTTP header):
 
-- `account` — Account API key
-- `storage:<zone>` — Storage zone password (per zone)
-- `stream:<lib>` — Stream library API key (per library)
-- `database:<name>` — Database access key
+- `account` - Account API key
+- `storage:<zone>` - Storage zone password (per zone)
+- `stream:<lib>` - Stream library API key (per library)
+- `database:<name>` - Database access key
 
 **Resolver chain (per call site):** `--flag` → scoped env (e.g. `BUNNY_STORAGE_PASSWORD_MY_APP`) → generic env (`BUNNY_STORAGE_PASSWORD`) → OS keychain (`<profile>:<scope>` keys) → `~/.config/bunny-tools/credentials.json` → interactive prompt.
 
@@ -372,9 +372,9 @@ Install steps are at the top under [Install → As an MCP server](#as-an-mcp-ser
 **Tools (15):** `bunny.deploy`, `bunny.purge`, `bunny.init`, `bunny.manifest`, `bunny.whoami`, storage zone CRUD, pull zone CRUD, DNS zone + record CRUD, plus `bunny.run` as an escape hatch for any CLI invocation.
 
 **Resources (3):**
-- `bunny://manifest` — full command registry as JSON
-- `bunny://agents` — AGENTS.md (workflows, gotchas, conventions for AI agents)
-- `bunny://config/current` — resolved config from `bunny.json` + active alias
+- `bunny://manifest` - full command registry as JSON
+- `bunny://agents` - AGENTS.md (workflows, gotchas, conventions for AI agents)
+- `bunny://config/current` - resolved config from `bunny.json` + active alias
 
 **Cross-project usage.** With the MCP server installed, drop a 2-line hint into any new project's `CLAUDE.md` to anchor Claude to bunny-tools for that project:
 
@@ -400,4 +400,4 @@ For release instructions, see [`docs/deployment-guide.md`](docs/deployment-guide
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT - see [LICENSE](./LICENSE).

@@ -1,4 +1,4 @@
-// `bunny init [dir]` — unified bootstrap (auth + feature picker + project config).
+// `bunny init [dir]` - unified bootstrap (auth + feature picker + project config).
 
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';

@@ -30,7 +30,7 @@ function shouldLog(level: LogLevel): boolean {
 }
 
 // All log output goes to stderr. stdout is reserved for command results
-// (and for the MCP server, stdout is the JSON-RPC transport — never log there).
+// (and for the MCP server, stdout is the JSON-RPC transport - never log there).
 function emit(level: LogLevel, prefix: string, args: unknown[]): void {
   if (!shouldLog(level)) return;
   const parts = args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a)));

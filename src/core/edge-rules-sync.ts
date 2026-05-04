@@ -82,7 +82,7 @@ export async function syncEdgeRulesForPullZone(
   const managedByDesc = new Map(managed.map((r) => [r.Description!, r]));
 
   let added = 0;
-  // `updated` is never incremented — we trust the description hash for
+  // `updated` is never incremented - we trust the description hash for
   // identity. Kept in the result envelope for back-compat / future use
   // if we add a "force update" mode that re-applies same-hash rules.
   const updated = 0;
@@ -97,7 +97,7 @@ export async function syncEdgeRulesForPullZone(
   //
   // Side effect: if a user manually edits a managed rule in the dashboard,
   // its description still matches our hash → we leave it alone. That's
-  // intentional — manual edits via dashboard aren't our responsibility.
+  // intentional - manual edits via dashboard aren't our responsibility.
   // To force re-sync, the user changes the spec (which changes the hash).
   for (const [desc, rule] of desiredByDesc) {
     if (!managedByDesc.has(desc)) {
@@ -136,8 +136,8 @@ function compileDesiredRules(config: BunnyJson): EdgeRule[] {
 // Header → edge rule(s). Each (key, value) pair becomes one rule.
 //
 // Cache-Control is special-cased: when the value contains `max-age=N`, we
-// emit two rules — OverrideCacheTime (edge cache) and OverrideBrowserCacheTime
-// (Cache-Control header sent to client) — both with parameter1=N seconds.
+// emit two rules - OverrideCacheTime (edge cache) and OverrideBrowserCacheTime
+// (Cache-Control header sent to client) - both with parameter1=N seconds.
 // This matches Bunny's intended use of these action types and gives the
 // behavior users expect from a Cloudflare Pages / Netlify-style declaration.
 //
@@ -174,7 +174,7 @@ export function compileHeaderRule(rule: HeaderRuleSpec): EdgeRule[] {
       );
     } else {
       // Bunny's SetResponseHeader takes the header NAME in ActionParameter1
-      // and the VALUE in ActionParameter2 — not a combined "Name: Value"
+      // and the VALUE in ActionParameter2 - not a combined "Name: Value"
       // string (which Bunny rejects with "Please enter a valid header name.").
       rules.push(
         markRule(
@@ -233,7 +233,7 @@ function urlTrigger(pattern: string): EdgeRuleTrigger {
 
 // Embed a stable hash of the rule's specifying fields into Description, so
 // any change in spec produces a different description → diff shows up as
-// add+delete. Hash is short (8 hex chars) — collisions don't break sync,
+// add+delete. Hash is short (8 hex chars) - collisions don't break sync,
 // just look like duplicate rules to the user.
 function markRule(rule: EdgeRule, kind: string): EdgeRule {
   const hash = createHash('sha256')
@@ -252,7 +252,7 @@ function markRule(rule: EdgeRule, kind: string): EdgeRule {
   return { ...rule, Description: `${MARKER_PREFIX} ${kind} hash=${hash}` };
 }
 
-// Public helper — used by `runDeploy` to decide whether to skip sync entirely.
+// Public helper - used by `runDeploy` to decide whether to skip sync entirely.
 export function hasDeclaredRules(config: BunnyJson): boolean {
   return config.deploy.headers.length > 0 || config.deploy.edgeRules.length > 0;
 }

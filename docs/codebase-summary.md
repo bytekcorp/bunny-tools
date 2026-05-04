@@ -83,12 +83,12 @@ Each entry carries:
 **`src/manifest/types.ts`** (65 lines)
 
 TypeScript type definitions for registry:
-- `CommandSpec` — full command definition
-- `ArgSpec` — positional argument spec
-- `FlagSpec` — flag spec (with short form, default value)
-- `ExampleSpec` — usage example
-- `McpToolSpec` — MCP tool mapping
-- `Registry` — full CLI registry
+- `CommandSpec` - full command definition
+- `ArgSpec` - positional argument spec
+- `FlagSpec` - flag spec (with short form, default value)
+- `ExampleSpec` - usage example
+- `McpToolSpec` - MCP tool mapping
+- `Registry` - full CLI registry
 
 **Dependencies:** none
 
@@ -118,16 +118,16 @@ Wrangler-style help layout renderer. Formats help as TITLE → USAGE → COMMAND
 ### Commands (P1–4, 6–7 Shipped)
 
 **Phase 1 (Bootstrap)**
-- `src/commands/manifest.ts` — Registry as JSON
+- `src/commands/manifest.ts` - Registry as JSON
 
 **Phase 2 (Deploy Loop)**
-- `src/commands/init.ts` — Project init with feature multi-select
-- `src/commands/configure/{index,list,switch,remove}.ts` — Profile-aware creds (rc.9+, replaces auth)
-- `src/commands/deploy.ts` — Storage sync + purge
-- `src/commands/purge.ts` — Standalone purge
-- `src/commands/use.ts` — Alias switching
-- `src/commands/whoami.ts` — Show active credentials (rc.8+)
-- `src/commands/docs.ts` — Quick help command (rc.8+)
+- `src/commands/init.ts` - Project init with feature multi-select
+- `src/commands/configure/{index,list,switch,remove}.ts` - Profile-aware creds (rc.9+, replaces auth)
+- `src/commands/deploy.ts` - Storage sync + purge
+- `src/commands/purge.ts` - Standalone purge
+- `src/commands/use.ts` - Alias switching
+- `src/commands/whoami.ts` - Show active credentials (rc.8+)
+- `src/commands/docs.ts` - Quick help command (rc.8+)
 
 **Phase 3 (Storage & Zones)**
 - `src/commands/storage/{upload,download,list,delete,sync}.ts` (5 files)
@@ -140,9 +140,9 @@ Wrangler-style help layout renderer. Formats help as TITLE → USAGE → COMMAND
 - `src/commands/dns/record/{list,add,update,delete}.ts` (4 files)
 
 **Phase 6 (MCP)**
-- `src/commands/mcp.ts` — MCP stdio server entry
+- `src/commands/mcp.ts` - MCP stdio server entry
 
-**Phase 5 (Stream/Containers/Scripting) — Shipped rc.10**
+**Phase 5 (Stream/Containers/Scripting) - Shipped rc.10**
 - `src/commands/stream/library/{list,create,get,delete}.ts` (4 commands; get/delete rc.10+)
 - `src/commands/stream/video/{list,upload,delete}.ts` (3 commands)
 - `src/commands/containers/app/{list,create,delete}.ts` (3 commands)
@@ -272,9 +272,9 @@ function maskCredential(value: string): string
 ### UI Layer (Rendering)
 
 **Phase 2+**
-- `src/ui/progress.ts` — Progress bar + spinner wrapper
-- `src/ui/prompt.ts` — Interactive prompts (credential input, confirmation)
-- `src/ui/table.ts` — Table formatting for list commands
+- `src/ui/progress.ts` - Progress bar + spinner wrapper
+- `src/ui/prompt.ts` - Interactive prompts (credential input, confirmation)
+- `src/ui/table.ts` - Table formatting for list commands
 
 ### Utilities
 
@@ -295,30 +295,30 @@ MIME type detection for file uploads.
 ### Core Layer (Business Logic)
 
 **Phase 2 (Deploy Loop)**
-- `src/core/deploy.ts` — Walk, diff, upload orchestration
-- `src/core/purge.ts` — CDN purge by tag/URL/zone
-- `src/core/init.ts` — Project initialization
-- `src/core/configure.ts` — Global setup
-- `src/core/auth.ts` — Credential set/list/clear
-- `src/core/aliases.ts` — Alias resolution
+- `src/core/deploy.ts` - Walk, diff, upload orchestration
+- `src/core/purge.ts` - CDN purge by tag/URL/zone
+- `src/core/init.ts` - Project initialization
+- `src/core/configure.ts` - Global setup
+- `src/core/auth.ts` - Credential set/list/clear
+- `src/core/aliases.ts` - Alias resolution
 
 **Phase 2 (Deploy Internals)**  
-- `src/deploy/walk.ts` — Directory traversal with gitignore
-- `src/deploy/diff.ts` — Local vs remote comparison
-- `src/deploy/upload-queue.ts` — Parallel upload pool
-- `src/deploy/remote-list.ts` — Fetch remote file list
-- `src/deploy/state.ts` — State cache (.bunny-state.json)
+- `src/deploy/walk.ts` - Directory traversal with gitignore
+- `src/deploy/diff.ts` - Local vs remote comparison
+- `src/deploy/upload-queue.ts` - Parallel upload pool
+- `src/deploy/remote-list.ts` - Fetch remote file list
+- `src/deploy/state.ts` - State cache (.bunny-state.json)
 
 **Phase 3 (Storage & Zones)**
-- `src/core/storage-ops.ts` — Upload/download/list/delete/sync
-- `src/core/zones.ts` — Storage zone + pull zone CRUD
+- `src/core/storage-ops.ts` - Upload/download/list/delete/sync
+- `src/core/zones.ts` - Storage zone + pull zone CRUD
 
 **Phase 4 (DNS)**
-- `src/core/dns.ts` — DNS zone + record CRUD (zod-validated record types)
+- `src/core/dns.ts` - DNS zone + record CRUD (zod-validated record types)
 
 **Phase 6 (MCP)**
-- `src/mcp/server.ts` — MCP stdio transport + tool dispatch
-- `src/mcp/tools.ts` — MCP tool implementations (~14 tools + 3 resources)
+- `src/mcp/server.ts` - MCP stdio transport + tool dispatch
+- `src/mcp/tools.ts` - MCP tool implementations (~14 tools + 3 resources)
 
 **`src/core/README.md`** (Invariant documentation)
 
@@ -397,23 +397,23 @@ Reads zod schemas from `src/config/bunny-json.ts`, generates `schema/bunny.schem
 | `test/deploy/state.test.ts` | P2 | State file cache read/write |
 | `test/mcp/tools.test.ts` | P6 | MCP tool invocation, resources |
 
-**Setup:** `test/setup.ts` — Vitest + Nock (disableNetConnect, afterEach cleanup)  
+**Setup:** `test/setup.ts` - Vitest + Nock (disableNetConnect, afterEach cleanup)  
 **Coverage target:** ≥80% on api, config, core, deploy layers  
 **CI gate:** Coverage failure blocks merge
 
 **E2E Tests (10 files, 44 tests, gated on BUNNY_E2E=1):**
 
-- `test/e2e/account-readonly.e2e.ts` — `whoami`, manifest enumeration, zone listing
-- `test/e2e/storage-zones.e2e.ts` — Zone CRUD + region normalization
-- `test/e2e/storage-files.e2e.ts` — Upload/download/sync/delete + subdirectory listing
-- `test/e2e/pull-zones.e2e.ts` — Pull zone CRUD with origin
-- `test/e2e/edge-rules.e2e.ts` — Edge rule add/list/delete
-- `test/e2e/dns.e2e.ts` — DNS zone + record CRUD + 13 routing types (rc.24)
-- `test/e2e/stream.e2e.ts` — Stream library CRUD + video ops
-- `test/e2e/scripting.e2e.ts` — Edge script create/update/delete
-- `test/e2e/deploy.e2e.ts` — Full deploy pipeline with state caching
-- `test/e2e/mcp.e2e.ts` (New rc.23) — MCP stdio server with 13 active tools + 2 skipped (init/deploy via MCP)
-- `test/e2e/helpers/mcp-client.ts` (New rc.23) — MCP SDK Client wrapper for stdio transport
+- `test/e2e/account-readonly.e2e.ts` - `whoami`, manifest enumeration, zone listing
+- `test/e2e/storage-zones.e2e.ts` - Zone CRUD + region normalization
+- `test/e2e/storage-files.e2e.ts` - Upload/download/sync/delete + subdirectory listing
+- `test/e2e/pull-zones.e2e.ts` - Pull zone CRUD with origin
+- `test/e2e/edge-rules.e2e.ts` - Edge rule add/list/delete
+- `test/e2e/dns.e2e.ts` - DNS zone + record CRUD + 13 routing types (rc.24)
+- `test/e2e/stream.e2e.ts` - Stream library CRUD + video ops
+- `test/e2e/scripting.e2e.ts` - Edge script create/update/delete
+- `test/e2e/deploy.e2e.ts` - Full deploy pipeline with state caching
+- `test/e2e/mcp.e2e.ts` (New rc.23) - MCP stdio server with 13 active tools + 2 skipped (init/deploy via MCP)
+- `test/e2e/helpers/mcp-client.ts` (New rc.23) - MCP SDK Client wrapper for stdio transport
 
 **E2E Harness:** Nightly CI at `.github/workflows/e2e-nightly.yml` runs against real Bunny account. Detects API drift (schema changes, endpoint breakage). All resources prefixed `bt-e2e-*` for cleanup. MCP e2e harness live rc.23+. See `docs/e2e-testing.md` for provisioning + adding new tests.
 

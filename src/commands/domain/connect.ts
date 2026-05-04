@@ -41,10 +41,10 @@ export async function run(inv: ParsedInvocation): Promise<number> {
       ...(noForceSsl ? { noForceSSL: true } : {}),
     });
     const certBit = noWait
-      ? '(cert pending — re-run or check `bunny pullzone get`)'
+      ? '(cert pending - re-run or check `bunny pullzone get`)'
       : `cert ready (${Math.round(result.certWaitedMs / 1000)}s wait)`;
     const dnsBit = result.dnsRecordId !== undefined ? `, DNS record id=${result.dnsRecordId}` : '';
-    progress.succeed(`${args.hostname} connected — ${certBit}${dnsBit}.`);
+    progress.succeed(`${args.hostname} connected - ${certBit}${dnsBit}.`);
     return 0;
   } catch (err) {
     progress.fail(formatBunnyError(err));

@@ -47,11 +47,11 @@ No official Bunny CLI exists. Community alternatives (4 total) handle storage-on
 
 ## Non-Goals (v0.1 / Explicitly Deferred)
 
-- **Live emulator** — Mock with Nock in tests; no local Bunny simulation
-- **Plugin system** — Defer until 100+ commands or external request
-- **Telemetry** — No phone-home or tracking
-- **`headers`/`rewrites`/`redirects` sugar** — Deferred to v0.2 (requires edge-rule sync); raw CRUD lands v0.1
-- **Multipart upload** — Bunny undocumented; single PUT + retry covers <100MB cleanly
+- **Live emulator** - Mock with Nock in tests; no local Bunny simulation
+- **Plugin system** - Defer until 100+ commands or external request
+- **Telemetry** - No phone-home or tracking
+- **`headers`/`rewrites`/`redirects` sugar** - Deferred to v0.2 (requires edge-rule sync); raw CRUD lands v0.1
+- **Multipart upload** - Bunny undocumented; single PUT + retry covers <100MB cleanly
 
 ---
 
@@ -134,18 +134,18 @@ All shipped same project (no split); 129 unit tests + 44 e2e tests passing; 51 a
 
 ---
 
-## Command Taxonomy (v0.1.0-rc.24 — 51 Active Commands)
+## Command Taxonomy (v0.1.0-rc.24 - 51 Active Commands)
 
 **Setup & Daily:**
-- `bunny init [dir]` — auth + feature multi-select + per-feature config
-- `bunny configure` — profile-aware credential walkthrough (rc.9+)
-- `bunny configure list|switch|remove` — multi-account management (rc.9+)
-- `bunny deploy [--dry-run]` — storage sync + CDN purge (the main command)
-- `bunny purge <target>` — standalone cache purge by URL/tag/zone
-- `bunny whoami` — show active credentials (rc.8+)
-- `bunny docs [topic]` — quick help (rc.8+)
-- `bunny install mcp` — self-bootstrap Claude config (rc.19+)
-- `bunny update` — self-update via npm (rc.19+)
+- `bunny init [dir]` - auth + feature multi-select + per-feature config
+- `bunny configure` - profile-aware credential walkthrough (rc.9+)
+- `bunny configure list|switch|remove` - multi-account management (rc.9+)
+- `bunny deploy [--dry-run]` - storage sync + CDN purge (the main command)
+- `bunny purge <target>` - standalone cache purge by URL/tag/zone
+- `bunny whoami` - show active credentials (rc.8+)
+- `bunny docs [topic]` - quick help (rc.8+)
+- `bunny install mcp` - self-bootstrap Claude config (rc.19+)
+- `bunny update` - self-update via npm (rc.19+)
 
 **Storage (with auto-default zone rc.10+):**
 - `bunny storage upload|download|list|delete|sync`
@@ -157,7 +157,7 @@ All shipped same project (no split); 129 unit tests + 44 e2e tests passing; 51 a
 
 **DNS (13 record types as of rc.24, up from 8 in rc.23):**
 - `bunny dns list|get|create|delete`
-- `bunny dns record list|add|update|delete` (A, AAAA, ALIAS, CNAME, TXT, NS, MX, SRV, CAA, REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT — rc.24 extended)
+- `bunny dns record list|add|update|delete` (A, AAAA, ALIAS, CNAME, TXT, NS, MX, SRV, CAA, REDIRECT, FLATTEN, PULLZONE, PTR, SCRIPT - rc.24 extended)
 
 **Stream (Phase 5, shipped rc.10):**
 - `bunny stream library list|create|get|delete` (get/delete rc.10+)
@@ -171,8 +171,8 @@ All shipped same project (no split); 129 unit tests + 44 e2e tests passing; 51 a
 
 **Discovery & Config:**
 - `bunny manifest [--pretty --names]` (--names rc.10+)
-- `bunny mcp` — MCP stdio server (rc.23: e2e harness live)
-- `bunny use <alias>` — alias switching
+- `bunny mcp` - MCP stdio server (rc.23: e2e harness live)
+- `bunny use <alias>` - alias switching
 
 
 ---
@@ -180,21 +180,21 @@ All shipped same project (no split); 129 unit tests + 44 e2e tests passing; 51 a
 ## Dependencies & Infrastructure
 
 **Runtime**
-- `commander` — CLI framework
-- `undici` — HTTP client
-- `zod` — validation
-- `keytar` — OS keychain (optional native; graceful fallback to file)
-- `picocolors` — terminal colors
-- `ora` — progress spinner
-- `ignore` — gitignore parser
-- `fast-glob` — file traversal
-- `prompts` — interactive input
+- `commander` - CLI framework
+- `undici` - HTTP client
+- `zod` - validation
+- `keytar` - OS keychain (optional native; graceful fallback to file)
+- `picocolors` - terminal colors
+- `ora` - progress spinner
+- `ignore` - gitignore parser
+- `fast-glob` - file traversal
+- `prompts` - interactive input
 
 **Dev**
-- `typescript` — strict mode, ES2022 target
-- `vitest` + `nock` — unit tests + HTTP mocking
-- `esbuild` — build
-- `eslint` + `prettier` — lint + format
+- `typescript` - strict mode, ES2022 target
+- `vitest` + `nock` - unit tests + HTTP mocking
+- `esbuild` - build
+- `eslint` + `prettier` - lint + format
 
 **CI/CD**
 - GitHub Actions (Node 20 + 22, ubuntu-latest + macos-latest)

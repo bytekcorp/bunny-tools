@@ -22,10 +22,10 @@ bunny-tools uses **GitHub Actions with OIDC trusted publishing** for releases. L
    npm run gen:all && npm run build
    ```
    This regenerates:
-   - `manifest.json` — registry as JSON (used by CLI, MCP, AI agents)
-   - `AGENTS.md` — AI-agent guidance (shipped in npm tarball)
-   - `schema/bunny.schema.json` — JSON Schema for bunny.json
-   - `dist/` — compiled CLI binary
+   - `manifest.json` - registry as JSON (used by CLI, MCP, AI agents)
+   - `AGENTS.md` - AI-agent guidance (shipped in npm tarball)
+   - `schema/bunny.schema.json` - JSON Schema for bunny.json
+   - `dist/` - compiled CLI binary
 
 3. **Update documentation:**
    - Add entry to `docs/project-changelog.md` with RC number, date, and summary
@@ -34,13 +34,13 @@ bunny-tools uses **GitHub Actions with OIDC trusted publishing** for releases. L
 4. **Commit the bump:**
    ```bash
    git add .
-   git commit -m "feat/fix/chore: 0.1.0-rc.X — <title>"
+   git commit -m "feat/fix/chore: 0.1.0-rc.X - <title>"
    ```
    Use conventional commit prefix matching the change type:
-   - `feat:` — new features
-   - `fix:` — bug fixes
-   - `chore:` — version bumps, build config, dependencies
-   - `docs:` — documentation only
+   - `feat:` - new features
+   - `fix:` - bug fixes
+   - `chore:` - version bumps, build config, dependencies
+   - `docs:` - documentation only
 
 5. **Push to main:**
    ```bash

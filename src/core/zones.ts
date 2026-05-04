@@ -1,4 +1,4 @@
-// core/zones — typed wrappers for storage-zone + pull-zone CRUD.
+// core/zones - typed wrappers for storage-zone + pull-zone CRUD.
 // Edge rules live inside pull-zone responses; mutate via list+update flow.
 
 import { createAccountClient } from '../api/account.js';
@@ -68,10 +68,10 @@ export async function deletePullZone(id: number): Promise<void> {
   await client().deletePullZone(id);
 }
 
-// Edge rules — listed via the parent pull zone object, but mutated through
+// Edge rules - listed via the parent pull zone object, but mutated through
 // dedicated subresource endpoints. Bunny's `POST /pullzone/{id}` silently
 // drops EdgeRules in the body, so list-then-update with the rules array
-// looks successful but never persists — we must hit /edgerules/addOrUpdate.
+// looks successful but never persists - we must hit /edgerules/addOrUpdate.
 
 // Bunny edge-rule trigger entry. Multiple triggers per rule are AND'd by
 // default (matching TriggerMatchingType). Each trigger has its own pattern
@@ -114,7 +114,7 @@ export async function deleteEdgeRule(pullZoneId: number, ruleGuid: string): Prom
   return listEdgeRules(pullZoneId);
 }
 
-// Hostnames — same dedicated-subresource pattern as edge rules. Returns the
+// Hostnames - same dedicated-subresource pattern as edge rules. Returns the
 // updated hostname list after each mutation so callers can confirm state.
 
 export async function listPullZoneHostnames(pullZoneId: number): Promise<string[]> {
@@ -134,7 +134,7 @@ export async function removePullZoneHostname(pullZoneId: number, hostname: strin
 
 // Request a Let's Encrypt cert for a hostname on a pull zone, then poll the
 // PZ until that hostname's HasCertificate flips true (or timeout). Validates
-// the hostname is on the PZ before firing — Bunny's loadFreeCertificate
+// the hostname is on the PZ before firing - Bunny's loadFreeCertificate
 // endpoint accepts any hostname and resolves PZ from it, but failing fast
 // produces a better error than waiting for the cert that will never arrive.
 
@@ -185,7 +185,7 @@ export async function enablePullZoneSSL(
     );
   }
   if (matchedBefore.HasCertificate === true) {
-    // Cert already there — apply ForceSSL anyway so re-running on an existing
+    // Cert already there - apply ForceSSL anyway so re-running on an existing
     // hostname brings it up to default-secure state. Idempotent on the API.
     let forceSslSet: boolean | undefined;
     if (!opts.noForceSSL && matchedBefore.ForceSSL !== true) {

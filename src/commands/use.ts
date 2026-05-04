@@ -1,4 +1,4 @@
-// `bunny use <alias>` — switch active alias from .bunnyrc.
+// `bunny use <alias>` - switch active alias from .bunnyrc.
 
 import type { ParsedInvocation } from '../manifest/types.js';
 import { listAliases, setActiveAlias } from '../core/aliases.js';

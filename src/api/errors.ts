@@ -87,7 +87,7 @@ export function parseBunnyErrorBody(
       });
     }
   } catch {
-    // not JSON — fall through
+    // not JSON - fall through
   }
   const trimmed = body.trim();
   return new BunnyApiError({

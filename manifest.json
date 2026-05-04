@@ -1,8 +1,8 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.2",
-  "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
+  "version": "0.1.3",
+  "description": "Bunny.net CLI - storage deploy, CDN purge, full resource management.",
   "commands": [
     {
       "name": "manifest",
@@ -1360,7 +1360,7 @@
       "examples": [
         {
           "command": "bunny dns create example.com",
-          "description": "Provision a DNS zone — Bunny returns the assigned NS records."
+          "description": "Provision a DNS zone - Bunny returns the assigned NS records."
         }
       ],
       "mcp": null

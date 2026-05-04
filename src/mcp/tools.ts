@@ -1,4 +1,4 @@
-// MCP tools — high-level surface (~10 + escape hatch). Each calls into
+// MCP tools - high-level surface (~10 + escape hatch). Each calls into
 // src/core/* directly (no CLI plumbing here). Inputs validated with zod.
 
 import { z } from 'zod';
@@ -201,7 +201,7 @@ export const TOOLS: ToolDef[] = [
         })
         .parse(raw);
 
-      // Idempotent linking — only POST addHostname when not already present.
+      // Idempotent linking - only POST addHostname when not already present.
       const existing = await listPullZoneHostnames(pullZoneId);
       if (!existing.includes(hostname)) {
         await addPullZoneHostname(pullZoneId, hostname);
@@ -218,7 +218,7 @@ export const TOOLS: ToolDef[] = [
         await setHostnameForceSSL(pullZoneId, hostname, false);
       }
       // rc.53: include post-mutation hostnames list. Mirrors hostname_remove
-      // shape — every hostname-mutating MCP tool now returns { ok, hostname,
+      // shape - every hostname-mutating MCP tool now returns { ok, hostname,
       // hostnames, ... }. AI agents get post-state in one call instead of
       // needing a follow-up hostname_list. One extra GET is cheap; the
       // alternative (caller-side polling) is slower in aggregate.
@@ -255,7 +255,7 @@ export const TOOLS: ToolDef[] = [
   {
     name: 'bunny.domain_connect',
     description:
-      'Atomic Connect Domain: link hostname to pull zone, provision Let\'s Encrypt cert (waits up to 90s), optionally create apex Type-7 DNS record. Mirrors the Bunny dashboard "Connect Domain" button. Idempotent — safe to re-run. Pass `dnsZoneId` to also create the DNS record. Returns { ok, hostname, hostnames, hasCertificate, dnsRecordId?, certWaitedMs }.',
+      'Atomic Connect Domain: link hostname to pull zone, provision Let\'s Encrypt cert (waits up to 90s), optionally create apex Type-7 DNS record. Mirrors the Bunny dashboard "Connect Domain" button. Idempotent - safe to re-run. Pass `dnsZoneId` to also create the DNS record. Returns { ok, hostname, hostnames, hasCertificate, dnsRecordId?, certWaitedMs }.',
     inputSchema: z.object({
       pullZoneId: z.number().int().positive(),
       hostname: z.string().min(1),
@@ -281,7 +281,7 @@ export const TOOLS: ToolDef[] = [
       });
       // rc.53: enrich with post-state hostnames + the hostname acted on,
       // unifying the shape with hostname_add and hostname_remove. Drop the
-      // `hostnameLinked` field — `hostnames.includes(hostname)` is the
+      // `hostnameLinked` field - `hostnames.includes(hostname)` is the
       // canonical post-state check.
       const hostnames = await listPullZoneHostnames(args.pullZoneId);
       return {
@@ -307,7 +307,7 @@ export const TOOLS: ToolDef[] = [
   {
     name: 'bunny.dns_record_set',
     description:
-      'Add a DNS record. Standard types (A/AAAA/CNAME/TXT/MX/SRV/CAA/NS) plus Bunny routing types (REDIRECT/PULLZONE/PTR/SCRIPT). For PULLZONE: pass `pullZoneId` (number) and we auto-derive value+linkName — mirrors the CLI `--pull-zone` convenience. SCRIPT still requires linkName.',
+      'Add a DNS record. Standard types (A/AAAA/CNAME/TXT/MX/SRV/CAA/NS) plus Bunny routing types (REDIRECT/PULLZONE/PTR/SCRIPT). For PULLZONE: pass `pullZoneId` (number) and we auto-derive value+linkName - mirrors the CLI `--pull-zone` convenience. SCRIPT still requires linkName.',
     inputSchema: z.object({
       zoneId: z.number().int().positive(),
       type: z.enum([
@@ -462,7 +462,7 @@ export const TOOLS: ToolDef[] = [
       // Re-spawn the SAME entry point that's running this MCP server. In
       // production builds that's `node dist/cli.js`; in dev (tsx) it's
       // `node --import tsx src/cli.ts`. process.execArgv carries the loader
-      // flags so the child can execute a .ts entry too — without forwarding
+      // flags so the child can execute a .ts entry too - without forwarding
       // execArgv, the child would crash when argv[1] is a TypeScript file.
       const argv1 = process.argv[1] ?? 'bunny';
       const childArgs = [...process.execArgv, argv1, ...args];

@@ -1,4 +1,4 @@
-// `bunny configure list` — show all profiles + their scopes (masked). Marks active.
+// `bunny configure list` - show all profiles + their scopes (masked). Marks active.
 
 import type { ParsedInvocation } from '../../manifest/types.js';
 import { listProfiles } from '../../config/credential-resolver.js';
@@ -31,7 +31,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   }
 
   if (profiles.length === 0) {
-    process.stdout.write('(no profiles configured) — run `bunny configure` to create one.\n');
+    process.stdout.write('(no profiles configured) - run `bunny configure` to create one.\n');
     return 0;
   }
   process.stdout.write(renderTable(rows) + '\n');

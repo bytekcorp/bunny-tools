@@ -5,7 +5,7 @@ import type { CommandSpec, Registry } from './types.js';
 // derived from the same data.
 export function renderCommandHelpText(cmd: CommandSpec, binary: string): string {
   const lines: string[] = [];
-  lines.push(`${binary} ${cmd.name} — ${cmd.summary}`);
+  lines.push(`${binary} ${cmd.name} - ${cmd.summary}`);
   if (cmd.description) lines.push('', cmd.description);
   if (cmd.args && cmd.args.length > 0) {
     lines.push('', 'Arguments:');
@@ -35,7 +35,7 @@ export function renderCommandHelpText(cmd: CommandSpec, binary: string): string 
   return lines.join('\n');
 }
 
-// Structured help — what `--help --json` returns.
+// Structured help - what `--help --json` returns.
 export type CommandHelpJson = {
   name: string;
   summary: string;

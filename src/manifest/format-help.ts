@@ -9,8 +9,7 @@
 // COMMANDS section already lists every runnable command. USAGE retained on
 // leaves where it carries the positional-arg signature.
 //
-// Commander invokes `formatHelp(cmd, helper)` for every help invocation —
-// root, group, and leaf. We dispatch on the command's structure: commands
+// Commander invokes `formatHelp(cmd, helper)` for every help invocation - // root, group, and leaf. We dispatch on the command's structure: commands
 // with subcommands render the COMMANDS block; leaves render USAGE + FLAGS.
 //
 // No emoji. Wrangler uses them; bunny-tools is text-only for accessibility
@@ -26,8 +25,7 @@ import type { CommandSpec } from './types.js';
 
 // Bold section labels (USAGE / COMMANDS / FLAGS / EXAMPLES / GLOBAL FLAGS and
 // the root sections). picocolors auto-disables for NO_COLOR + non-TTY, so this
-// is grep-safe in pipes and scripts. wrangler/gh/aws all bold their labels —
-// it creates the visual zoning that lets the eye skip to the right block.
+// is grep-safe in pipes and scripts. wrangler/gh/aws all bold their labels - // it creates the visual zoning that lets the eye skip to the right block.
 const label = (s: string): string => pc.bold(s);
 
 // Root help is sectioned wrangler/gh/aws-style: GETTING STARTED for the daily
@@ -35,10 +33,10 @@ const label = (s: string): string => pc.bold(s);
 // `bunny <group> <subcmd>` pointer (count appended), UTILITIES for the
 // discovery + maintenance commands. Sub-groups (e.g. `pullzone hostname`)
 // are folded INTO their parent service's count, not split into their own
-// pointer rows — that pattern was fragmenting root help in rc.20–37.
+// pointer rows - that pattern was fragmenting root help in rc.20–37.
 //
 // Sub-group help (e.g. `bunny pullzone --help`) still expands every leaf
-// — see renderGroupChildren.
+// - see renderGroupChildren.
 const SECTIONS: Array<{ label: string; prefixes: string[] }> = [
   {
     label: 'GETTING STARTED',
@@ -59,7 +57,7 @@ const SECTIONS: Array<{ label: string; prefixes: string[] }> = [
 //
 // rc.49: dropped the previous 40-char floor (NAME_COL_MIN). Was originally
 // added so short rows aligned with long-arg rows in mixed sections, but
-// per-section auto-width already handles that — the floor only ever
+// per-section auto-width already handles that - the floor only ever
 // padded sections where every row was short (e.g. root help where every
 // entry collapses to `<subcmd>`), creating ~14 chars of dead whitespace.
 // Matches wrangler/gh/aws conventions.
@@ -74,7 +72,7 @@ export function formatHelp(cmd: Command, _helper: Help): string {
 
 function formatGroupOrRoot(cmd: Command, isRoot: boolean): string {
   const lines: string[] = [];
-  // Title line — just the full command name. Description follows on its own
+  // Title line - just the full command name. Description follows on its own
   // line below (wrangler-style two-line header). USAGE is omitted at this
   // level since `<subcommand> [args] [flags]` is boilerplate; the COMMANDS
   // block already enumerates runnable commands.
@@ -103,7 +101,7 @@ function formatGroupOrRoot(cmd: Command, isRoot: boolean): string {
   }
   lines.push('');
 
-  // GLOBAL FLAGS — same block on every help invocation; pulled from root.
+  // GLOBAL FLAGS - same block on every help invocation; pulled from root.
   lines.push(label('GLOBAL FLAGS'));
   lines.push(...renderGlobalFlags());
   lines.push('');
@@ -130,7 +128,7 @@ function formatLeaf(cmd: Command): string {
   }
   lines.push('');
 
-  // USAGE — show declared positional args inline.
+  // USAGE - show declared positional args inline.
   const argSig = cmd
     .registeredArguments
     .map((a) => (a.required ? `<${a.name()}>` : `[${a.name()}]`))
@@ -139,7 +137,7 @@ function formatLeaf(cmd: Command): string {
   lines.push(`  ${fullName}${argSig ? ' ' + argSig : ''} [flags]`);
   lines.push('');
 
-  // FLAGS — command-local options (not the inherited globals). Auto-width
+  // FLAGS - command-local options (not the inherited globals). Auto-width
   // (no NAME_COL_MIN floor): the longest flag + gap defines the column.
   // Floor was meant for COMMANDS rows where short-arg leaves should align
   // with long-arg ones; FLAGS doesn't have that asymmetry.
@@ -155,7 +153,7 @@ function formatLeaf(cmd: Command): string {
     lines.push('');
   }
 
-  // EXAMPLES — only renders when the registry has examples for this leaf.
+  // EXAMPLES - only renders when the registry has examples for this leaf.
   // Format: `  $ <command>` then a wrapped, indented description below if
   // present. Mirrors `gh` / `aws` / `npm` example styling.
   const spec = findSpecByCommand(cmd);
@@ -168,7 +166,7 @@ function formatLeaf(cmd: Command): string {
     lines.push('');
   }
 
-  // GLOBAL FLAGS — same as on root help.
+  // GLOBAL FLAGS - same as on root help.
   lines.push(label('GLOBAL FLAGS'));
   lines.push(...renderGlobalFlags());
   lines.push('');
@@ -193,7 +191,7 @@ function commandFullName(cmd: Command): string {
   return parts.join(' ');
 }
 
-// Same as commandFullName but without the binary prefix — for matching against
+// Same as commandFullName but without the binary prefix - for matching against
 // registry command names.
 function commandGroupPath(cmd: Command): string {
   const parts: string[] = [];
@@ -207,7 +205,7 @@ function commandGroupPath(cmd: Command): string {
 
 // Sectioned root help: GETTING STARTED / SERVICES / UTILITIES. Each top-level
 // group (pullzone, dns, stream, etc.) collapses to ONE pointer row at root
-// — `bunny <group> <subcmd>     <description> (N cmds)`. Sub-groups
+// - `bunny <group> <subcmd>     <description> (N cmds)`. Sub-groups
 // (pullzone hostname, dns record, etc.) fold INTO the parent count rather
 // than getting their own pointer line.
 //
@@ -220,12 +218,12 @@ function renderRootCommands(): string[] {
 
   // Two-pass: bucket every section first, gather ALL command lefts across
   // the whole COMMANDS block, compute ONE column width. Reads as a single
-  // visual block — descriptions land at the same column whether the row
+  // visual block - descriptions land at the same column whether the row
   // is in GETTING STARTED, SERVICES, or UTILITIES.
   //
   // rc.50: was per-section in rc.49. Three sections produced a staircase
   // (col 28 / 30 / 26) that's hard to scan. GLOBAL FLAGS still has its
-  // own width — that's a different block (flags vs commands).
+  // own width - that's a different block (flags vs commands).
   type SectionBucket = {
     section: (typeof SECTIONS)[number];
     byTop: Map<string, CommandSpec[]>;
@@ -288,12 +286,12 @@ function belongsToGroup(commandName: string, prefixes: string[]): boolean {
 // ALL leaf descendants of this group regardless of depth. Earlier behaviour
 // stopped at immediate leaves + sub-group pointers, but that left groups
 // like `stream` (no direct leaves, only `library` / `video` subgroups)
-// showing nothing actionable — users had to drill twice to find a runnable
+// showing nothing actionable - users had to drill twice to find a runnable
 // command. Showing every descendant collapses that into one help page.
 //
 // Long arg signatures (e.g. `bunny pullzone edgerule delete <pullZoneId>
 // <ruleGuid>`) may overflow the alignment column at this level; that's
-// acceptable here — root help is where alignment matters most, and root
+// acceptable here - root help is where alignment matters most, and root
 // already collapses 3+ segment commands to subgroup pointers.
 function renderGroupChildren(groupPath: string): string[] {
   const active = registry.commands.filter((c) => c.status === 'active');
@@ -306,7 +304,7 @@ function renderGroupChildren(groupPath: string): string[] {
 
 // Format a single command row with a left "name + args" column and a right
 // "description" column, padded for column alignment. Callers always pass
-// `colWidth` from a section-level groupColWidth() — the default is just a
+// `colWidth` from a section-level groupColWidth() - the default is just a
 // safety floor for any orphan caller.
 function formatCommandRow(spec: CommandSpec, colWidth: number = 0): string {
   const argSig = (spec.args ?? [])
@@ -322,7 +320,7 @@ function formatRow(left: string, right: string, colWidth: number = 0): string {
   return `${left}${' '.repeat(pad)}${right}`;
 }
 
-// Section column width: longest left + gap. No floor — short-row sections
+// Section column width: longest left + gap. No floor - short-row sections
 // (e.g. root help where every entry is `bunny <group> <subcmd>`) get a
 // tight column instead of being padded to a global minimum.
 function groupColWidth(lefts: string[]): number {
@@ -330,7 +328,7 @@ function groupColWidth(lefts: string[]): number {
   return longest + NAME_COL_GAP;
 }
 
-// Build the left-column string for a CommandSpec — same shape as
+// Build the left-column string for a CommandSpec - same shape as
 // formatCommandRow uses, exposed so callers can compute group col width
 // before rendering.
 function commandRowLeft(spec: CommandSpec): string {

@@ -87,7 +87,7 @@ export function createAccountClient(opts: AccountClientOptions) {
     deletePullZone: (id: number) =>
       callBunny<void>({ base, path: `/pullzone/${id}`, method: 'DELETE', scope: { kind: 'account' } }),
 
-    // Edge rules use dedicated subresource endpoints — Bunny's `POST /pullzone/{id}`
+    // Edge rules use dedicated subresource endpoints - Bunny's `POST /pullzone/{id}`
     // silently drops EdgeRules in the body, so we must hit /edgerules/addOrUpdate.
     addOrUpdateEdgeRule: (pullZoneId: number, rule: Record<string, unknown>) =>
       callBunny<void>({
@@ -105,7 +105,7 @@ export function createAccountClient(opts: AccountClientOptions) {
         scope: { kind: 'account' },
       }),
 
-    // Hostnames are managed via dedicated subresource endpoints — Bunny's
+    // Hostnames are managed via dedicated subresource endpoints - Bunny's
     // `POST /pullzone/{id}` silently drops the Hostnames array (same gotcha
     // as edge rules). PULLZONE (Type-7) DNS records also fail silently
     // unless the FQDN is registered here first.
@@ -120,7 +120,7 @@ export function createAccountClient(opts: AccountClientOptions) {
     removePullZoneHostname: (pullZoneId: number, hostname: string) =>
       callBunny<void>({
         base,
-        // Bunny rejects POST here with 405 — the correct verb is DELETE
+        // Bunny rejects POST here with 405 - the correct verb is DELETE
         // (asymmetric to addHostname which uses POST). Body shape matches.
         path: `/pullzone/${pullZoneId}/removeHostname`,
         method: 'DELETE',
@@ -129,7 +129,7 @@ export function createAccountClient(opts: AccountClientOptions) {
       }),
 
     // Toggle the HTTP→HTTPS auto-redirect on a custom hostname. Requires
-    // a valid cert (HasCertificate=true) — flipping ForceSSL true on a
+    // a valid cert (HasCertificate=true) - flipping ForceSSL true on a
     // hostname without a cert produces an infinite-redirect loop, so the
     // CLI gates this behind `enable-ssl` having succeeded.
     setPullZoneForceSSL: (pullZoneId: number, hostname: string, force: boolean) =>
@@ -307,7 +307,7 @@ export type DnsRecord = {
   Tag?: string;
   Disabled?: boolean;
   // Bunny auto-spawns a hidden pull zone for some record types (REDIRECT
-  // notably). Surfaced so the CLI can warn when it happens — the user's
+  // notably). Surfaced so the CLI can warn when it happens - the user's
   // account picks up an extra PZ they didn't ask for.
   AcceleratedPullZoneId?: number;
   Accelerated?: boolean;

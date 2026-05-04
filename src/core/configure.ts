@@ -1,4 +1,4 @@
-// core/configure — guided walkthrough that stores credentials into a named profile.
+// core/configure - guided walkthrough that stores credentials into a named profile.
 // UI-free; takes injected callbacks. Replaces the old configure that was deleted
 // in rc.3, brought back in rc.9 with profile awareness.
 

@@ -1,4 +1,4 @@
-// core/containers — Magic Containers app CRUD. UI-free.
+// core/containers - Magic Containers app CRUD. UI-free.
 
 import { createAccountClient } from '../api/account.js';
 import type { ContainerApp } from '../api/account.js';

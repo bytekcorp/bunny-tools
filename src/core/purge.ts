@@ -1,4 +1,4 @@
-// core/purge — dispatch purge requests to the account API. UI-free.
+// core/purge - dispatch purge requests to the account API. UI-free.
 
 import { createAccountClient } from '../api/account.js';
 import type { AccountClient } from '../api/account.js';
@@ -33,7 +33,7 @@ export function parsePurgeArg(raw: string): PurgeTarget {
   throw new Error(`Unrecognized purge target "${raw}". Expected URL or "pullzone:<id>".`);
 }
 
-// High-level entry used by `bunny purge` command — instantiates its own client
+// High-level entry used by `bunny purge` command - instantiates its own client
 // so the command layer doesn't need to import src/api/* directly.
 export async function runPurgeCommand(target: PurgeTarget): Promise<PurgeResult> {
   const client = createAccountClient({ resolveCredential: (s) => resolveCredential(s) });
