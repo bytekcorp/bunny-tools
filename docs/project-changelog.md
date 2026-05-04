@@ -4,6 +4,60 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0] — 2026-05-04 (GA — first stable release)
+
+bunny-tools graduates from `0.1.0-rc.X` to GA. 54 release candidates over ~3 days of intensive iteration; everything that surfaced in real-account e2e + dogfooding is locked in.
+
+### What's in 0.1.0
+
+**CLI surface (60 commands, 55 active):**
+- Daily-use deploy loop: `bunny init`, `bunny deploy`, `bunny purge`, `bunny configure`, `bunny use`, `bunny whoami`, `bunny update`
+- Storage: zone CRUD + file ops (upload, download, list, delete, sync)
+- Pull zones (CDN): zone CRUD + edge rules + custom hostnames + ForceSSL
+- DNS: zone + record CRUD covering 12 record types incl. PULLZONE/REDIRECT/SCRIPT
+- Stream: video libraries + videos
+- Magic Containers + Edge Scripting (basic CRUD)
+- High-level `bunny domain connect` for atomic hostname + cert + DNS-record
+
+**MCP server (19 tools) for AI agents:**
+Stdio transport, registered via `bunny install mcp` for one-shot Claude Code setup. All hostname-mutating tools return unified `{ ok, hostname, hostnames, ...metadata }` shape.
+
+**Help format:**
+Wrangler-style two-line headers, EXAMPLES blocks on 22 leaves, bold section labels, auto-width columns. Root help with sectioned GETTING STARTED / SERVICES / UTILITIES.
+
+**CI:**
+Self-hosted nightly e2e drift detection at 03:00 UTC. Auto-creates GitHub issues with redacted logs on failure. OIDC-based npm publishing.
+
+### Verified end-to-end
+
+- 185/185 unit tests
+- 50/52 e2e tests against a real Bunny account (`testfwd.com`, 2 permanent skips by design)
+- Real production deploy on `bytek.org` (~57 files, 2.4 MB, edge rules, custom hostname, www→apex redirect)
+- MCP server tested as Claude Code MCP client (4-tool parallel invocation + ~12 tools used across the rc cycle)
+
+### Migration from any rc.X
+
+The rc cycle made several breaking renames. If you were on an early RC:
+- `BUNNY_ACCOUNT_KEY` → `BUNNY_API_KEY` (rc.54)
+- `--account-key` → `--api-key` flag (rc.54)
+- `BUNNY_E2E_CERT_DOMAIN` → `BUNNY_E2E_DOMAIN` for e2e (rc.52)
+- MCP `pullzone_hostname_add` returns `{ hostnames }` plural now (rc.53)
+
+If you're new, start with `bunny init --ci`.
+
+### Known gaps (deferred to v0.2)
+
+- Stream sub-resources: collections, captions
+- Containers `app create` (schema rewrite needed; list/delete remain functional)
+- Edge Scripting secrets/variables
+- HTTP/SSE MCP transport
+- `bunny.json` `headers`/`rewrites`/`redirects` declarative sugar (the deploy.headers form covers the most common case)
+
+### Thanks
+Built and dogfooded by [@chienqan](https://github.com/chienqan).
+
+---
+
 ## [0.1.0-rc.54] — 2026-05-04 (Rename `BUNNY_ACCOUNT_KEY` → `BUNNY_API_KEY`)
 
 The credential is called "API Key" everywhere in Bunny's dashboard and docs; "account key" was our invention. Industry convention is also `<SERVICE>_API_KEY` (Stripe, OpenAI, Anthropic, GitHub, npm). Renaming pre-GA before the env var name becomes a published contract.
