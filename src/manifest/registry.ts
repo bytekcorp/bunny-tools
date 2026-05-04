@@ -81,7 +81,7 @@ export const registry: Registry = {
       flags: [
         { name: 'non-interactive', description: 'Skip prompts and accept all values via flags.', hasValue: false },
         { name: 'force', description: 'Overwrite existing bunny.json.', hasValue: false },
-        { name: 'account-key', description: 'Bunny account API key (skipped if env/keychain has one).', hasValue: true },
+        { name: 'api-key', description: 'Bunny API key (skipped if env/keychain has one).', hasValue: true },
         { name: 'features', description: 'Comma-separated: storage,dns,stream,containers,scripting (or "all").', hasValue: true },
         { name: 'public-dir', description: 'Public directory to deploy (default: auto-detect).', hasValue: true },
         { name: 'storage-zone', description: 'Storage zone name (required for `storage` feature in non-interactive).', hasValue: true },
@@ -96,7 +96,7 @@ export const registry: Registry = {
       examples: [
         { command: 'bunny init', description: 'Interactive wizard with feature multi-select.' },
         {
-          command: 'bunny init --non-interactive --features=storage --account-key=$KEY --storage-zone=my-app --storage-password=$PW --pull-zone=12345',
+          command: 'bunny init --non-interactive --features=storage --api-key=$KEY --storage-zone=my-app --storage-password=$PW --pull-zone=12345',
           description: 'CI-friendly Storage+CDN setup.',
         },
         { command: 'bunny init --features=all --non-interactive ...', description: 'Enable every feature.' },
@@ -108,11 +108,11 @@ export const registry: Registry = {
     },
     {
       name: 'configure',
-      summary: 'Interactive credential walkthrough for a profile (account key + optional storage/stream).',
+      summary: 'Interactive credential walkthrough for a profile (API key + optional storage/stream).',
       flags: [
         { name: 'non-interactive', description: 'Skip prompts; accept all values via flags.', hasValue: false },
         { name: 'profile', description: 'Profile name (default: active profile, or "default").', hasValue: true },
-        { name: 'account-key', description: 'Bunny account API key.', hasValue: true },
+        { name: 'api-key', description: 'Bunny API key.', hasValue: true },
         { name: 'storage-zone', description: 'Default storage zone for this profile.', hasValue: true },
         { name: 'storage-password', description: 'Storage zone password.', hasValue: true },
         { name: 'pull-zone', description: 'Default pull zone id.', hasValue: true },
@@ -123,7 +123,7 @@ export const registry: Registry = {
         { command: 'bunny configure', description: 'Walkthrough for the active profile.' },
         { command: 'bunny configure --profile=work', description: 'Set up the "work" profile.' },
         {
-          command: 'bunny configure --non-interactive --profile=ci --account-key=$KEY --storage-zone=my-app --storage-password=$PW',
+          command: 'bunny configure --non-interactive --profile=ci --api-key=$KEY --storage-zone=my-app --storage-password=$PW',
           description: 'CI form.',
         },
       ],

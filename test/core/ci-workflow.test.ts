@@ -37,7 +37,7 @@ describe('generateGitHubActionsWorkflow', () => {
     expect(result.wrote).toBe(true);
     if (!result.wrote) return; // type narrowing
     const yaml = await readFile(result.path, 'utf8');
-    expect(yaml).toContain('BUNNY_ACCOUNT_KEY');
+    expect(yaml).toContain('BUNNY_API_KEY');
     expect(yaml).toContain('BUNNY_STORAGE_PASSWORD_MY_APP');
     expect(yaml).toContain('npm install -g bunny-tools');
     expect(yaml).toContain('bunny deploy --delete');
@@ -45,9 +45,9 @@ describe('generateGitHubActionsWorkflow', () => {
     expect(yaml).toContain('docs/**');
   });
 
-  it('returns secretsToAdd for both account-key and per-zone password', async () => {
+  it('returns secretsToAdd for both api-key and per-zone password', async () => {
     const result = await generateGitHubActionsWorkflow(scratch, config({ storageZone: 'site-prod' }));
-    expect(result.secretsToAdd).toEqual(['BUNNY_ACCOUNT_KEY', 'BUNNY_STORAGE_PASSWORD_SITE_PROD']);
+    expect(result.secretsToAdd).toEqual(['BUNNY_API_KEY', 'BUNNY_STORAGE_PASSWORD_SITE_PROD']);
   });
 
   it('skips writing when workflow file already exists', async () => {

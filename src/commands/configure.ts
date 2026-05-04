@@ -11,7 +11,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   const flags = inv.flags as {
     nonInteractive?: boolean;
     profile?: string;
-    accountKey?: string;
+    apiKey?: string;
     storageZone?: string;
     storagePassword?: string;
     pullZone?: string;
@@ -25,8 +25,8 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   const profile = flags.profile ?? process.env['BUNNY_PROFILE'] ?? 'default';
   const interactive = !flags.nonInteractive && isInteractive();
 
-  if (!interactive && !flags.accountKey) {
-    progress.fail('Non-interactive mode requires --account-key.');
+  if (!interactive && !flags.apiKey) {
+    progress.fail('Non-interactive mode requires --api-key.');
     return 1;
   }
 
@@ -34,7 +34,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
     const result = await runConfigure(
       {
         profile,
-        ...(flags.accountKey ? { accountKey: flags.accountKey } : {}),
+        ...(flags.apiKey ? { apiKey: flags.apiKey } : {}),
         ...(flags.storageZone ? { storageZone: flags.storageZone } : {}),
         ...(flags.storagePassword ? { storagePassword: flags.storagePassword } : {}),
         ...(flags.pullZone ? { pullZoneId: Number.parseInt(flags.pullZone, 10) } : {}),

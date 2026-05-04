@@ -3,7 +3,7 @@
 // triple the wall-clock cost (each spawn + handshake is ~1s) for no
 // additional coverage.
 //
-// Tests pass `BUNNY_ACCOUNT_KEY` from the parent env so MCP-bound zone/dns
+// Tests pass `BUNNY_API_KEY` from the parent env so MCP-bound zone/dns
 // ops authenticate. Storage ops require a per-zone password injected at
 // spawn time via `BUNNY_STORAGE_PASSWORD_<ZONE_UPPER_UNDERSCORED>` — the
 // resolver chain reads that env var first when its scope is

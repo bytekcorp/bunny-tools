@@ -12,7 +12,7 @@ type ListedRow = { type: ResourceType; id: string; name: string };
 
 export default async function setup(): Promise<void> {
   if (process.env['BUNNY_E2E'] !== '1') return;
-  if (!process.env['BUNNY_ACCOUNT_KEY']) return;
+  if (!process.env['BUNNY_API_KEY']) return;
 
   const stale: ListedRow[] = [];
   for (const type of ['storagezone', 'pullzone', 'dns', 'stream-library', 'scripting'] as const) {

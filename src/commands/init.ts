@@ -19,7 +19,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   const flags = inv.flags as {
     nonInteractive?: boolean;
     force?: boolean;
-    accountKey?: string;
+    apiKey?: string;
     features?: string;
     publicDir?: string;
     storageZone?: string;
@@ -33,8 +33,8 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   };
 
   const interactive = !flags.nonInteractive && isInteractive();
-  if (!interactive && !flags.accountKey && !(await hasAccountKey())) {
-    progress.fail('Non-interactive mode without existing creds requires --account-key.');
+  if (!interactive && !flags.apiKey && !(await hasAccountKey())) {
+    progress.fail('Non-interactive mode without existing creds requires --api-key.');
     return 1;
   }
 
@@ -43,7 +43,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
   try {
     const result = await runInit(
       {
-        ...(flags.accountKey ? { accountKey: flags.accountKey } : {}),
+        ...(flags.apiKey ? { apiKey: flags.apiKey } : {}),
         ...(features ? { features } : {}),
         ...(flags.publicDir ? { publicDir: flags.publicDir } : {}),
         ...(flags.storageZone ? { storageZone: flags.storageZone } : {}),

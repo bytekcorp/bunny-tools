@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.53",
+  "version": "0.1.0-rc.54",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -80,9 +80,9 @@
           "defaultValue": null
         },
         {
-          "name": "account-key",
+          "name": "api-key",
           "short": null,
-          "description": "Bunny account API key (skipped if env/keychain has one).",
+          "description": "Bunny API key (skipped if env/keychain has one).",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
@@ -174,7 +174,7 @@
           "description": "Interactive wizard with feature multi-select."
         },
         {
-          "command": "bunny init --non-interactive --features=storage --account-key=$KEY --storage-zone=my-app --storage-password=$PW --pull-zone=12345",
+          "command": "bunny init --non-interactive --features=storage --api-key=$KEY --storage-zone=my-app --storage-password=$PW --pull-zone=12345",
           "description": "CI-friendly Storage+CDN setup."
         },
         {
@@ -189,7 +189,7 @@
     },
     {
       "name": "configure",
-      "summary": "Interactive credential walkthrough for a profile (account key + optional storage/stream).",
+      "summary": "Interactive credential walkthrough for a profile (API key + optional storage/stream).",
       "description": null,
       "status": "active",
       "phase": 2,
@@ -212,9 +212,9 @@
           "defaultValue": null
         },
         {
-          "name": "account-key",
+          "name": "api-key",
           "short": null,
-          "description": "Bunny account API key.",
+          "description": "Bunny API key.",
           "hasValue": true,
           "valueHint": null,
           "defaultValue": null
@@ -270,7 +270,7 @@
           "description": "Set up the \"work\" profile."
         },
         {
-          "command": "bunny configure --non-interactive --profile=ci --account-key=$KEY --storage-zone=my-app --storage-password=$PW",
+          "command": "bunny configure --non-interactive --profile=ci --api-key=$KEY --storage-zone=my-app --storage-password=$PW",
           "description": "CI form."
         }
       ],

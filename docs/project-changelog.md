@@ -4,6 +4,47 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.54] — 2026-05-04 (Rename `BUNNY_ACCOUNT_KEY` → `BUNNY_API_KEY`)
+
+The credential is called "API Key" everywhere in Bunny's dashboard and docs; "account key" was our invention. Industry convention is also `<SERVICE>_API_KEY` (Stripe, OpenAI, Anthropic, GitHub, npm). Renaming pre-GA before the env var name becomes a published contract.
+
+### Renamed
+- **Env var**: `BUNNY_ACCOUNT_KEY` → `BUNNY_API_KEY`
+- **CLI flag**: `--account-key` → `--api-key` (on `bunny init`, `bunny configure`)
+- **GH secret name in nightly workflow**: `BUNNY_E2E_ACCOUNT_KEY` → `BUNNY_E2E_API_KEY`
+- **Generated GH Actions workflow** (`bunny init --ci`) now references `BUNNY_API_KEY` secret
+- **User-facing prose** in help/error messages: "Bunny account API key" → "Bunny API key"; "Account API key required" → "Bunny API key required"; whoami output line "Resources reachable with current account key:" → "with current API key:"
+
+### Unchanged (intentional)
+- **Internal scope name `account`** stays. `--scope=account` is correct because it describes the credential's role/level (vs `--scope=storage:<zone>` / `--scope=stream:<lib>`), independent of what the credential is called from Bunny's perspective.
+- **Per-product env vars**: `BUNNY_STORAGE_PASSWORD_<ZONE>` and `BUNNY_STREAM_KEY_<LIB>` keep their product prefixes — clearer hierarchy.
+- **Comments referencing the credential by scope name** ("the account key") inside internal code are fine; they describe the scope concept.
+
+### Migration (one-time, ~5 seconds)
+
+Local shell:
+```bash
+export BUNNY_API_KEY=$BUNNY_ACCOUNT_KEY
+unset BUNNY_ACCOUNT_KEY
+# update .zshrc / .bashrc accordingly
+```
+
+GitHub Actions:
+```bash
+gh secret set BUNNY_E2E_API_KEY --body <your-key>
+gh secret delete BUNNY_E2E_ACCOUNT_KEY
+```
+
+External CI scripts (if any): replace `BUNNY_ACCOUNT_KEY` with `BUNNY_API_KEY` and `--account-key` with `--api-key`.
+
+### No backwards-compat shim
+Pre-GA, single maintainer, 5-second migration. Same call as rc.52's `BUNNY_E2E_CERT_DOMAIN` rename. Carrying a fallback would rot.
+
+### Test Coverage
+- 185/185 unit (unchanged).
+
+---
+
 ## [0.1.0-rc.53] — 2026-05-04 (Unify MCP hostname-mutation tool response shape)
 
 ### Changed (breaking on MCP tool surface — internal AI-agent contract)

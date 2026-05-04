@@ -33,7 +33,7 @@ export async function generateGitHubActionsWorkflow(
 // GitHub Actions normalizes secret names to UPPER_SNAKE_CASE; mirror the
 // resolver chain's BUNNY_STORAGE_PASSWORD_<ZONE_UPPER> convention.
 function secretsToAdd(config: BunnyJson): string[] {
-  const out = ['BUNNY_ACCOUNT_KEY'];
+  const out = ['BUNNY_API_KEY'];
   const zone = config.deploy.storageZone;
   if (zone) {
     const upper = zone.replaceAll('-', '_').toUpperCase();
@@ -72,7 +72,7 @@ jobs:
         run: npm install -g bunny-tools
       - name: Deploy
         env:
-          BUNNY_ACCOUNT_KEY: \${{ secrets.BUNNY_ACCOUNT_KEY }}
+          BUNNY_API_KEY: \${{ secrets.BUNNY_API_KEY }}
           ${passwordSecret}: \${{ secrets.${passwordSecret} }}
         run: bunny deploy --delete
 `;

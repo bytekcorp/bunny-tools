@@ -30,7 +30,7 @@ function defaultHandcurated(): string {
     'When asked to deploy a project to Bunny.net using bunny-tools:',
     '',
     '1. Check that `bunny.json` exists in the project root. If not, run `bunny init`.',
-    '2. Check global creds with `bunny auth list`. If empty, `bunny init` will prompt for them (interactive) or run `bunny init --non-interactive --features=storage --account-key=... --storage-zone=... --storage-password=...` (CI).',
+    '2. Check global creds with `bunny auth list`. If empty, `bunny init` will prompt for them (interactive) or run `bunny init --non-interactive --features=storage --api-key=... --storage-zone=... --storage-password=...` (CI).',
     '3. Run `bunny deploy --dry-run` first to verify the plan.',
     '4. Run `bunny deploy` to sync storage and purge CDN cache.',
     '',

@@ -395,7 +395,7 @@ export const TOOLS: ToolDef[] = [
       'Initialize a bunny.json + store credentials in one call. Non-interactive shape. Use this to bootstrap a project. Returns the result with bunnyJsonPath, storedScopes, features.',
     inputSchema: z.object({
       features: z.array(z.enum(FEATURES)).min(1),
-      accountKey: z.string().optional(),
+      apiKey: z.string().optional(),
       publicDir: z.string().optional(),
       storageZone: z.string().optional(),
       storagePassword: z.string().optional(),
@@ -411,7 +411,7 @@ export const TOOLS: ToolDef[] = [
       const args = z
         .object({
           features: z.array(z.enum(FEATURES)).min(1),
-          accountKey: z.string().optional(),
+          apiKey: z.string().optional(),
           publicDir: z.string().optional(),
           storageZone: z.string().optional(),
           storagePassword: z.string().optional(),

@@ -25,7 +25,7 @@ export const FEATURE_LABELS: Record<Feature, string> = {
 
 export type InitInput = {
   // Auth
-  accountKey?: string;
+  apiKey?: string;
   // Feature selection (defaults to ['storage'] in non-interactive)
   features?: Feature[];
   // Storage+CDN config
@@ -84,11 +84,11 @@ export async function runInit(
   const accountAlreadySet = await hasAccountCredential();
   if (!accountAlreadySet) {
     const key =
-      input.accountKey ??
+      input.apiKey ??
       (opts.interactive
-        ? await cb.ask({ name: 'accountKey', message: 'Bunny account API key', mode: 'mask' })
+        ? await cb.ask({ name: 'apiKey', message: 'Bunny API key', mode: 'mask' })
         : undefined);
-    if (!key) throw new AuthError('Account API key required (--account-key or interactive prompt).');
+    if (!key) throw new AuthError('Bunny API key required (--api-key or interactive prompt).');
     await setCredential({ kind: 'account' }, key);
     storedScopes.push('account');
     cb.notify?.('Account key stored.');

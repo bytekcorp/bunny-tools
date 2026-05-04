@@ -70,7 +70,7 @@ export function envVarSuffix(raw: string): string {
 export function scopeToEnvVars(scope: AuthScope): string[] {
   switch (scope.kind) {
     case 'account':
-      return ['BUNNY_ACCOUNT_KEY'];
+      return ['BUNNY_API_KEY'];
     case 'storage':
       return [`BUNNY_STORAGE_PASSWORD_${envVarSuffix(scope.zone)}`, 'BUNNY_STORAGE_PASSWORD'];
     case 'stream':

@@ -18,11 +18,11 @@ describe('runDeploy', () => {
     await writeFile(join(workDir, 'dist', 'app.js'), 'console.log(1)');
     xdgBackup = process.env['XDG_CONFIG_HOME'];
     process.env['XDG_CONFIG_HOME'] = workDir;
-    for (const k of ['BUNNY_ACCOUNT_KEY', 'BUNNY_STORAGE_PASSWORD', 'BUNNY_STORAGE_PASSWORD_MY_APP']) {
+    for (const k of ['BUNNY_API_KEY', 'BUNNY_STORAGE_PASSWORD', 'BUNNY_STORAGE_PASSWORD_MY_APP']) {
       envBackup[k] = process.env[k];
       delete process.env[k];
     }
-    process.env['BUNNY_ACCOUNT_KEY'] = 'acc-key';
+    process.env['BUNNY_API_KEY'] = 'acc-key';
     process.env['BUNNY_STORAGE_PASSWORD_MY_APP'] = 'st-pw';
   });
 

@@ -36,7 +36,7 @@ export async function clearKey(scope: AuthScope, opts: { profile?: string } = {}
 // List scopes available in the given profile (or active if omitted).
 // Includes both stored credentials (keychain + file) AND env-based account
 // credentials. The latter is the CI / non-interactive path: callers set
-// BUNNY_ACCOUNT_KEY without ever running `bunny configure`. Pre-rc.47 this
+// BUNNY_API_KEY without ever running `bunny configure`. Pre-rc.47 this
 // function only enumerated stored scopes, so `bunny whoami` reported
 // "No credentials stored" in CI environments — misleading.
 export async function listScopes(profile?: string): Promise<StoredScope[]> {
@@ -61,7 +61,7 @@ export async function listScopes(profile?: string): Promise<StoredScope[]> {
   // stored scopes. We only check `account` here — per-zone storage/stream
   // env vars (BUNNY_STORAGE_PASSWORD_<ZONE>, etc.) need a zone name to
   // construct, and whoami works at account level.
-  const envAccountKey = process.env['BUNNY_ACCOUNT_KEY'];
+  const envAccountKey = process.env['BUNNY_API_KEY'];
   if (
     envAccountKey &&
     envAccountKey.length > 0 &&

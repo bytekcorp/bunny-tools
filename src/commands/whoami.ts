@@ -56,7 +56,7 @@ export async function run(inv: ParsedInvocation): Promise<number> {
 
   process.stdout.write('Stored credentials:\n');
   process.stdout.write(renderTable(scopes.map((s) => ({ scope: s.scope, value: s.masked }))) + '\n\n');
-  process.stdout.write('Resources reachable with current account key:\n');
+  process.stdout.write('Resources reachable with current API key:\n');
   process.stdout.write(
     renderTable([
       { resource: 'storage zones', count: String(storageCount) },

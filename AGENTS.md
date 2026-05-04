@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.53  |  **Active commands:** 55/56
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.54  |  **Active commands:** 55/56
 
 <!-- HANDCURATED:START -->
 
@@ -49,7 +49,7 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 ### Phase 2
 
 - `bunny init` [active] — Initialize bunny.json + creds. Auth → feature multi-select → per-feature config. _mcp: `bunny.init`_
-- `bunny configure` [active] — Interactive credential walkthrough for a profile (account key + optional storage/stream).
+- `bunny configure` [active] — Interactive credential walkthrough for a profile (API key + optional storage/stream).
 - `bunny configure list` [active] — List all credential profiles + stored scopes (masked). Active profile marked with *.
 - `bunny configure switch` [active] — Set the active credential profile.
 - `bunny configure remove` [active] — Remove a credential profile (entire) or a single scope within it.

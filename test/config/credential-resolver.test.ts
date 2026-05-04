@@ -10,7 +10,7 @@ import { AuthError } from '../../src/api/errors.js';
 import type { AuthScope } from '../../src/api/http.js';
 
 const ENV_KEYS = [
-  'BUNNY_ACCOUNT_KEY',
+  'BUNNY_API_KEY',
   'BUNNY_STORAGE_PASSWORD',
   'BUNNY_STORAGE_PASSWORD_MY_APP',
   'BUNNY_STREAM_KEY',
@@ -68,7 +68,7 @@ describe('credential resolver', () => {
   });
 
   it('flag override wins over everything', async () => {
-    process.env['BUNNY_ACCOUNT_KEY'] = 'env-key';
+    process.env['BUNNY_API_KEY'] = 'env-key';
     const v = await resolveCredential({ kind: 'account' }, { flag: 'flag-key', keytar: null });
     expect(v).toBe('flag-key');
   });

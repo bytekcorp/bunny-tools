@@ -26,7 +26,7 @@ describe.skipIf(!E2E_ENABLED)('e2e: Stream library + video', () => {
     // — we only need it to authenticate video uploads downstream. This is
     // the same pattern users follow today.
     const detail = await fetch(`https://api.bunny.net/videolibrary/${libId}`, {
-      headers: { AccessKey: process.env['BUNNY_ACCOUNT_KEY']! },
+      headers: { AccessKey: process.env['BUNNY_API_KEY']! },
     });
     libKey = extractApiKey(await detail.text());
 

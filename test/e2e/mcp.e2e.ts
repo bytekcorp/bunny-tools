@@ -84,7 +84,7 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
         }
         // No-match path: leave DNS_ZONE_ID unset; gated tests skip cleanly.
       } catch {
-        // Best-effort. If dns list fails (account-key issue, etc.) just
+        // Best-effort. If dns list fails (api-key issue, etc.) just
         // leave DNS_ZONE_ID unset and let the cert tests skip.
       }
     }

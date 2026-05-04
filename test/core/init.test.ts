@@ -13,7 +13,7 @@ vi.mock('keytar', () => {
 import { runInit } from '../../src/core/init.js';
 import { getMockAgent } from '../setup.js';
 
-const ENV_KEY = 'BUNNY_ACCOUNT_KEY';
+const ENV_KEY = 'BUNNY_API_KEY';
 
 describe('runInit (unified bootstrap)', () => {
   let scratch: string;
@@ -65,7 +65,7 @@ describe('runInit (unified bootstrap)', () => {
     const cb = spies();
     const result = await runInit(
       {
-        accountKey: 'k',
+        apiKey: 'k',
         features: ['storage'],
         publicDir: 'dist',
         storageZone: 'my-app',
@@ -90,7 +90,7 @@ describe('runInit (unified bootstrap)', () => {
     mockZoneListing();
     const cb = spies();
     await expect(
-      runInit({ accountKey: 'k', features: ['storage'] }, cb, { interactive: false, cwd: scratch }),
+      runInit({ apiKey: 'k', features: ['storage'] }, cb, { interactive: false, cwd: scratch }),
     ).rejects.toThrowError(/storage-zone required/);
   });
 
@@ -98,7 +98,7 @@ describe('runInit (unified bootstrap)', () => {
     mockZoneListing();
     const cb = spies();
     const result = await runInit(
-      { accountKey: 'k', features: ['dns'] },
+      { apiKey: 'k', features: ['dns'] },
       cb,
       { interactive: false, cwd: scratch },
     );
@@ -111,7 +111,7 @@ describe('runInit (unified bootstrap)', () => {
     await writeFile(join(scratch, 'bunny.json'), '{}');
     const cb = spies();
     const result = await runInit(
-      { accountKey: 'k', features: ['storage'], storageZone: 'my-app', storagePassword: 'pw' },
+      { apiKey: 'k', features: ['storage'], storageZone: 'my-app', storagePassword: 'pw' },
       cb,
       { interactive: false, cwd: scratch },
     );
@@ -123,7 +123,7 @@ describe('runInit (unified bootstrap)', () => {
     mockZoneListing();
     const cb = spies();
     const result = await runInit(
-      { accountKey: 'k', features: ['storage'], storageZone: 'my-app', storagePassword: 'pw' },
+      { apiKey: 'k', features: ['storage'], storageZone: 'my-app', storagePassword: 'pw' },
       cb,
       { interactive: false, cwd: scratch, force: true },
     );
@@ -149,7 +149,7 @@ describe('runInit (unified bootstrap)', () => {
     const cb = spies();
     await expect(
       runInit({ features: ['storage'], storageZone: 'my-app' }, cb, { interactive: false, cwd: scratch }),
-    ).rejects.toThrowError(/Account API key required/);
+    ).rejects.toThrowError(/Bunny API key required/);
   });
 
   it('updates .gitignore when present (and not yet listing state file)', async () => {
@@ -157,7 +157,7 @@ describe('runInit (unified bootstrap)', () => {
     mockZoneListing();
     const cb = spies();
     const result = await runInit(
-      { accountKey: 'k', features: ['storage'], storageZone: 'my-app', storagePassword: 'pw' },
+      { apiKey: 'k', features: ['storage'], storageZone: 'my-app', storagePassword: 'pw' },
       cb,
       { interactive: false, cwd: scratch },
     );
@@ -190,7 +190,7 @@ describe('runInit (unified bootstrap)', () => {
 
     try {
       const result = await runInit(
-        { accountKey: 'k' },
+        { apiKey: 'k' },
         { ask, pick, multiselect, confirm },
         { interactive: true, cwd: scratch },
       );

@@ -19,11 +19,11 @@ describe('core/stream', () => {
   beforeEach(async () => {
     scratch = await mkdtemp(join(tmpdir(), 'stream-'));
     envBackup['XDG_CONFIG_HOME'] = process.env['XDG_CONFIG_HOME'];
-    envBackup['BUNNY_ACCOUNT_KEY'] = process.env['BUNNY_ACCOUNT_KEY'];
+    envBackup['BUNNY_API_KEY'] = process.env['BUNNY_API_KEY'];
     envBackup['BUNNY_STREAM_KEY'] = process.env['BUNNY_STREAM_KEY'];
     envBackup['BUNNY_STREAM_KEY_42'] = process.env['BUNNY_STREAM_KEY_42'];
     process.env['XDG_CONFIG_HOME'] = scratch;
-    process.env['BUNNY_ACCOUNT_KEY'] = 'acct';
+    process.env['BUNNY_API_KEY'] = 'acct';
     process.env['BUNNY_STREAM_KEY'] = 'stream-default';
     process.env['BUNNY_STREAM_KEY_42'] = 'stream-lib-42';
   });

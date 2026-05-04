@@ -9,7 +9,7 @@ import { AuthError } from '../api/errors.js';
 
 export type ConfigureInput = {
   profile?: string;
-  accountKey?: string;
+  apiKey?: string;
   storageZone?: string;
   storagePassword?: string;
   pullZoneId?: number;
@@ -38,15 +38,15 @@ export async function runConfigure(
   const storedScopes: string[] = [];
 
   // 1) Account key.
-  const accountKey =
-    input.accountKey ??
+  const apiKey =
+    input.apiKey ??
     (options.interactive
-      ? await cb.ask({ name: 'accountKey', message: `Bunny account API key for profile "${profile}"`, mode: 'mask' })
+      ? await cb.ask({ name: 'apiKey', message: `Bunny API key for profile "${profile}"`, mode: 'mask' })
       : undefined);
-  if (!accountKey) {
-    throw new AuthError(`Account API key required (--account-key) for profile "${profile}".`);
+  if (!apiKey) {
+    throw new AuthError(`Bunny API key required (--api-key) for profile "${profile}".`);
   }
-  await setCredential({ kind: 'account' }, accountKey, { profile });
+  await setCredential({ kind: 'account' }, apiKey, { profile });
   storedScopes.push(`${profile}:account`);
   cb.notify?.(`Account key stored for profile "${profile}".`);
 

@@ -57,7 +57,7 @@ Non-interactive form for CI:
 
 ```bash
 bunny init --non-interactive --features=storage \
-  --account-key=$BUNNY_ACCOUNT_KEY \
+  --account-key=$BUNNY_API_KEY \
   --storage-zone=my-app \
   --storage-password=$BUNNY_STORAGE_PASSWORD \
   --pull-zone=12345
@@ -341,7 +341,7 @@ Four credential scopes (all use the `AccessKey` HTTP header):
 ```yaml
 - uses: bytekcorp/bunny-tools-deploy-action@v1
   with:
-    account-key: ${{ secrets.BUNNY_ACCOUNT_KEY }}
+    account-key: ${{ secrets.BUNNY_API_KEY }}
     storage-password: ${{ secrets.BUNNY_STORAGE_PASSWORD }}
 ```
 
