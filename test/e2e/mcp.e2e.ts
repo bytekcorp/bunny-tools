@@ -371,27 +371,37 @@ describe.skipIf(!E2E_ENABLED)('e2e: MCP server', () => {
     expect(Array.isArray(initial.hostnames)).toBe(true);
     expect(initial.hostnames).not.toContain(host);
 
-    const added = unwrapJson<{ ok: boolean; hostnames: string[] }>(
+    // bunny.pullzone_hostname_add returns metadata about the single linked
+    // hostname: { ok, hostname, linked, hasCertificate, forceSslSet? }.
+    // (The plural `hostnames` array is the shape of pullzone_hostname_list,
+    // which the rc.45-era test conflated. Surfaced when rc.52's auto-resolve
+    // first let this test run against a real domain.)
+    const added = unwrapJson<{ ok: boolean; hostname: string; hasCertificate?: boolean }>(
       (await mcp.client.callTool({
         name: 'bunny.pullzone_hostname_add',
         arguments: { pullZoneId, hostname: host },
       })) as { content?: Array<{ type: string; text?: string }> },
     );
     expect(added.ok).toBe(true);
-    expect(added.hostnames).toContain(host);
+    expect(added.hostname).toBe(host);
 
     // rc.45: idempotency check. Re-adding the same hostname must not 4xx
-    // (Bunny would reject "already linked") and must not produce a duplicate
-    // in the hostnames list. Same fix lineage as Bug #4 (rc.40 domain
-    // connect duplicate DNS record).
-    const reAdded = unwrapJson<{ ok: boolean; hostnames: string[] }>(
+    // (Bunny would reject "already linked") and must not produce a duplicate.
+    // Verify the dedup via a fresh list call.
+    const reAdded = unwrapJson<{ ok: boolean; hostname: string }>(
       (await mcp.client.callTool({
         name: 'bunny.pullzone_hostname_add',
         arguments: { pullZoneId, hostname: host },
       })) as { content?: Array<{ type: string; text?: string }> },
     );
     expect(reAdded.ok).toBe(true);
-    expect(reAdded.hostnames.filter((h) => h === host).length).toBe(1);
+    const afterAdd = unwrapJson<{ hostnames: string[] }>(
+      (await mcp.client.callTool({
+        name: 'bunny.pullzone_hostname_list',
+        arguments: { pullZoneId },
+      })) as { content?: Array<{ type: string; text?: string }> },
+    );
+    expect(afterAdd.hostnames.filter((h) => h === host).length).toBe(1);
 
     const removed = unwrapJson<{ ok: boolean; hostnames: string[] }>(
       (await mcp.client.callTool({
