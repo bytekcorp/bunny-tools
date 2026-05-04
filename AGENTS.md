@@ -2,7 +2,7 @@
 
 Bunny.net CLI — storage deploy, CDN purge, full resource management.
 
-**Binary:** `bunny`  |  **Version:** 0.1.0-rc.50  |  **Active commands:** 55/56
+**Binary:** `bunny`  |  **Version:** 0.1.0-rc.51  |  **Active commands:** 55/56
 
 <!-- HANDCURATED:START -->
 
@@ -48,7 +48,7 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 
 ### Phase 2
 
-- `bunny init` [active] — Initialize a bunny.json + creds in one shot. Auth → feature multi-select → per-feature config. _mcp: `bunny.init`_
+- `bunny init` [active] — Initialize bunny.json + creds. Auth → feature multi-select → per-feature config. _mcp: `bunny.init`_
 - `bunny configure` [active] — Interactive credential walkthrough for a profile (account key + optional storage/stream).
 - `bunny configure list` [active] — List all credential profiles + stored scopes (masked). Active profile marked with *.
 - `bunny configure switch` [active] — Set the active credential profile.
@@ -80,9 +80,9 @@ claude mcp add bunny-tools npx -y bunny-tools mcp
 - `bunny pullzone edgerule add` [active] — Add an edge rule to a pull zone (raw JSON rule).
 - `bunny pullzone edgerule delete` [active] — Delete an edge rule by Guid.
 - `bunny pullzone hostname list` [active] — List custom hostnames linked to a pull zone.
-- `bunny pullzone hostname add` [active] — Idempotent: link hostname + provision Let's Encrypt cert + enable ForceSSL (HTTP→HTTPS). Pass --no-force-ssl to provision cert without the HTTP→HTTPS redirect.
+- `bunny pullzone hostname add` [active] — Link hostname + provision Let's Encrypt cert + ForceSSL. Idempotent.
 - `bunny pullzone hostname remove` [active] — Unlink a custom hostname from a pull zone.
-- `bunny domain connect` [active] — Atomic Connect Domain: link hostname to PZ, provision Let's Encrypt cert, optionally create the apex Type-7 DNS record. Idempotent — safe to re-run.
+- `bunny domain connect` [active] — Atomic: link hostname + cert + optional apex Type-7 DNS record. Idempotent.
 
 ### Phase 4
 

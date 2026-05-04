@@ -1,7 +1,7 @@
 {
   "cliName": "bunny-tools",
   "binary": "bunny",
-  "version": "0.1.0-rc.50",
+  "version": "0.1.0-rc.51",
   "description": "Bunny.net CLI — storage deploy, CDN purge, full resource management.",
   "commands": [
     {
@@ -50,7 +50,7 @@
     },
     {
       "name": "init",
-      "summary": "Initialize a bunny.json + creds in one shot. Auth → feature multi-select → per-feature config.",
+      "summary": "Initialize bunny.json + creds. Auth → feature multi-select → per-feature config.",
       "description": null,
       "status": "active",
       "phase": 2,
@@ -1158,7 +1158,7 @@
     },
     {
       "name": "pullzone hostname add",
-      "summary": "Idempotent: link hostname + provision Let's Encrypt cert + enable ForceSSL (HTTP→HTTPS). Pass --no-force-ssl to provision cert without the HTTP→HTTPS redirect.",
+      "summary": "Link hostname + provision Let's Encrypt cert + ForceSSL. Idempotent.",
       "description": null,
       "status": "active",
       "phase": 3,
@@ -1232,7 +1232,7 @@
     },
     {
       "name": "domain connect",
-      "summary": "Atomic Connect Domain: link hostname to PZ, provision Let's Encrypt cert, optionally create the apex Type-7 DNS record. Idempotent — safe to re-run.",
+      "summary": "Atomic: link hostname + cert + optional apex Type-7 DNS record. Idempotent.",
       "description": null,
       "status": "active",
       "phase": 3,

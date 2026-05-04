@@ -4,6 +4,21 @@ All notable changes to bunny-tools are documented here. This changelog follows [
 
 ---
 
+## [0.1.0-rc.51] — 2026-05-04 (Trim 3 long summaries that wrapped help output)
+
+### Fixed
+- **`pullzone hostname add` summary was 164 chars** → wrapped mid-description on `bunny pullzone --help` for any terminal narrower than 220 cols. The summary explained the `--no-force-ssl` negation inline, but that detail is already documented on the flag itself. Trimmed to 68 chars: "Link hostname + provision Let's Encrypt cert + ForceSSL. Idempotent."
+- **`domain connect` summary was 150 chars** — same wrap class. Trimmed to 75 chars: "Atomic: link hostname + cert + optional apex Type-7 DNS record. Idempotent."
+- **`init` summary was 94 chars** — borderline; tripped the new guard. Trimmed to 80 chars by dropping "a" and "in one shot" without losing meaning.
+
+### Added
+- **`every command summary fits in 90 chars` regression guard** in `test/manifest/examples-parse.test.ts`. Combined with the longest plausible left column (~50 chars) + 4-char indent/gap, 90-char summaries keep every COMMANDS row under 144 chars — fits 100-col terminals (modern floor) with headroom.
+
+### Test Coverage
+- 185/185 unit (was 184 + 1 new guard).
+
+---
+
 ## [0.1.0-rc.50] — 2026-05-04 (Root help: unify command-block column across all 3 sections)
 
 ### Changed

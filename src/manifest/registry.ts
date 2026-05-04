@@ -76,7 +76,7 @@ export const registry: Registry = {
     // Phase 2 — daily-use deploy loop
     {
       name: 'init',
-      summary: 'Initialize a bunny.json + creds in one shot. Auth → feature multi-select → per-feature config.',
+      summary: 'Initialize bunny.json + creds. Auth → feature multi-select → per-feature config.',
       args: [{ name: 'dir', description: 'Optional target directory (defaults to cwd).', required: false }],
       flags: [
         { name: 'non-interactive', description: 'Skip prompts and accept all values via flags.', hasValue: false },
@@ -443,8 +443,7 @@ export const registry: Registry = {
     },
     {
       name: 'pullzone hostname add',
-      summary:
-        'Idempotent: link hostname + provision Let\'s Encrypt cert + enable ForceSSL (HTTP→HTTPS). Pass --no-force-ssl to provision cert without the HTTP→HTTPS redirect.',
+      summary: 'Link hostname + provision Let\'s Encrypt cert + ForceSSL. Idempotent.',
       args: [
         { name: 'pullZoneId', description: 'Pull zone id.', required: true },
         { name: 'hostname', description: 'Custom hostname (e.g. example.com).', required: true },
@@ -475,8 +474,7 @@ export const registry: Registry = {
 
     {
       name: 'domain connect',
-      summary:
-        'Atomic Connect Domain: link hostname to PZ, provision Let\'s Encrypt cert, optionally create the apex Type-7 DNS record. Idempotent — safe to re-run.',
+      summary: 'Atomic: link hostname + cert + optional apex Type-7 DNS record. Idempotent.',
       args: [
         { name: 'pullZoneId', description: 'Pull zone id.', required: true },
         { name: 'hostname', description: 'FQDN to connect (e.g. example.com).', required: true },

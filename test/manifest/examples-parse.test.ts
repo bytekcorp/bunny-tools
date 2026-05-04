@@ -91,4 +91,25 @@ describe('examples parse', () => {
     }
     expect(failures).toEqual([]);
   });
+
+  // rc.51: bound summary length so the COMMANDS row in --help doesn't wrap
+  // mid-description on standard terminals. Combined with the longest plausible
+  // left column (`bunny pullzone hostname add <pullZoneId> <hostname>` = 50)
+  // plus 2-char indent + 2-char gap, a 90-char summary keeps every row under
+  // 144 chars — fits comfortably in 100-col terminals (the modern floor) with
+  // headroom for column shifts.
+  //
+  // Original offender: `pullzone hostname add` shipped a 164-char summary
+  // that explained the --no-force-ssl negation inline. Detail moved into
+  // the leaf's flag descriptions (already documented there).
+  const SUMMARY_MAX = 90;
+  it(`every command summary fits in ${SUMMARY_MAX} chars`, () => {
+    const failures: string[] = [];
+    for (const cmd of registry.commands) {
+      if (cmd.summary.length > SUMMARY_MAX) {
+        failures.push(`[${cmd.name}] summary is ${cmd.summary.length} chars (max ${SUMMARY_MAX}): "${cmd.summary.slice(0, 80)}..."`);
+      }
+    }
+    expect(failures).toEqual([]);
+  });
 });
